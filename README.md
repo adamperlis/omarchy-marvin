@@ -122,6 +122,27 @@ Enabling a clone replaces the built-in in its bar slot; disabling it brings
 the built-in back. Plugins are unsandboxed QML and land disabled so you can
 read them first. See [`plugins/README.md`](plugins/README.md).
 
+## Apps
+
+The system reaches past the shell into the apps Omarchy installs, in two
+ways:
+
+- **Shipped by the theme**, so a plain install gets them: `obsidian.css`
+  restyles the Notes app entirely — Inter, radius 16, borderless panes,
+  neutral headings, chips for tags, monospace only inside code — and
+  `hyprland-preview-share-picker.css` does the same for the screen-share
+  picker. Omarchy syncs both into place on every theme switch.
+- **Set by the config layer**, because they are settings rather than theme
+  files: Files and every GTK app get Inter and the blue accent through
+  `gsettings` (snapshotted, restored on revert), and Hyprland's group bar
+  gets Inter at body size on a 32px row.
+
+Everything else Omarchy templates — btop, Chromium, VS Code, Claude Code,
+Helix, Neovim, the terminals — takes its colours from `colors.toml`
+automatically, and colour is all those surfaces accept.
+
+Monospace survives in exactly two places: terminals and code. Nowhere else.
+
 ## Put it back
 
 ```
@@ -151,6 +172,7 @@ the shell journal open) and what to send back.
 | Path | What |
 |------|------|
 | `colors.toml`, `shell.toml`, `icons.theme` | The theme. Dark. |
+| `obsidian.css`, `hyprland-preview-share-picker.css` | The Notes app and the share picker, restyled by the theme. |
 | `light/` | The light sibling: same geometry, different tone table. |
 | `backgrounds/`, `light/backgrounds/` | Wallpapers, graded to the ground. |
 | `preview.png`, `preview-unlock.png`, `unlock.png` | Theme-switcher preview and the Plymouth boot logo. |

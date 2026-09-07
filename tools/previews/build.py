@@ -132,7 +132,7 @@ BASE_CSS = """
 """
 
 def vars_css(t):
-    return f":root{{--bg:{t['bg']};--raised:{t['raised']};--fg:{t['fg']};--fg-rgb:{hexrgb(t['fg'])};--muted:{t['muted']};--accent:{t['accent']};--attn:{t['attn']};--wx-bg:{t['wx'][0]};--wx-ink:{t['wx'][1]};--wx-muted:{t['wx'][2]};--wx-end:{t['wx'][3]};--pw-bg:{t['pw'][0]};--pw-ink:{t['pw'][1]};--pw-rgb:{hexrgb(t['pw'][1])};--pw-muted:{t['pw'][2]};--chip-fill:{t['pw'][3]};--chip-text:{t['pw'][4]};--sh:{'.08' if t['light'] else '.32'}}}"
+    return f":root{{--bg:{t['bg']};--raised:{t['raised']};--fg:{t['fg']};--fg-rgb:{hexrgb(t['fg'])};--muted:{t['muted']};--accent:{t['accent']};--attn:{t['attn']};--wx-bg:{t['wx'][0]};--wx-ink:{t['wx'][1]};--acc-rgb:{hexrgb(t['accent'])};--wx-muted:{t['wx'][2]};--wx-end:{t['wx'][3]};--pw-bg:{t['pw'][0]};--pw-ink:{t['pw'][1]};--pw-rgb:{hexrgb(t['pw'][1])};--pw-muted:{t['pw'][2]};--chip-fill:{t['pw'][3]};--chip-text:{t['pw'][4]};--sh:{'.08' if t['light'] else '.32'}}}"
 
 def bar(t, wide=True):
     return f'''<div class="bar"><div class="l"><div class="slot">{ic("apps")}</div><div class="ws"><span>1</span><span class="on">2</span><span>3</span><span>4</span><span>5</span></div></div>
@@ -198,6 +198,8 @@ def desktop(t, fonts):
     folders = ["Desktop","Documents","Downloads","Dropbox","Music","Pictures","Public","Videos"]
     fgrid = "".join(f'<div class="fd"><svg width="56" height="44" viewBox="0 0 56 44"><path d="M2 8a4 4 0 0 1 4-4h14l4 4h24a4 4 0 0 1 4 4v26a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z" fill="{t["accent"]}" opacity=".9"/><path d="M2 14h52v24a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z" fill="{t["accent"]}"/></svg><span>{f}</span></div>' for f in folders)
     side = "".join(f'<div class="si{" on" if n=="Home" else ""}">{ic(i,16)}{n}</div>' for i,n in (("home","Home"),("clock","Recent"),("star","Starred"),("network","Network"),("trash","Trash"),("download","Downloads")))
+    obs_side = "".join(f'<div class="si{" on" if n=="Principles" else ""}">{ic("text",16)}{n}</div>' for n in ("Principles","Grid","Type scale","Motion","Backgrounds","Widgets"))
+    w = widgets(t)
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>{font_face(fonts)}{vars_css(t)}{BASE_CSS}
 html,body{{width:1800px;height:1012px;overflow:hidden}}
 body{{background:url('file://{t["wall"]}') center/cover}}
@@ -210,6 +212,14 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 .term .p{{color:var(--accent)}}.term .c{{color:var(--muted)}}
 .mon{{padding:16px 20px;font-size:12px;line-height:20px}}.mon h4{{margin:0 0 8px;font:500 13px Inter}}.mon .sec{{margin-bottom:16px}}.mon .lab{{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px}}
 .pr{{display:grid;grid-template-columns:1fr 60px 70px;font-family:'JetBrains Mono';font-size:12px}}.pr .m{{color:var(--muted);text-align:right}}
+.obs{{display:grid;grid-template-columns:224px 1fr;height:100%}}.obs .sb{{background:var(--bg);padding:16px 8px;display:flex;flex-direction:column;gap:2px}}
+.obs .vault{{font-size:11px;color:var(--muted);padding:0 12px 12px}}.obs .sb .si{{height:32px;border-radius:16px;padding:0 12px;display:flex;align-items:center;gap:10px}}.obs .sb .si.on{{background:rgba(var(--fg-rgb),.14);font-weight:500}}
+.obs .ed{{background:var(--raised);position:relative;padding:0}}.obs .tabs{{height:48px;display:flex;align-items:center;gap:8px;padding:8px 16px}}.obs .tab{{height:32px;padding:0 16px;border-radius:16px;display:flex;align-items:center;color:var(--muted)}}.obs .tab.on{{background:rgba(var(--fg-rgb),.14);color:var(--fg);font-weight:500}}
+.obs .doc{{padding:24px 48px;max-width:640px;font-size:15px;line-height:1.5}}.obs h1{{font-size:32px;font-weight:500;letter-spacing:-.02em;margin:0 0 16px;line-height:1.15}}.obs h2{{font-size:18px;font-weight:500;margin:24px 0 8px}}.obs p{{margin:0 0 12px}}
+.obs .chk{{display:flex;align-items:center;gap:10px;margin:4px 0}}.obs .chk i{{width:16px;height:16px;border-radius:8px;border:1.5px solid var(--muted);display:inline-block}}.obs .chk i.d{{background:var(--accent);border-color:var(--accent)}}.obs .chk s{{color:var(--muted)}}
+.obs .tag{{display:inline-flex;align-items:center;height:24px;padding:0 12px;border-radius:16px;background:rgba(var(--acc-rgb),.12);color:var(--accent);font-size:13px;font-weight:500;margin-right:8px}}
+.obs code{{font-family:'JetBrains Mono';font-size:13px;background:rgba(var(--fg-rgb),.06);border-radius:8px;padding:2px 6px}}.obs blockquote{{margin:12px 0;padding-left:16px;border-left:2px solid var(--accent);color:var(--muted)}}
+.obs .status{{position:absolute;left:16px;right:16px;bottom:12px;height:32px;display:flex;align-items:center;justify-content:flex-end;gap:16px;font-size:11px;color:var(--muted)}}
 .files{{display:grid;grid-template-columns:184px 1fr;height:100%}}.files .sb{{padding:16px 8px;display:flex;flex-direction:column;gap:2px;background:var(--raised)}}
 .si{{height:32px;border-radius:16px;padding:0 12px;display:flex;align-items:center;gap:10px;color:var(--fg)}}.si.on{{background:rgba(var(--fg-rgb),.14)}}
 .files .main{{padding:16px 20px}}.files .top{{display:flex;align-items:center;gap:12px;margin-bottom:24px}}.files .top .pathf{{height:32px;flex:1;border-radius:16px;background:rgba(var(--fg-rgb),.06);display:flex;align-items:center;padding:0 16px;gap:8px}}
@@ -217,8 +227,19 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 </style></head><body>
 {bar(t)}
 <div class="win focus" style="left:16px;top:48px;width:1004px;height:600px">
-  <div class="ed mono">{editor_lines(t, src)}</div>
-  <div class="status"><b>NORMAL</b><span>shell.toml</span><span>[spacing]</span><span style="margin-left:auto">TOML · UTF-8</span><b>62:1</b></div>
+  <div class="obs"><div class="sb"><div class="vault">Notes</div>{obs_side}</div>
+  <div class="ed"><div class="tabs"><div class="tab on">Principles</div><div class="tab">Grid</div><div class="tab">Motion</div></div>
+  <div class="doc"><h1>Principles</h1>
+  <p>Understand the grid, set a clean type scale, art-direct a few key widgets, then propagate. After that it gets rather easy.</p>
+  <h2>Rules</h2>
+  <div class="chk"><i class="d"></i><s>Every step in a scale must be perceptible</s></div>
+  <div class="chk"><i class="d"></i><s>Depth from surfaces, not outlines</s></div>
+  <div class="chk"><i></i>Tone is a property of each surface</div>
+  <div class="chk"><i></i>Large numerals, small labels</div>
+  <p style="margin-top:16px">Padding equals radius: <code>popup-padding = 16</code>, so content sits at the centre of the corner arc.</p>
+  <blockquote>Leave a little room for the unexpected.</blockquote>
+  <p><span class="tag">#design-system</span><span class="tag">#omarchy</span></p></div>
+  <div class="status"><span>212 words</span><span>1,280 characters</span></div></div></div>
 </div>
 <div class="win" style="left:16px;top:656px;width:1004px;height:340px">
   <div class="term mono"><span class="p">❯</span> omarchy theme set marvin
@@ -226,7 +247,6 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 <span class="p">❯</span> omarchy dev theme-preview marvin
 {swatch}
 {swatch2}
-<span class="c">accent {t["accent"]} · attention {t["attn"]} · foreground {t["fg"]} · background {t["bg"]}</span>
 <span class="p">❯</span> ./test/run
 <span style="color:{t["green"]}">ok</span>  contrast floors      <span class="c">40 pairs</span>
 <span style="color:{t["green"]}">ok</span>  shell parser         <span class="c">154 keys, 0 dropped</span>
@@ -234,16 +254,10 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 <span style="color:{t["green"]}">ok</span>  install → revert     <span class="c">byte for byte</span>
 <span class="p">❯</span> <span style="display:inline-block;width:8px;height:16px;background:var(--fg);vertical-align:-3px"></span></div>
 </div>
-<div class="win" style="left:1028px;top:48px;width:756px;height:420px">
-  <div class="mon"><div class="sec"><div class="lab"><span>CPU</span><span>24% · 2.9 GHz · 51°C</span></div>
-  <svg width="716" height="60" viewBox="0 0 300 60" preserveAspectRatio="none"><polyline points="{poly}" fill="none" stroke="{t["accent"]}" stroke-width="1.5" vector-effect="non-scaling-stroke"/><polyline points="0,60 {poly} 290,60" fill="{t["accent"]}" opacity=".08" stroke="none"/></svg></div>
-  <div class="sec"><div class="lab"><span>Memory</span><span>6.1 / 32 GB</span></div><div class="hair"><i style="width:19%"></i></div></div>
-  <div class="sec"><div class="lab"><span>Disk</span><span>412 / 931 GB</span></div><div class="hair"><i style="width:44%"></i></div></div>
-  <div class="lab" style="margin-top:8px"><span>Processes</span><span>cpu · mem</span></div>{plist}</div>
-</div>
-<div class="win" style="left:1028px;top:476px;width:756px;height:520px">
+<div class="win" style="left:1028px;top:48px;width:756px;height:948px">
   <div class="files"><div class="sb">{side}</div><div class="main"><div class="top">{ic("chevron_left",20)}{ic("chevron_right",20)}<div class="pathf">{ic("home",16)}Home</div>{ic("search",20)}</div><div class="fgrid">{fgrid}</div></div></div>
 </div>
+<div style="position:absolute;right:16px;top:48px">{w["power"]}</div>
 </body></html>"""
 
 def boot(t, fonts):

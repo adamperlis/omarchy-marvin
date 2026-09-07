@@ -1,0 +1,147 @@
+/* Marvin for Obsidian — dark.
+   Generated from colors.toml by the theme; the design system applied to the
+   Notes app: Inter, radius 16, padding 16, no dividers, two text tones,
+   neutral headings, chips for tags, monospace only inside code. */
+
+body {
+  --font-interface-theme: "Inter", sans-serif;
+  --font-text-theme: "Inter", sans-serif;
+  --font-monospace-theme: "JetBrains Mono", monospace;
+  --font-text-size: 15px;
+  --font-ui-smaller: 11px;
+  --font-ui-small: 11px;
+  --font-ui-medium: 13px;
+  --font-ui-large: 15px;
+  --line-height-normal: 1.5;
+  --file-line-width: 42em;
+  --radius-s: 8px;
+  --radius-m: 16px;
+  --radius-l: 16px;
+  --radius-xl: 24px;
+  --tab-radius: 16px;
+  --input-radius: 16px;
+  --button-radius: 16px;
+  --size-4-2: 8px;
+  --size-4-3: 12px;
+  --size-4-4: 16px;
+  --size-4-6: 24px;
+  --size-4-8: 32px;
+  --h1-size: 32px; --h1-weight: 500; --h1-line-height: 1.15;
+  --h2-size: 24px; --h2-weight: 500;
+  --h3-size: 18px; --h3-weight: 500;
+  --h4-size: 15px; --h4-weight: 500;
+  --h5-size: 13px; --h5-weight: 500;
+  --h6-size: 13px; --h6-weight: 500;
+  --bold-weight: 500;
+}
+
+.theme-dark, .theme-light {
+  --background-primary: #1e1e1e;
+  --background-primary-alt: #1e1e1e;
+  --background-secondary: #161616;
+  --background-secondary-alt: #161616;
+  --titlebar-background: #161616;
+  --titlebar-background-focused: #161616;
+  --background-modifier-border: transparent;
+  --background-modifier-border-hover: transparent;
+  --background-modifier-border-focus: #7aa6ff;
+  --background-modifier-hover: rgba(214,214,214, .10);
+  --background-modifier-active-hover: rgba(214,214,214, .14);
+  --background-modifier-form-field: rgba(214,214,214, .06);
+  --background-modifier-message: #1e1e1e;
+  --background-modifier-error: #e38484;
+  --background-modifier-success: #98c78c;
+  --divider-color: transparent;
+  --divider-color-hover: transparent;
+  --divider-width: 0px;
+  --tab-outline-width: 0px;
+  --tab-divider-color: transparent;
+  --tab-background-active: rgba(214,214,214, .14);
+  --tab-text-color-focused-active: #d6d6d6;
+  --nav-item-background-active: rgba(214,214,214, .14);
+  --nav-item-background-hover: rgba(214,214,214, .10);
+  --nav-item-color-active: #d6d6d6;
+  --nav-item-weight-active: 500;
+  --text-normal: #d6d6d6;
+  --text-muted: #8c8c8c;
+  --text-faint: #8c8c8c;
+  --text-on-accent: #161616;
+  --text-selection: #303030;
+  --text-highlight-bg: rgba(223,191,114, .25);
+  --text-accent: #7aa6ff;
+  --text-accent-hover: #7aa6ff;
+  --interactive-normal: rgba(214,214,214, .06);
+  --interactive-hover: rgba(214,214,214, .10);
+  --interactive-accent: #7aa6ff;
+  --interactive-accent-hover: #7aa6ff;
+  --text-title-h1: #d6d6d6; --text-title-h2: #d6d6d6; --text-title-h3: #d6d6d6;
+  --text-title-h4: #d6d6d6; --text-title-h5: #d6d6d6; --text-title-h6: #8c8c8c;
+  --text-link: #7aa6ff;
+  --link-color: #7aa6ff;
+  --link-external-color: #7aa6ff;
+  --link-decoration: none;
+  --code-normal: #d6d6d6;
+  --code-background: rgba(214,214,214, .06);
+  --code-comment: #8c8c8c;
+  --code-keyword: #7aa6ff;
+  --code-string: #98c78c;
+  --code-value: #dfbf72;
+  --code-function: #c4a0dc;
+  --code-property: #82c9c9;
+  --blockquote-border-color: #7aa6ff;
+  --blockquote-border-thickness: 2px;
+  --hr-color: rgba(214,214,214, .12);
+  --hr-thickness: 2px;
+  --checkbox-color: #7aa6ff;
+  --checkbox-color-hover: #7aa6ff;
+  --checkbox-border-color: #8c8c8c;
+  --checkbox-radius: 8px;
+  --tag-color: #7aa6ff;
+  --tag-color-hover: #7aa6ff;
+  --tag-background: rgba(122,166,255, .12);
+  --tag-background-hover: rgba(122,166,255, .18);
+  --tag-radius: 16px;
+  --tag-padding-x: 12px;
+  --tag-padding-y: 4px;
+  --tag-weight: 500;
+  --scrollbar-thumb-bg: rgba(214,214,214, .14);
+  --scrollbar-active-thumb-bg: rgba(214,214,214, .24);
+  --scrollbar-bg: transparent;
+  --graph-line: #8c8c8c;
+  --graph-node: #7aa6ff;
+  --graph-node-focused: #d6d6d6;
+  --graph-node-tag: #82c9c9;
+  --graph-node-attachment: #98c78c;
+  --text-error: #e38484;
+  --text-success: #98c78c;
+  --modal-radius: 16px;
+  --prompt-border-width: 0px;
+  --shadow-s: 0 12px 32px rgba(0,0,0,.32);
+  --shadow-l: 0 12px 32px rgba(0,0,0,.32);
+}
+
+/* Headings are hierarchy by size and weight, not colour. h1 is tracked in. */
+.markdown-rendered h1, .cm-header-1 { letter-spacing: -0.02em; }
+.markdown-rendered h2, .cm-header-2 { letter-spacing: -0.01em; }
+
+/* Panes are surfaces: raised editor on the base sidebar, no rules between them. */
+.workspace-split.mod-root .workspace-tabs .workspace-leaf,
+.workspace-leaf-content { background: var(--background-primary); }
+.workspace-tab-header-container, .workspace-ribbon, .status-bar, .side-dock-ribbon { border: none; }
+.workspace-tab-header.is-active .workspace-tab-header-inner { border-radius: 16px; }
+.workspace-tab-header-inner { padding: 0 12px; }
+.view-header { border: none; }
+.status-bar { padding: 0 16px; }
+
+/* Code: the one place monospace belongs. */
+.markdown-rendered code, .cm-inline-code { border-radius: 8px; padding: 2px 6px; }
+.markdown-rendered pre, .HyperMD-codeblock { border-radius: 8px; }
+
+/* Controls are the text colour at alpha, focus is an accent ring. */
+button, .clickable-icon { border-radius: 16px; }
+input[type=text], input[type=search], .prompt-input { border-radius: 16px; background: var(--background-modifier-form-field); border: none; }
+input[type=text]:focus, input[type=search]:focus, .prompt-input:focus { box-shadow: 0 0 0 2px #7aa6ff; }
+
+/* Callouts are tinted surfaces, never bordered. */
+.callout { border: none; border-radius: 16px; padding: 16px; }
+.callout .callout-title { font-weight: 500; }

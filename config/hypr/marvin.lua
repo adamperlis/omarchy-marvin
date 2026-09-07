@@ -34,6 +34,24 @@ hl.config({
     },
   },
 
+  -- The group bar (tabbed windows) is the one piece of Hyprland chrome with
+  -- text. Inter at body size, a 32px row, a 2px indicator: the bar's rules.
+  group = {
+    groupbar = {
+      font_family = "Inter",
+      font_size = 13,
+      font_weight_active = "medium",
+      font_weight_inactive = "normal",
+      height = 32,
+      indicator_height = 2,
+      indicator_gap = 4,
+      gradient_rounding = 16,
+      gradient_round_only_edges = false,
+      gaps_in = 8,
+      gaps_out = 0,
+    },
+  },
+
   animations = {
     enabled = true,
   },

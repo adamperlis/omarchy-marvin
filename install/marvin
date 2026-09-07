@@ -69,6 +69,10 @@ snapshot() {
   {
     echo "taken=$(date -Is)"
     echo "theme=$(current_theme)"
+    if command -v gsettings >/dev/null; then
+      echo "gtk_font=$(gsettings get org.gnome.desktop.interface font-name 2>/dev/null || true)"
+      echo "gtk_accent=$(gsettings get org.gnome.desktop.interface accent-color 2>/dev/null || true)"
+    fi
   } >"$SNAP/state"
   note "previous theme: $(current_theme)"
   note "→ $SNAP"
@@ -95,6 +99,17 @@ install_font() {
   mkdir -p "$FONTCONF"
   cp "$THEME_DIR/config/fontconfig/60-marvin-shell.conf" "$FONTCONF/60-marvin-shell.conf"
   note "→ $FONTCONF/60-marvin-shell.conf (scoped to quickshell; terminals unchanged)"
+}
+
+install_gtk() {
+  say "GTK apps"
+  command -v gsettings >/dev/null || { note "no gsettings; skipped"; return; }
+  # Omarchy never sets a GTK font, so Files and every GTK app run on the
+  # sans-serif fallback. Inter at 10pt is 13px at 96 dpi: the body size.
+  gsettings set org.gnome.desktop.interface font-name "Inter 10" 2>/dev/null && note "font-name → Inter 10" || true
+  # libadwaita derives per-scheme accent colours from the named accent, so
+  # one setting serves both tones.
+  gsettings set org.gnome.desktop.interface accent-color "blue" 2>/dev/null && note "accent-color → blue" || true
 }
 
 install_hypr() {
@@ -184,6 +199,14 @@ revert() {
 
   clean_shell_json
 
+  if command -v gsettings >/dev/null && [[ -f "$SNAP/state" ]]; then
+    local gf ga
+    gf=$(sed -n 's/^gtk_font=//p' "$SNAP/state"); ga=$(sed -n 's/^gtk_accent=//p' "$SNAP/state")
+    if [[ -n $gf ]]; then gsettings set org.gnome.desktop.interface font-name "${gf//\'/}" 2>/dev/null || true; else gsettings reset org.gnome.desktop.interface font-name 2>/dev/null || true; fi
+    if [[ -n $ga ]]; then gsettings set org.gnome.desktop.interface accent-color "${ga//\'/}" 2>/dev/null || true; else gsettings reset org.gnome.desktop.interface accent-color 2>/dev/null || true; fi
+    note "GTK font and accent restored"
+  fi
+
   local previous
   previous=$(sed -n 's/^theme=//p' "$SNAP/state" 2>/dev/null || true)
   if [[ -n $previous && $previous != marvin && $previous != marvin-light ]] && command -v omarchy-theme-set >/dev/null; then
@@ -239,6 +262,6 @@ case "${1:-}" in
   --revert|--remove) revert ;;
   --status) status ;;
   -h|--help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//' ;;
-  "") snapshot; install_light; install_font; install_hypr; install_plugins; apply ;;
+  "") snapshot; install_light; install_font; install_gtk; install_hypr; install_plugins; apply ;;
   *) echo "usage: install/marvin [--revert | --status]" >&2; exit 1 ;;
 esac
