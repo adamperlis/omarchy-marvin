@@ -62,6 +62,7 @@ added it (`sudo pacman -Rns inter-font`).
 | `config/fontconfig/60-marvin-shell.conf` | Inter for `quickshell` only. |
 | `install/marvin` | Installs the config layer; `--revert` restores the snapshot; `--status` reports. |
 | `test/install-revert` | Proves revert is an exact restore. |
+| `docs/testing.md` | The order to test it in on a real machine, and where the shell logs. |
 | `test/run` | Contrast floors, parser compatibility, dark/light geometry identity, widget tint floors. |
 
 ## Rules that are tested, not eyeballed
