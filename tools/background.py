@@ -28,17 +28,17 @@ WORK_W, WORK_H = 960, 540
 # Theme grounds, from colors.toml dark_background / darker_background and the
 # light ramp. Luminance bands are in 0..1 relative luminance.
 TONES = {
-    "dark":  dict(ground=(0x0f, 0x0f, 0x0f), band=(0.020, 0.260), mix=0.12, sat=1.15, out="backgrounds"),
-    "light": dict(ground=(0xeb, 0xeb, 0xeb), band=(0.520, 0.840), mix=0.18, sat=1.05, out="light/backgrounds"),
+    "dark":  dict(ground=(0x0f, 0x0f, 0x0f), band=(0.020, 0.340), mix=0.05, sat=1.50, out="backgrounds"),
+    "light": dict(ground=(0xeb, 0xeb, 0xeb), band=(0.300, 0.900), mix=0.06, sat=1.50, out="light/backgrounds"),
 }
 
 # Palette-derived fields for when no source painting is on disk. Colours are
 # the dominant hues of the named work, not the work itself.
 PALETTES = {
     # Water Lilies — teal water, blue-lilac sky reflections, pink blooms, ivory light
-    "lilies":  ["#3b6d6c", "#5f8fa8", "#8fb0c9", "#9c93bf", "#c9a3b3", "#6f8f62", "#e6e2cf"],
+    "lilies":  ["#1f5a5e", "#2f6f9e", "#5f97c9", "#7e6fb8", "#c98ab0", "#3d7f7a", "#eee6cc"],
     # Impression, Sunrise — blue-grey harbour, orange sun, violet haze
-    "sunrise": ["#5e7b95", "#8aa0b3", "#b39a8e", "#d9814f", "#e8a464", "#6b6f8e", "#c8c2c0"],
+    "sunrise": ["#3f5f83", "#7a97b5", "#c48a6e", "#ef7a3a", "#f7b955", "#5a5f93", "#d9c9bd"],
 }
 
 def hex_rgb(h):
@@ -76,7 +76,7 @@ def prepare_source(path):
 
 def grade(im, tone, seed):
     t = TONES[tone]
-    im = im.filter(ImageFilter.GaussianBlur(radius=WORK_H / 22))
+    im = im.filter(ImageFilter.GaussianBlur(radius=WORK_H / 30))
     a = np.asarray(im, dtype=np.float32) / 255
     # saturation
     grey = a.mean(axis=2, keepdims=True)

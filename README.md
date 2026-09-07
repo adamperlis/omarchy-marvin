@@ -51,11 +51,11 @@ These are renders from the tokens, not screenshots of the shell — see
 | **Radius** | one radius for everything | 24px — cards, windows; controls are pills |
 | **Padding** | equals the radius | 24px, so content sits at the centre of the corner arc |
 | **Type** | Inter, pinned scale, every step perceptible | 12 / 14 / 16 / 18 / 24 / 56; hero numerals regular weight, tracked −0.03em |
-| **Colour** | true-neutral ramp, one accent, one attention role | accent `#7aa6ff` / `#2a63d8`; attention amber, not terminal red; semantic colour is a soft-fill chip |
+| **Colour** | true-neutral ramp, one accent, one attention role | accent `#7aa6ff` / `#2a63d8`; attention amber, not terminal red; status is a banana-yellow chip with dark text |
 | **Text** | two tones, no third | foreground and muted |
-| **Depth** | surfaces, not outlines | a hairline at 8% and a wide faint shadow; no dividers, no structural borders |
+| **Depth** | surfaces, not outlines | a hairline at 10% and a wide faint shadow; no dividers, no structural borders |
 | **Tone** | a property of each surface | bar is base, popups are raised, weather is a gradient, battery is inverted |
-| **State** | emphasis rises in one direction; focus ≠ hover | fills 0.06 → 0.10 → 0.14 → 0.18; focus is a 2px accent ring |
+| **State** | emphasis rises in one direction; focus ≠ hover | fills 0.03 → 0.05 → 0.07 → 0.10 in light (0.06 → 0.10 → 0.14 → 0.18 in dark); focus is the selected fill plus a 1px text-colour ring, never an accent outline |
 | **Progress** | a hairline | 2px, track at 0.06, fill foreground or accent |
 | **Motion** | a scale, exits faster than entrances | 120 / 200 / 320 ms, exits at 0.6; workspaces slide, borders don't linger |
 | **Icons** | Material Design Icons on their own grid | 16 / 20 / 24 |
@@ -233,9 +233,10 @@ travels with them in `plugins/LICENSE-omarchy`.
 ## Backgrounds
 
 The wallpaper is the ground the whole system sits on, so it is graded, not
-chosen: a painting blurred until nothing is recognisable, saturation pulled
-down, mixed toward the theme ground, luminance clamped into a band the bar
-stays readable over, grain added against banding.
+chosen: a painting blurred until nothing is recognisable, saturation pushed
+up so the field stays rich under the blur, mixed lightly toward the theme
+ground, luminance clamped into a band the bar stays readable over, grain
+added against banding.
 
 The shipped set is synthesised from named palettes — the dominant hues of
 Monet's *Water Lilies* and *Impression, Sunrise* — because no image host was

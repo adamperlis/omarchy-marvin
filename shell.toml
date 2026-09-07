@@ -233,5 +233,11 @@ background     = "#2f3b58"
 background-end = "#1a2338"
 text           = "#ffffff"
 muted          = "#b6c0d6"
-attention-fill = "#3b2f16"
-attention-text = "#f0c66b"
+attention-fill = "#ffe15c"
+attention-text = "#3a2b00"
+
+# Status chips on raised cards (the note's "Draft"): banana yellow with dark
+# text, a saturated fill rather than a tint, as in the reference.
+[marvin-chip]
+attention-fill = "#ffe15c"
+attention-text = "#3a2b00"

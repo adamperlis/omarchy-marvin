@@ -14,7 +14,7 @@
   font-size: 14px;
   color: @foreground;
 }
-.window { background: @background; border: 1px solid alpha(@foreground, 0.08); border-radius: 24px; margin: 0; padding: 24px; }
+.window { background: @background; border: 1px solid alpha(@foreground, 0.10); border-radius: 24px; margin: 0; padding: 24px; }
 tabs { padding: 0 0 16px 0; }
 tabs > tab { margin-right: 8px; padding: 0 20px; min-height: 40px; border-radius: 20px; }
 .tab-label { color: @muted; }

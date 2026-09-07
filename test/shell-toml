@@ -4,7 +4,7 @@
 1. Every key line matches one of the four regexes in Color.qml parseShell();
    a line that matches none is silently dropped by the shell.
 2. Dark and light share every geometry token exactly. Only colors and the
-   scrim alphas (a tone property) may differ.
+   alphas (a tone property) may differ.
 3. Control fill alphas rise monotonically, and focus is distinct from hover.
 Run from the repo root: ./test/shell-toml
 """
@@ -37,7 +37,8 @@ for name, dropped in (("shell.toml", dd), ("light/shell.toml", ld)):
     for i, l in dropped: print(f"   line {i}: {l}")
     failed += len(dropped)
 
-tone_dependent = lambda k: k.endswith("scrim-alpha")
+# Alphas are tone properties: a light surface reads a fill at 0.03, a dark one needs 0.06.
+tone_dependent = lambda k: k.endswith("-alpha")
 geo = [k for k in dark if not color.match(dark[k]) and not tone_dependent(k)]
 mismatch = [k for k in geo if dark.get(k) != light.get(k)]
 keys = sorted(set(dark) ^ set(light))
@@ -70,7 +71,7 @@ for name, d in (("shell.toml", dark), ("light/shell.toml", light)):
         # deeper stop at AA large (3:1); a solid tint keeps the body floors.
         stops = [end] if end else [d.get(f"{sec}.background")]
         floors = (3.0, 3.0) if end else (10.0, 4.5)
-        for bg in stops:
+        for bg in (stops if tx else []):   # a chip-only section has no text/muted
             for label, fg, floor in (("text", tx, floors[0]), ("muted", mu, floors[1])):
                 v = contrast(fg, bg)
                 ok = v >= floor

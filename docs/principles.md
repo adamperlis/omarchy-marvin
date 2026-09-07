@@ -129,12 +129,17 @@ Extracted from the reference; proposed as rules.
   weather is a vertical gradient (`background` → `background-end`), power
   is the inverted card in both tones with a ring of sixty ticks around the
   numeral, and every other surface stays raised. Applied.
-- **Semantic colour is a soft-fill chip**: the hue at a light fill with
-  darker text of the same hue (`attention-fill` / `attention-text`), never
-  a saturated block. The battery's charging state is the first one.
+- **Status is a banana-yellow chip**: a saturated `#ffe15c` fill with dark
+  text (`attention-fill` / `attention-text`), the same chip on white and
+  on the navy card. The reference's palette is not pastel; the chip is the
+  one place a card gets a full-chroma colour. The battery's charging state
+  and the note's draft state are the first two.
 - **Controls are the text color at alpha**, so they survive any tone.
   Upstream's model is right and its values are too faint (0.04 normal).
-  Target roughly 0.06–0.08 on light surfaces, 0.12–0.16 on dark.
+  The reference's Search pill measures #f8f8f8 on white: 0.03 of the text
+  colour. Light runs 0.03 / 0.05 / 0.07 / 0.10; dark needs more to read at
+  all and runs 0.06 / 0.10 / 0.14 / 0.18. Alphas are the one geometry
+  token that differs by tone.
 - **One inverted element per surface, and it is the primary action.**
 - **Progress is a hairline.** 2–3px; track is foreground at low alpha,
   fill is foreground or accent.
@@ -166,9 +171,9 @@ Proposed. Direct correction of upstream.
   border down on hover).
 - **Focus is always visible and always distinct from hover.** Upstream
   defaults focus to identical values as hover.
-- **Never an accent outline on an input.** A focused field is a deeper
-  fill (0.10 of the text colour) with a 1px ring of the text colour at
-  0.24, in every tone. The reference never draws a blue ring; the field
+- **Never an accent outline on an input.** A focused field is the
+  selected fill with a 1px ring of the text colour (0.16 light, 0.24
+  dark). The reference never draws a blue ring; the field
   itself darkens. Applies to the launcher, lock, polkit, Obsidian and the
   share picker.
 - **Card geometry is 352 wide, radius 24, inset 24, rows on the 8
@@ -201,9 +206,10 @@ the short step and workspaces get the long one, the inverse of upstream.
 ## Backgrounds
 
 Confirmed. A famous painting, public domain, blurred past recognition into a
-colour field, graded so it complements the palette: saturation down, mixed
-toward the ground, luminance in a band the bar reads over (dark 0.01–0.17,
-light 0.60–0.86), fine grain against banding. `tools/background.py` is the
+colour field, graded so it complements the palette: saturation up (1.5,
+the reference's imagery is rich, not pastel), mixed lightly toward the
+ground, luminance in a band the bar reads over (dark 0.02–0.34, light
+0.30–0.90), fine grain against banding. `tools/background.py` is the
 rule made executable. Shipped set is palette-synthesised until a source
 painting is supplied.
 

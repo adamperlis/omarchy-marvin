@@ -45,8 +45,8 @@ body {
   --titlebar-background-focused: #f5f5f5;
   --background-modifier-border: rgba(26,26,26, .08);
   --background-modifier-border-hover: rgba(26,26,26, .12);
-  --background-modifier-border-focus: rgba(26,26,26, .24);
-  --background-modifier-hover: rgba(26,26,26, .10);
+  --background-modifier-border-focus: rgba(26,26,26, .16);
+  --background-modifier-hover: rgba(26,26,26, .05);
   --background-modifier-active-hover: rgba(26,26,26, .14);
   --background-modifier-form-field: rgba(26,26,26, .06);
   --background-modifier-message: #ffffff;
@@ -60,19 +60,19 @@ body {
   --tab-background-active: rgba(26,26,26, .14);
   --tab-text-color-focused-active: #1a1a1a;
   --nav-item-background-active: rgba(26,26,26, .14);
-  --nav-item-background-hover: rgba(26,26,26, .10);
+  --nav-item-background-hover: rgba(26,26,26, .05);
   --nav-item-color-active: #1a1a1a;
   --nav-item-weight-active: 500;
   --text-normal: #1a1a1a;
   --text-muted: #6b6b6b;
   --text-faint: #6b6b6b;
   --text-on-accent: #ffffff;
-  --text-selection: #d9d9d9;
+  --text-selection: .07;
   --text-highlight-bg: rgba(143,106,0, .25);
   --text-accent: #2a63d8;
   --text-accent-hover: #2a63d8;
   --interactive-normal: rgba(26,26,26, .06);
-  --interactive-hover: rgba(26,26,26, .10);
+  --interactive-hover: rgba(26,26,26, .05);
   --interactive-accent: #2a63d8;
   --interactive-accent-hover: #2a63d8;
   --text-title-h1: #1a1a1a; --text-title-h2: #1a1a1a; --text-title-h3: #1a1a1a;
@@ -106,7 +106,7 @@ body {
   --tag-padding-y: 4px;
   --tag-weight: 500;
   --scrollbar-thumb-bg: rgba(26,26,26, .14);
-  --scrollbar-active-thumb-bg: rgba(26,26,26, .24);
+  --scrollbar-active-thumb-bg: rgba(26,26,26, .16);
   --scrollbar-bg: transparent;
   --graph-line: #6b6b6b;
   --graph-node: #2a63d8;
@@ -142,8 +142,8 @@ body {
 /* Controls are the text colour at alpha; focus is a deeper fill and a hairline, never an accent outline. */
 button, .clickable-icon { border-radius: 20px; }
 input[type=text], input[type=search], .prompt-input { border-radius: 20px; background: var(--background-modifier-form-field); border: none; min-height: 40px; }
-input[type=text]:focus, input[type=search]:focus, .prompt-input:focus { background: rgba(26,26,26, .10); box-shadow: 0 0 0 1px rgba(26,26,26, .24); }
+input[type=text]:focus, input[type=search]:focus, .prompt-input:focus { background: rgba(26,26,26, .07); box-shadow: 0 0 0 1px rgba(26,26,26, .16); }
 
 /* Callouts are tinted surfaces with a hairline, never a coloured band. */
-.callout { border: 1px solid rgba(26,26,26, .08); border-radius: 24px; padding: 24px; }
+.callout { border: 1px solid rgba(26,26,26, .10); border-radius: 24px; padding: 24px; }
 .callout .callout-title { font-family: var(--font-interface-theme); font-weight: 500; }

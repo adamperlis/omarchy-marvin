@@ -67,7 +67,7 @@ body {
   --text-muted: #8c8c8c;
   --text-faint: #8c8c8c;
   --text-on-accent: #161616;
-  --text-selection: #303030;
+  --text-selection: .14;
   --text-highlight-bg: rgba(223,191,114, .25);
   --text-accent: #7aa6ff;
   --text-accent-hover: #7aa6ff;
@@ -142,8 +142,8 @@ body {
 /* Controls are the text colour at alpha; focus is a deeper fill and a hairline, never an accent outline. */
 button, .clickable-icon { border-radius: 20px; }
 input[type=text], input[type=search], .prompt-input { border-radius: 20px; background: var(--background-modifier-form-field); border: none; min-height: 40px; }
-input[type=text]:focus, input[type=search]:focus, .prompt-input:focus { background: rgba(214,214,214, .10); box-shadow: 0 0 0 1px rgba(214,214,214, .24); }
+input[type=text]:focus, input[type=search]:focus, .prompt-input:focus { background: rgba(214,214,214, .14); box-shadow: 0 0 0 1px rgba(214,214,214, .24); }
 
 /* Callouts are tinted surfaces with a hairline, never a coloured band. */
-.callout { border: 1px solid rgba(214,214,214, .08); border-radius: 24px; padding: 24px; }
+.callout { border: 1px solid rgba(214,214,214, .10); border-radius: 24px; padding: 24px; }
 .callout .callout-title { font-family: var(--font-interface-theme); font-weight: 500; }
