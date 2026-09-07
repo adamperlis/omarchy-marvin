@@ -238,31 +238,36 @@ pushed up a little so the field stays rich, mixed lightly toward the theme
 ground, luminance clamped into a band the bar stays readable over, grain
 added against banding.
 
-Four ship, all avant-garde, none of them the paintings everybody knows.
-The desktop gets each one fully blurred into a colour field; the same
-image, sharp, is what the widgets show as album art, thumbnails and
-mood-board tiles (`docs/images/art/`):
+Seven backgrounds ship. The first is no image at all: the reference's own
+ground, white falling to the base grey, so the desktop reads exactly like
+the widget sheet. The other six are lit rooms, drawn by
+`tools/background.py` at 4K, nothing borrowed: a box in perspective whose walls, floor and ceiling are gradient
+planes converging on a small door or window at the far end, light blooming
+from it, a whisper of grain. Each room is one run of the system's colours
+plus the hot magenta and orange the idiom wants. The same six, ungraded,
+are the imagery inside the widgets (`docs/images/art/`): album art,
+thumbnails, screen-share previews, the mood board.
 
-| | Work | What it is |
+| | Background | Colours |
 |---|---|---|
-| 1 | *Orphic* | an original composition in Delaunay's idiom: overlapping discs of concentric rings in the system's colours, drawn at 4K |
-| 2 | Wassily Kandinsky, *Composition VII* (1913) | the most colour in one place; public domain, 4032 × 3022 |
-| 3 | Francis Picabia, *Edtaonisl* (1913) | Orphism at its loudest; public domain, upscaled under the blur |
-| 4 | *Planes* | an original: flat rotated planes over ivory, after Malevich and Léger, drawn at 4K |
+| 1 | Plain | the ground itself, `#ffffff` → `#ebebeb` light, `#1e1e1e` → `#0f0f0f` dark |
+| 2 | Ember | orange walls, peach ceiling, a glowing amber door |
+| 3 | Lilac | lilac and pink, a dark doorway |
+| 4 | Sky | the accent blue, a navy floor, a pale window |
+| 5 | Citrus | yellow and lime over an orange floor |
+| 6 | Dusk | violet meets orange, a pink door |
+| 7 | Magenta | violet, cyan and magenta, an orange-edged door |
 
-Nothing later than the 1920s can ship here: Basquiat, Rothko, Miró and
-everything contemporary is still in copyright, and an MIT repository
-can't carry it. The two originals exist for that reason. If you own or
-license a contemporary work, drop it in and grade it the same way. Sources
-and the recipe are in `backgrounds/README.md`:
+They are original, so they carry this repository's licence. To draw more,
+or to grade a painting or photo of your own:
 
 ```
-tools/background.py --source path/to/painting.jpg --name mine --index 5 --blur 0.045 --crop-out docs/images/art
-tools/background.py --style orphic --index 6 --blur 0.045 --seed 3
+tools/background.py --style corridors --palette sky --index 7 --seed 21 --crop-out docs/images/art
+tools/background.py --source path/to/yours.jpg --name mine --index 8 --blur 0.045 --crop-out docs/images/art
 ```
 
-The blur is 4.5 % of the height. Dark and light tones get the same
-saturation and the dark tone is not dimmed: the bar is opaque, so the
-wallpaper never has to carry text.
+Seven palettes are built in (`ember lilac sky citrus dusk tide magenta`);
+every seed is a different room. Rooms ship unblurred, since their softness
+is drawn in; a painting gets a 4.5 % blur so the desktop stays a field.
 
 It writes both tones. Needs Pillow and numpy.

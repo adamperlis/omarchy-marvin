@@ -1,33 +1,44 @@
 # Backgrounds
 
-Four wallpapers per tone, each blurred into a colour field by
-`tools/background.py`; the same four, sharp, live in `docs/images/art/`
-for imagery inside the UI. The light set is under `light/backgrounds/`.
+A plain ground and six lit rooms per tone, drawn by `tools/background.py`
+at 3840 × 2160. The light set is under `light/backgrounds/`, graded to the
+light ground; the ungraded rooms are in `docs/images/art/` for imagery
+inside the UI.
 
-| File | Work | Source | Status |
-|------|------|--------|--------|
-| `1-orphic.jpg` | *Orphic*, an original composition after Robert Delaunay's *Rythme* | drawn at 3840 × 2160 by the tool (`--style orphic --seed 11`) | this repository's MIT licence |
-| `2-composition.jpg` | Wassily Kandinsky, *Composition VII* (1913) | 4032 × 3022 | public domain (Kandinsky d. 1944; published before 1930) |
-| `3-edtaonisl.jpg` | Francis Picabia, *Edtaonisl* (1913) | 800 × 776, upscaled under the blur (`--allow-upscale`) | public domain (Picabia d. 1953; published before 1930) |
-| `4-planes.jpg` | *Planes*, an original after Malevich and Léger | drawn at 3840 × 2160 by the tool (`--style planes --seed 5`) | this repository's MIT licence |
+| File | Style | Palette | Seed |
+|------|-------|---------|------|
+| `1-plain.jpg` | plain | the tone's ground, raised at the top | 7 |
+| `2-ember.jpg` | corridors | ember | 8 |
+| `3-lilac.jpg` | corridors | lilac | 3 |
+| `4-sky.jpg` | corridors | sky | 8 |
+| `5-citrus.jpg` | corridors | citrus | 8 |
+| `6-dusk.jpg` | corridors | dusk | 8 |
+| `7-magenta.jpg` | corridors | magenta | 8 |
 
-The reproductions come from style images vendored in
-[Kautenja/a-neural-algorithm-of-artistic-style](https://github.com/Kautenja/a-neural-algorithm-of-artistic-style)
-and [gordicaleksa/pytorch-neural-style-transfer](https://github.com/gordicaleksa/pytorch-neural-style-transfer).
-Faithful photographs of public-domain paintings carry no new copyright.
+How a room is drawn: a vanishing point sits somewhere off centre with a
+small opening around it; every pixel's ray from that point leaves the
+opening on one of four planes (left, right, floor, ceiling) and reaches the
+screen edge, which gives it a plane and a depth. Each plane runs from the
+far light at the opening to its own colour at the viewer, a little darker
+at the near edge; the creases between planes are softened; the opening has
+its own gradient; light from it is bloomed outward and screened in; a
+2.5-level grain keeps the gradients from banding. Everything is the
+repository's own work, so it carries the MIT licence.
 
-Grading, per tone, at 3840 × 2160: cover-crop to 16:9, Gaussian blur at
-4.5 % of the height, saturation × 1.3, a 0–4 % mix toward the theme
-ground, luminance kept inside 0.02–0.90 (dark) or 0.20–0.92 (light), then
-fine grain against banding. The dark tone is not dimmed. `--crop-out DIR`
-also writes the sharp 1600 × 900 crop for the UI. JPEG quality 88.
+Grading, per tone: saturation × 1.0, no mix, luminance kept inside
+0.02–0.90 (dark) or 0.20–0.92 (light), grain 1.6. No blur: the softness
+is drawn in. Reproducible:
 
 ```
-tools/background.py --style orphic --index 1 --blur 0.045 --seed 11 --crop-out docs/images/art
-tools/background.py --source composition-vii.jpg --name composition --index 2 --blur 0.045 --crop-out docs/images/art
-tools/background.py --source edtaonisl.jpg --name edtaonisl --index 3 --blur 0.045 --allow-upscale --crop-out docs/images/art
-tools/background.py --style planes --index 4 --blur 0.045 --seed 5 --crop-out docs/images/art
+tools/background.py --style plain --index 1
+tools/background.py --style corridors --palette ember   --name ember   --index 2 --seed 8 --blur 0 --sat 1 --mix 0 --crop-out docs/images/art
+tools/background.py --style corridors --palette lilac   --name lilac   --index 3 --seed 3 --blur 0 --sat 1 --mix 0 --crop-out docs/images/art
+tools/background.py --style corridors --palette sky     --name sky     --index 4 --seed 8 --blur 0 --sat 1 --mix 0 --crop-out docs/images/art
+tools/background.py --style corridors --palette citrus  --name citrus  --index 5 --seed 8 --blur 0 --sat 1 --mix 0 --crop-out docs/images/art
+tools/background.py --style corridors --palette dusk    --name dusk    --index 6 --seed 8 --blur 0 --sat 1 --mix 0 --crop-out docs/images/art
+tools/background.py --style corridors --palette magenta --name magenta --index 7 --seed 8 --blur 0 --sat 1 --mix 0 --crop-out docs/images/art
 ```
 
-A source under 3840 × 2160 is refused unless `--allow-upscale` is passed;
-under a full blur the upscale is invisible, sharp it would not be.
+`--source` still grades a painting or photograph (blurred at 4.5 % for the
+desktop, `--allow-upscale` under a blur), and `--style orphic|planes`
+draws the earlier flat compositions.

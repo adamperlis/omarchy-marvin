@@ -50,7 +50,8 @@ def main():
     dk_js = (dk / "browser.global.js").read_text()
     dk_css = (dk / "styles.css").read_text()
     L, D = tones["light"], tones["dark"]
-    strip = "".join(
+    none_tile = f'<button class="film" data-key="none" title="No image: the plain ground"><span class="none"></span><span class="cap"><b>None</b><i>Plain ground</i></span><span class="px ok">the tone\'s own ground</span></button>'
+    strip = none_tile + "".join(
         f'<button class="film" data-key="{m["key"]}" title="{m["artist"]}, {m["title"]} ({m["year"]})">'
         f'<img src="{m["src"]}" alt=""><span class="cap"><b>{m["title"]}</b><i>{m["artist"]}</i></span>'
         f'<span class="px{" ok" if m["eligible"] else ""}">{m["w"]} × {m["h"]}{"" if m["eligible"] else " · under 4K"}</span></button>'
@@ -83,7 +84,7 @@ html,body{{margin:0;background:var(--pg-bg);color:var(--pg-fg);font-family:Inter
 .film{{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:8px;border-radius:16px;padding:8px;background:var(--pg-raised);box-shadow:0 0 0 1px rgba(var(--pg-fg-rgb),.10);color:var(--pg-fg)}}
 .film:focus-visible{{box-shadow:0 0 0 1px rgba(var(--pg-fg-rgb),.24),0 0 0 4px rgba(var(--pg-fg-rgb),.10)}}
 .film.on{{box-shadow:0 0 0 2px var(--pg-accent)}}
-.film img{{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px}}
+.film img,.film .none{{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px}}.film .none{{background:linear-gradient(180deg,var(--pg-raised),var(--pg-bg));box-shadow:inset 0 0 0 1px rgba(var(--pg-fg-rgb),.10)}}
 .film .cap{{display:flex;flex-direction:column;gap:2px;padding:0 4px}}.film .cap b{{font-weight:500;font-size:13px}}.film .cap i{{font-style:normal;color:var(--pg-muted);font-size:12px}}
 .film .px{{font-size:11px;color:var(--pg-muted);padding:0 4px 4px;font-variant-numeric:tabular-nums}}.film .px.ok{{color:var(--pg-accent)}}
 .readout{{display:grid;grid-template-columns:1fr auto;gap:12px 24px;align-items:center;background:var(--pg-raised);border-radius:24px;padding:16px 24px;box-shadow:0 0 0 1px rgba(var(--pg-fg-rgb),.10)}}
@@ -111,12 +112,13 @@ html,body{{margin:0;background:var(--pg-bg);color:var(--pg-fg);font-family:Inter
   var SRC = {{}};
   document.querySelectorAll('.film').forEach(function(b){{ SRC[b.dataset.key] = b.querySelector('img').src; }});
   var GROUND = {{light: "{L["ground"]}", dark: "{D["ground"]}"}};
-  var titles = P.map(function(m){{ return m.title; }});
+  var titles = ["None"].concat(P.map(function(m){{ return m.title; }}));
+  var RAISED = {{light: "{L["raised"]}", dark: "{D["raised"]}"}};
   var root = DialKit.createDialRoot({{position: "top-right"}});
   var kit = DialKit.createDialKit("Wallpaper", {{
     painting: {{type: "select", options: titles}},
     tone: {{type: "select", options: ["light", "dark"]}},
-    blur: [45, 0, 60, 1],
+    blur: [0, 0, 60, 1],
     saturation: [1.3, 0.5, 2, 0.05],
     mix: [0.06, 0, 0.6, 0.01],
     grain: true,
@@ -125,11 +127,13 @@ html,body{{margin:0;background:var(--pg-bg);color:var(--pg-fg);font-family:Inter
   var wall = document.getElementById('wall'), scrim = document.getElementById('scrim'), grain = document.getElementById('grain');
   var who = document.getElementById('who'), flag = document.getElementById('flag'), cmd = document.getElementById('cmd');
   function apply(v){{
-    var m = P[Math.max(0, titles.indexOf(v.painting))];
     var tone = v.tone === "dark" ? "dark" : "light";
+    var none = v.painting === "None" || titles.indexOf(v.painting) < 0;
+    var m = none ? {{key: "none", artist: "No image", title: "Plain ground", year: "", w: 3840, h: 2160, eligible: true}} : P[titles.indexOf(v.painting) - 1];
     // the stage is 1012 tall; the tool works at 2160, so the same look is blur/1012 of the height
     var frac = v.blur / 1012;
-    wall.style.backgroundImage = 'url("' + SRC[m.key] + '")';
+    if (none) {{ v = Object.assign({{}}, v, {{saturation: 1, mix: 0}}); }}
+    wall.style.backgroundImage = none ? 'linear-gradient(180deg, ' + RAISED[tone] + ', ' + GROUND[tone] + ')' : 'url("' + SRC[m.key] + '")';
     wall.style.filter = 'saturate(' + v.saturation + ') blur(' + v.blur + 'px)';
     scrim.style.background = GROUND[tone]; scrim.style.opacity = v.mix;
     grain.hidden = !v.grain;
@@ -140,13 +144,14 @@ html,body{{margin:0;background:var(--pg-bg);color:var(--pg-fg);font-family:Inter
     who.innerHTML = '<b>' + m.artist + ', <i style="font-style:normal">' + m.title + '</i> (' + m.year + ')</b><span>source ' + m.w + ' × ' + m.h + ' · shown in the ' + tone + ' tone</span>';
     flag.textContent = m.eligible ? 'Full resolution on a 4K screen' : 'Under 3840 wide: a 4K screen would upscale it';
     flag.classList.toggle('ok', m.eligible);
-    cmd.textContent = 'tools/background.py --source ' + m.key + '.jpg --name ' + m.key + ' --index 1 --blur ' + frac.toFixed(4) + ' --sat ' + v.saturation.toFixed(2) + ' --mix ' + v.mix.toFixed(2) + ' --grain ' + (v.grain ? '1.6' : '0');
+    cmd.textContent = none ? 'tools/background.py --style plain --index 1' : 'tools/background.py --source ' + m.key + '.jpg --name ' + m.key + ' --index 1 --blur ' + frac.toFixed(4) + ' --sat ' + v.saturation.toFixed(2) + ' --mix ' + v.mix.toFixed(2) + ' --grain ' + (v.grain ? '1.6' : '0');
   }}
   kit.subscribe(apply);
   document.getElementById('strip').addEventListener('click', function(e){{
     var b = e.target.closest('.film'); if (!b) return;
-    var m = P.find(function(x){{ return x.key === b.dataset.key; }});
-    if (kit.set) kit.set({{painting: m.title}}); else if (kit.setValues) kit.setValues({{painting: m.title}}); else if (kit.update) kit.update({{painting: m.title}});
+    var m = P.find(function(x){{ return x.key === b.dataset.key; }}) || {{title: 'None'}};
+    var title = b.dataset.key === 'none' ? 'None' : m.title;
+    if (kit.setValues) kit.setValues({{painting: title}}); else if (kit.set) kit.set({{painting: title}});
   }});
   function fit(){{
     var pad = 48, w = Math.min(window.innerWidth - pad, 1800), s = w / 1800;

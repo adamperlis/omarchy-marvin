@@ -71,8 +71,88 @@ def synthesize(palette, seed):
 POP = ["#2f93d3", "#1b2436", "#f9ecad", "#ffd23f", "#ef7a3a", "#e0475b", "#7e6fb8", "#2f8f6b"]
 IVORY = "#f6f1e8"
 
-def compose(style, seed):
+# Corridors: a lit room. Four gradient planes (walls, floor, ceiling) recede
+# in perspective to a small door or window at the far end; light blooms from
+# it, and a whisper of grain keeps the gradients from banding. Every room is
+# drawn from the system's own colours, plus the hot magenta and orange the
+# reference runs on.
+ROOMS = {
+    #            far light,  left wall,  right wall, floor,      ceiling,    door,       door edge
+    "ember":   ["#fff3d0", "#ff4d1f", "#ffa34a", "#ff7a3d", "#ffd9c2", "#d8290b", "#ffe27a"],
+    "lilac":   ["#fbefff", "#e2c4ff", "#f2a7ff", "#ff6ad9", "#cfd2ff", "#17091b", "#ff7ad9"],
+    "sky":     ["#ecf8ff", "#2f93d3", "#7fd0ff", "#1f3f7a", "#a8cbe9", "#d6f0ff", "#ffffff"],
+    "citrus":  ["#fff8c0", "#ffd23f", "#c5df4f", "#ef7a3a", "#fbe98a", "#2a1a05", "#fff4a8"],
+    "dusk":    ["#ffe0b0", "#8a6bb3", "#ff6a3d", "#3b2a5c", "#ffb08a", "#ffa8e0", "#fff0b0"],
+    "tide":    ["#f4fbff", "#2f8f6b", "#6ea5d8", "#0f2a3a", "#bfe3ee", "#0f1626", "#5fc6ff"],
+    "magenta": ["#ffd0f0", "#4a2a9a", "#38c0ff", "#ff5fd2", "#7c5ce0", "#ff3fb0", "#ff9a3d"],
+}
+
+def _srgb_to_lin(c):
+    c = np.asarray(c, dtype=np.float32) / 255
+    return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+
+def _lin_to_srgb(c):
+    c = np.clip(c, 0, 1)
+    return np.where(c <= 0.0031308, c * 12.92, 1.055 * np.power(c, 1 / 2.4) - 0.055)
+
+def _sig(x, k):
+    return 1 / (1 + np.exp(-np.clip(x / k, -30, 30)))
+
+def room(palette, seed, grain=2.5):
+    """A gradient room in perspective: four planes meeting at a far opening, seams softened, light bloomed."""
+    rng = np.random.default_rng(seed)
+    w, h = OUT_W // 2, OUT_H // 2
+    far, left, right, floor, ceil, door, edge = (_srgb_to_lin(hex_rgb(c)) for c in palette)
+    # the far opening sits off to one side more often than not
+    vx, vy = rng.uniform(0.18, 0.82) * w, rng.uniform(0.28, 0.72) * h
+    dw, dh = rng.uniform(0.05, 0.20) * w, rng.uniform(0.12, 0.34) * h
+    if rng.random() < 0.35: dw, dh = dh * 0.5, dw * 1.7            # a tall slot
+    x0, x1, y0, y1 = vx - dw / 2, vx + dw / 2, vy - dh / 2, vy + dh / 2
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32) + 0.5
+    dx, dy = xx - vx, yy - vy
+    eps = 1e-6
+    sx = np.where(dx > 0, (x1 - vx) / (dx + eps), (x0 - vx) / (dx - eps))
+    sy = np.where(dy > 0, (y1 - vy) / (dy + eps), (y0 - vy) / (dy - eps))
+    s_rect = np.minimum(sx, sy)
+    ex = np.where(dx > 0, (w - vx) / (dx + eps), (0 - vx) / (dx - eps))
+    ey = np.where(dy > 0, (h - vy) / (dy + eps), (0 - vy) / (dy - eps))
+    s_scr = np.minimum(ex, ey)
+    t = np.clip((1.0 - s_rect) / np.maximum(s_scr - s_rect, eps), 0, 1)     # 0 at the opening, 1 at the screen edge
+    inside = _sig(s_rect - 1.0, 0.02)                                           # the opening, with a soft edge
+    # plane membership, softened so the corners of the room read as creases, not cuts
+    side = _sig(sy - sx, 0.09 * np.maximum(s_rect, 0.05))                     # 1 on the side walls
+    lr = _sig(dx, 0.025 * w)                                                    # 1 on the right wall
+    fc = _sig(dy, 0.025 * h)                                                    # 1 on the floor
+    # light: the opening lights what is near it, radially, and the planes darken toward the viewer
+    dist = np.sqrt((np.clip(np.abs(dx) - dw / 2, 0, None) / w) ** 2 + (np.clip(np.abs(dy) - dh / 2, 0, None) / h) ** 2)
+    lit = np.exp(-dist / rng.uniform(0.08, 0.16))
+    g = rng.uniform(0.45, 0.8)
+    depth = t ** g                                                              # 0 at the opening, 1 at the viewer
+    img = np.zeros((h, w, 3), dtype=np.float32)
+    for i in range(3):
+        wall_c = left[i] * (1 - lr) + right[i] * lr
+        vert_c = ceil[i] * (1 - fc) + floor[i] * fc
+        plane = wall_c * side + vert_c * (1 - side)
+        # every plane runs from the far light at the opening to its own colour at the viewer,
+        # a little darker at the near edge, and the opening spills light radially on top
+        plane = (far[i] * (1 - depth) + plane * depth) * (1 - 0.18 * depth) + far[i] * 0.6 * lit * (1 - depth)
+        dd = np.clip(((xx - x0) / max(dw, 1)) * 0.5 + ((yy - y0) / max(dh, 1)) * 0.5, 0, 1)
+        door_c = door[i] * (1 - dd) + edge[i] * dd
+        img[..., i] = door_c * inside + plane * (1 - inside)
+    im = Image.fromarray((_lin_to_srgb(img) * 255).astype(np.uint8))
+    glow = im.filter(ImageFilter.GaussianBlur(radius=h * 0.10))
+    soft = im.filter(ImageFilter.GaussianBlur(radius=h * 0.016))
+    a = np.asarray(soft, dtype=np.float32); b = np.asarray(glow, dtype=np.float32)
+    lum = (0.2126 * b[..., 0] + 0.7152 * b[..., 1] + 0.0722 * b[..., 2]) / 255
+    a = 255 - (255 - a) * (255 - b * (0.5 * lum[..., None])) / 255
+    big = np.asarray(Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).resize((OUT_W, OUT_H), Image.BICUBIC), dtype=np.float32)
+    big += rng.normal(0, grain, (OUT_H, OUT_W, 1)).astype(np.float32)
+    return Image.fromarray(np.clip(big, 0, 255).astype(np.uint8))
+
+def compose(style, seed, palette=None):
     from PIL import ImageDraw
+    if style == "corridors":
+        return room(ROOMS[palette or "ember"], seed)
     rng = random.Random(seed)
     S = 2  # supersample for clean edges
     W, H = OUT_W * S, OUT_H * S
@@ -152,10 +232,10 @@ def grade(im, tone, seed, blur=0.0, sat=None, mix=None, grain=1.6):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--source", help="path to a source painting (CC0 / public domain)")
-    p.add_argument("--palette", choices=sorted(PALETTES), help="synthesize from a named palette instead")
+    p.add_argument("--palette", choices=sorted(set(PALETTES) | set(ROOMS)), help="a named palette: for --style corridors one of the rooms, otherwise a synthesised field")
     p.add_argument("--name", help="output name; defaults to the palette name or the source stem")
     p.add_argument("--index", type=int, default=1, help="ordering prefix in backgrounds/")
-    p.add_argument("--style", choices=("orphic", "planes"), help="draw an original composition instead of grading a source")
+    p.add_argument("--style", choices=("orphic", "planes", "corridors", "plain"), help="draw an original composition instead of grading a source; corridors takes --palette ember|lilac|sky|citrus|dusk|tide|magenta")
     p.add_argument("--allow-upscale", action="store_true", help="accept a source under 3840 × 2160 (fine when the output is blurred)")
     p.add_argument("--crop-out", help="also write the sharp, ungraded 16:9 crop at 1600 × 900 into this directory, for imagery inside the UI")
     p.add_argument("--seed", type=int, default=7)
@@ -165,11 +245,24 @@ def main():
     p.add_argument("--grain", type=float, default=1.6, help="grain sigma in 8-bit levels; 0 for none (default 1.6)")
     p.add_argument("--blur", type=float, default=0.0, help="Gaussian radius as a fraction of the height; 0 (default) for none")
     args = p.parse_args()
+    if args.style == "plain":
+        # No image: the reference's own ground, raised at the top falling to the base, grained.
+        root = pathlib.Path(__file__).resolve().parent.parent
+        for tone, top, bottom in (("dark", (0x1e, 0x1e, 0x1e), (0x0f, 0x0f, 0x0f)), ("light", (0xff, 0xff, 0xff), (0xeb, 0xeb, 0xeb))):
+            yy = np.linspace(0, 1, OUT_H, dtype=np.float32)[:, None, None]
+            a = np.array(top, dtype=np.float32) * (1 - yy) + np.array(bottom, dtype=np.float32) * yy
+            a = np.broadcast_to(a, (OUT_H, OUT_W, 3)).copy()
+            a += np.random.default_rng(args.seed).normal(0, 1.0, (OUT_H, OUT_W, 1)).astype(np.float32)
+            out = root / TONES[tone]["out"] / f"{args.index}-{args.name or 'plain'}.jpg"
+            out.parent.mkdir(parents=True, exist_ok=True)
+            Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).save(out, "JPEG", quality=args.quality, optimize=True, progressive=True)
+            print(f"{out.relative_to(root)}  {OUT_W}x{OUT_H}  plain ground  {out.stat().st_size // 1024} KB")
+        return
     if not args.source and not args.palette and not args.style:
         p.error("give --source, --style or --palette")
-    name = args.name or args.style or args.palette or (pathlib.Path(args.source).stem if args.source else None)
+    name = args.name or (args.palette if args.style == "corridors" else None) or args.style or args.palette or (pathlib.Path(args.source).stem if args.source else None)
     root = pathlib.Path(__file__).resolve().parent.parent
-    base = compose(args.style, args.seed) if args.style else (prepare_source(args.source, args.allow_upscale) if args.source else synthesize(PALETTES[args.palette], args.seed))
+    base = compose(args.style, args.seed, args.palette) if args.style else (prepare_source(args.source, args.allow_upscale) if args.source else synthesize(PALETTES[args.palette], args.seed))
     if args.crop_out:
         cdir = pathlib.Path(args.crop_out); cdir.mkdir(parents=True, exist_ok=True)
         base.resize((1600, 900), Image.LANCZOS).save(cdir / f"{name}.jpg", "JPEG", quality=85, optimize=True, progressive=True)

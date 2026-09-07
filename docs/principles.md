@@ -213,8 +213,9 @@ the short step and workspaces get the long one, the inverse of upstream.
 
 ## Backgrounds
 
-Confirmed. An avant-garde painting, public domain, or an original drawn in
-that idiom, blurred into a
+Confirmed. A lit room drawn in perspective from the system's own colours,
+four gradient planes converging on a far opening, light bloomed; or, for a
+painting of your own, blurred into a
 colour field, graded so it complements the palette: saturation up (1.5,
 the reference's imagery is rich, not pastel), mixed lightly toward the
 ground, luminance in a band the bar reads over (dark 0.02–0.34, light

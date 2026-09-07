@@ -74,8 +74,8 @@ def sections(path):
         if m and sec: out.setdefault(sec, {})[m.group(1)] = m.group(2) if m.group(2) is not None else m.group(3)
     return out
 
-WALLS = ("1-orphic.jpg", "2-composition.jpg", "3-edtaonisl.jpg", "4-planes.jpg")   # blurred, graded, one per tone
-ARTS = ("orphic.jpg", "composition.jpg", "edtaonisl.jpg", "planes.jpg")           # the same paintings, sharp, for imagery inside the UI
+WALLS = ("1-plain.jpg", "2-ember.jpg", "3-lilac.jpg", "4-sky.jpg", "5-citrus.jpg", "6-dusk.jpg", "7-magenta.jpg")   # the plain ground first, then the rooms
+ARTS = ("ember.jpg", "lilac.jpg", "sky.jpg", "citrus.jpg", "dusk.jpg", "magenta.jpg")   # the same rooms, ungraded, for imagery inside the UI
 
 def tone(root, light):
     c = toml(root / ("light/colors.toml" if light else "colors.toml"))
@@ -85,6 +85,7 @@ def tone(root, light):
                 accent=c["accent"], attn=c["attention"], red=c["red"], green=c["green"], yellow=c["yellow"], blue=c["blue"], magenta=c["magenta"], cyan=c["cyan"],
                 bright_fg=c["bright_foreground"], selection=c["selection"], ansi=[c[k] for k in ("background","red","green","yellow","blue","magenta","cyan","foreground","muted","bright_red","bright_green","bright_yellow","bright_blue","bright_magenta","bright_cyan","bright_foreground")],
                 wall=root / (("light/" if light else "") + "backgrounds/" + WALLS[0]),
+                room=root / (("light/" if light else "") + "backgrounds/" + WALLS[1]),
                 walls=[(n, root / (("light/" if light else "") + f"backgrounds/{n}")) for n in WALLS],
                 arts=[(n, root / "docs/images/art" / n) for n in ARTS],
                 wx=(wx["background"], wx["text"], wx["muted"], wx.get("background-end", wx["background"])),
@@ -133,7 +134,7 @@ BASE_CSS = """
 .mood{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mood span{height:112px;border-radius:12px;display:block}
 .notes .page{font-family:'Libre Baskerville',Baskerville,'Noto Serif',serif;font-size:28px;line-height:1.25;letter-spacing:-.01em;padding-bottom:24px}
 .chip2{align-self:flex-start;height:28px;padding:0 12px;border-radius:6px;display:flex;align-items:center;font-size:13px;font-weight:400;background:var(--chip2-fill);color:var(--chip2-text)}
-.files{display:flex;gap:16px;min-height:200px}.files .sb{display:flex;flex-direction:column;gap:4px;width:120px}.files .sb div{height:32px;border-radius:16px;padding:0 12px;display:flex;align-items:center;gap:8px;font-size:13px}.files .sb div.on{background:rgba(var(--fg-rgb),var(--a3))}
+.files{display:flex;gap:16px;min-height:200px}.files .sb{display:flex;flex-direction:column;gap:4px;width:128px;flex:none}.files .sb div{height:40px;border-radius:20px;padding:0 14px;display:flex;align-items:center;gap:10px;font-size:13px;white-space:nowrap}.files .sb div.on{background:rgba(var(--fg-rgb),var(--a3))}
 .files .fg{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 8px;align-content:start}.files .fd{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px}
 .picker .tabs{display:flex;gap:8px}.picker .tabs span{height:40px;padding:0 20px;border-radius:20px;display:flex;align-items:center;color:var(--muted)}.picker .tabs span.on{background:rgba(var(--fg-rgb),var(--a3));color:var(--fg)}
 .picker .shots{display:grid;grid-template-columns:1fr 1fr;gap:8px}.picker .shot{border-radius:12px;background:rgba(var(--fg-rgb),var(--a1));padding:8px;display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--muted)}.picker .shot i{display:block;height:80px;border-radius:8px}
@@ -197,7 +198,7 @@ def widgets(t):
 <div class="pills"><span class="l">Power profile</span><div><em>{ic("eco")}Saver</em><em class="on">{ic("balance")}Balanced</em><em>{ic("bolt")}Performance</em></div></div></div>''',
      "media": f'''<div class="card" style="width:352px;gap:24px"><div class="now"><div class="art" style="background:url('file://{t["arts"][1][1]}') 30% 40%/200% auto"></div><div class="tt"><b>The Visit</b><i>Agar Agar</i><div class="tr"><span class="b">{ic("prev",20)}</span><span class="play">{ic("pause",20)}</span><span class="b">{ic("next",20)}</span></div></div></div>
 <div class="rail" style="gap:16px"><div class="hair"><i style="width:56%"></i></div><div class="lbl">2:22<span>-1:48</span></div></div></div>''',
-     "mood": f'''<div class="card" style="width:352px;gap:16px"><div class="mood"><span style="background:url('file://{t["arts"][0][1]}') 10% 20%/180% auto"></span><span style="background:url('file://{t["arts"][1][1]}') 70% 30%/180% auto"></span><span style="background:url('file://{t["arts"][1][1]}') 20% 80%/180% auto"></span><span style="background:url('file://{t["arts"][0][1]}') 80% 70%/180% auto"></span></div><div class="hd" style="height:auto"><div>Backgrounds<div style="font-size:14px;color:var(--muted);font-weight:400;margin-top:4px">Graded to the ground</div></div><span>4 per tone</span></div></div>''',
+     "mood": f'''<div class="card" style="width:352px;gap:16px"><div class="mood"><span style="background:url('file://{t["arts"][0][1]}') 10% 20%/180% auto"></span><span style="background:url('file://{t["arts"][1][1]}') 70% 30%/180% auto"></span><span style="background:url('file://{t["arts"][1][1]}') 20% 80%/180% auto"></span><span style="background:url('file://{t["arts"][0][1]}') 80% 70%/180% auto"></span></div><div class="hd" style="height:auto"><div>Backgrounds<div style="font-size:14px;color:var(--muted);font-weight:400;margin-top:4px">Graded to the ground</div></div><span>7 per tone</span></div></div>''',
      "notes": f'''<div class="card notes" style="width:352px;gap:24px"><div class="hd" style="justify-content:flex-start">Quick note</div><div class="page">Leave a little room for the unexpected.</div><span class="chip2">Draft · This session</span></div>''',
      "files": f'''<div class="card" style="width:352px;gap:16px"><div class="hd" style="height:auto"><div style="display:flex;gap:8px;align-items:center">{ic("chevron_left",20)}{ic("chevron_right",20)}<span style="height:32px;padding:0 16px;border-radius:16px;background:rgba(var(--fg-rgb),var(--a1));display:flex;align-items:center;gap:8px;font-size:14px;font-weight:400">{ic("home",16)}Home</span></div>{ic("search",20)}</div>
 <div class="files"><div class="sb"><div class="on">{ic("home",16)}Home</div><div>{ic("clock",16)}Recent</div><div>{ic("star",16)}Starred</div><div>{ic("trash",16)}Trash</div></div>
@@ -270,7 +271,7 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 .obs .tag{{display:inline-flex;align-items:center;height:24px;padding:0 12px;border-radius:16px;background:rgba(var(--acc-rgb),.12);color:var(--accent);font-size:13px;font-weight:500;margin-right:8px}}
 .obs code{{font-family:'JetBrains Mono';font-size:13px;background:rgba(var(--fg-rgb),var(--a1));border-radius:8px;padding:2px 6px}}.obs blockquote{{margin:12px 0;padding-left:16px;border-left:2px solid var(--accent);color:var(--muted)}}
 .obs .status{{position:absolute;left:16px;right:16px;bottom:12px;height:32px;display:flex;align-items:center;justify-content:flex-end;gap:16px;font-size:11px;color:var(--muted)}}
-.files{{display:grid;grid-template-columns:272px 1fr;height:100%}}.files .sb{{padding:24px 16px;display:flex;flex-direction:column;gap:4px;background:var(--raised)}}
+.files{{display:grid;grid-template-columns:272px 1fr;height:100%;gap:0;min-height:0}}.files .sb{{width:auto;padding:24px 16px;display:flex;flex-direction:column;gap:4px;background:var(--raised)}}.files .si{{width:auto}}
 .si{{height:40px;border-radius:20px;padding:0 16px;display:flex;align-items:center;gap:12px;color:var(--fg)}}.si.on{{background:rgba(var(--fg-rgb),var(--a3))}}
 .files .main{{padding:24px}}.files .top{{display:flex;align-items:center;gap:12px;margin-bottom:24px}}.files .top .pathf{{height:40px;flex:1;border-radius:20px;background:rgba(var(--fg-rgb),var(--a1));display:flex;align-items:center;padding:0 16px;gap:8px}}
 .fgrid{{display:grid;grid-template-columns:repeat(6,1fr);gap:24px 16px}}.fd{{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11px}}
@@ -321,7 +322,7 @@ def workspace(t, fonts):
     """Bar over the wallpaper with one notification: the wallpaper as the ground."""
     w = widgets(t)
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>{font_face(fonts)}{vars_css(t)}{BASE_CSS}
-html,body{{width:1800px;height:1012px;overflow:hidden}}body{{background:url('file://{t["wall"]}') center/cover;position:relative}}
+html,body{{width:1800px;height:1012px;overflow:hidden}}body{{background:url('file://{t["room"]}') center/cover;position:relative}}
 .n{{position:absolute;right:16px;top:48px}}
 </style></head><body>{bar(t)}<div class="n">{w["note"]}</div></body></html>"""
 
@@ -330,8 +331,8 @@ def backgrounds(t, fonts):
     tiles = "".join(f"""<div class="bgtile"><div class="img" style="background:url('file://{p}') center/cover"></div>
 <div class="cap"><b>{n.split('.')[0][2:].capitalize()}</b><span>{'light' if t['light'] else 'dark'} · 3840 × 2160 · graded to {t['ground']}</span></div></div>""" for n, p in t["walls"])
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>{font_face(fonts)}{vars_css(t)}{BASE_CSS}
-html,body{{width:1600px;height:560px;overflow:hidden}}body{{background:{t["ground"]};padding:48px;display:flex;gap:48px;justify-content:center}}
-.bgtile{{display:flex;flex-direction:column;gap:12px}}.img{{width:352px;height:198px;border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,var(--sh))}}
+html,body{{width:1600px;height:1100px;overflow:hidden}}body{{background:{t["ground"]};padding:48px;display:flex;flex-wrap:wrap;gap:40px 48px;justify-content:center;align-content:start}}
+.bgtile{{display:flex;flex-direction:column;gap:12px}}.img{{width:464px;height:261px;border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,var(--sh))}}
 .cap{{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px}}.cap b{{font-size:15px;font-weight:500}}.cap span{{font-size:11px;color:var(--muted)}}
 </style></head><body>{tiles}</body></html>"""
 
@@ -367,7 +368,7 @@ if __name__ == "__main__":
             ("boot", boot(t, a.fonts), (1920, 1080), [out / f"{pre}preview-unlock.png"]),
             ("widgets", sheet(t, a.fonts), (1600, 2700), [out / f"docs/images/widgets-{tag}.png"]),
             ("workspace", workspace(t, a.fonts), (1800, 1012), [out / f"docs/images/workspace-{tag}.png"]),
-            ("backgrounds", backgrounds(t, a.fonts), (1600, 560), [out / f"docs/images/backgrounds-{tag}.png"]),
+            ("backgrounds", backgrounds(t, a.fonts), (1600, 1100), [out / f"docs/images/backgrounds-{tag}.png"]),
         ):
             h = tmp / f"{name}-{tag}.html"; h.write_text(html)
             png = tmp / f"{name}-{tag}.png"
