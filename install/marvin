@@ -149,6 +149,17 @@ install_plugins() {
   fi
 }
 
+install_mode() {
+  say "Light/dark control"
+  # marvin-mode is an executable, so it cannot ship in the theme (a git-installed
+  # theme drops anything that can run code). It lives in the config layer instead.
+  mkdir -p "$HOME/.local/bin"
+  cp "$THEME_DIR/bin/marvin-mode" "$HOME/.local/bin/marvin-mode"
+  chmod +x "$HOME/.local/bin/marvin-mode"
+  note "→ ~/.local/bin/marvin-mode  (toggle · system · schedule)"
+  note "bind it: in ~/.config/hypr/bindings.lua — hl.bind(\"SUPER + SHIFT + M\", \"exec\", \"marvin-mode toggle\")"
+}
+
 apply() {
   say "Applying"
   command -v omarchy-theme-set >/dev/null && omarchy-theme-set marvin >/dev/null 2>&1 || true
@@ -201,6 +212,13 @@ revert() {
   rm -rf "$USERFONTS"; command -v fc-cache >/dev/null && fc-cache -f >/dev/null 2>&1 || true
   note "removed  ~/.local/share/fonts/marvin"
 
+  if [[ -x "$HOME/.local/bin/marvin-mode" ]]; then
+    "$HOME/.local/bin/marvin-mode" unschedule >/dev/null 2>&1 || true
+    "$HOME/.local/bin/marvin-mode" follow-off >/dev/null 2>&1 || true
+  fi
+  rm -f "$HOME/.local/bin/marvin-mode"
+  note "removed  ~/.local/bin/marvin-mode and any schedule"
+
   clean_shell_json
 
   if command -v gsettings >/dev/null && [[ -f "$SNAP/state" ]]; then
@@ -251,6 +269,7 @@ status() {
     [[ -e "$CFG/$rel" ]] && note "present  $rel" || note "absent   $rel"
   done
   local id; for id in $(plugin_ids); do [[ -e "$PLUGINS/$id" ]] && note "present  plugins/$id"; done
+  [[ -x "$HOME/.local/bin/marvin-mode" ]] && note "present  ~/.local/bin/marvin-mode" && "$HOME/.local/bin/marvin-mode" status 2>/dev/null | sed 's/^/    /'
   if [[ -f "$HYPR/hyprland.lua" ]] && grep -qF -- "$MARKER" "$HYPR/hyprland.lua"; then note "hyprland.lua requires hypr.marvin"; fi
   note "active theme: $(current_theme)"
   if [[ -f "$SNAP/state" ]]; then
@@ -265,6 +284,6 @@ case "${1:-}" in
   --revert|--remove) revert ;;
   --status) status ;;
   -h|--help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//' ;;
-  "") snapshot; install_light; install_font; install_gtk; install_hypr; install_plugins; apply ;;
+  "") snapshot; install_light; install_font; install_gtk; install_hypr; install_plugins; install_mode; apply ;;
   *) echo "usage: install/marvin [--revert | --status]" >&2; exit 1 ;;
 esac

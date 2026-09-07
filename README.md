@@ -3,7 +3,7 @@
 <p align="center"><em>Inspired by, and named for, <a href="https://x.com/MSchwaibold">Marvin Schwaibold</a> — <a href="https://x.com/MSchwaibold/status/2096059496812716307">the post</a> that started this whole project.</em></p>
 
 A design system for [Omarchy 4](https://omarchy.org), delivered as a theme, a
-reversible config layer, and fourteen restyled widgets — with 63 wallpapers
+reversible config layer, and fourteen restyled widgets — with 65 wallpapers
 included.
 
 A composed desktop under Marvin — the Notes app, Files and a terminal
@@ -17,7 +17,7 @@ Tone is a property of each surface: weather is a gradient, the battery card is
 inverted with a ring of ticks, state is a soft-fill chip, and the rest stay
 quiet.
 
-And the 63 wallpapers it ships with — blurred gradient rooms drawn from the
+And the 65 wallpapers it ships with — blurred gradient rooms drawn from the
 palette, plus soft abstractions:
 
 ![Marvin backgrounds](docs/images/backgrounds-all.jpg)
@@ -33,7 +33,7 @@ omarchy theme set marvin
 
 That is everything a theme file can carry: the palette, type scale, state
 model, quiet neutral window borders, the restyled widget styling, the boot
-logo, and all 63 wallpapers. It has to look intentional on its own — a plain
+logo, and all 65 wallpapers. It has to look intentional on its own — a plain
 install is the honest baseline. Cycle wallpapers with **SUPER + CTRL + SPACE**,
 or pick one from the Omarchy menu (**SUPER + ALT + SPACE → Style → Background**).
 
@@ -58,10 +58,23 @@ Adds, in order:
   motion scale. Written to `~/.config/hypr/marvin.lua`, required from your
   `hyprland.lua` by one marked line; nothing else of yours is edited.
 - **Widgets** — all fourteen plugins, enabled if the shell is running.
+- **`marvin-mode`** — a light/dark control installed to `~/.local/bin`. Switch
+  by hand, on a daily schedule, or in step with the system colour-scheme:
+
+  ```
+  marvin-mode toggle              # flip light ↔ dark
+  marvin-mode system              # match the system colour-scheme once
+  marvin-mode follow-on           # keep matching it (a user service)
+  marvin-mode schedule 07:00 19:00  # light at 07:00, dark at 19:00, daily
+  marvin-mode unschedule
+  ```
+
+  Bind the toggle in `~/.config/hypr/bindings.lua`:
+  `hl.bind("SUPER + SHIFT + M", "exec", "marvin-mode toggle")`.
 
 It snapshots every file it touches (and the active theme) first, so
-`install/marvin --revert` restores everything byte-for-byte, and
-`install/marvin --status` shows what is installed.
+`install/marvin --revert` restores everything byte-for-byte (and removes any
+schedule), and `install/marvin --status` shows what is installed.
 
 **3. Widgets by hand** (optional) — to enable them one at a time instead
 (recommended for a first look), skip the installer's enable step and:
@@ -152,7 +165,8 @@ Everything in the grid above is a surface the system actually reaches:
 | Screen-share picker | `hyprland-preview-share-picker.css` | theme |
 | Files and every GTK app | Inter and the accent via `gsettings` | config layer |
 | Windows: rounding, gaps, shadow, motion, group bar | `hypr/marvin.lua` | config layer |
-| Terminals, btop, Chromium, VS Code, Claude Code, Helix, Neovim | colours from `colors.toml` through Omarchy's templates | theme |
+| btop, Chromium, Helix | curated theme files — `btop.theme`, `chromium.theme`, `helix.toml`, generated from the palette | theme |
+| Terminals, VS Code, Claude Code, Neovim | colours from `colors.toml` through Omarchy's templates | theme |
 | Boot splash | `unlock.png` | theme |
 
 Notes get a serif for the text itself — Libre Baskerville, falling back to Noto
@@ -167,8 +181,10 @@ What could still be customised, and why it is not yet:
 - **GTK window chrome** — libadwaita accepts a `gtk.css` for header bars and
   sidebars, but rules there leak into every GTK app unevenly; font and
   accent through `gsettings` was the safe part.
-- **Chromium, VS Code, Neovim, btop beyond colour** — each takes only a
-  palette from a theme. Their own settings would carry the rest.
+- **VS Code, Neovim beyond colour** — a git-installed theme cannot ship their
+  config (`vscode.json` names an extension; editor Lua runs code), so they take
+  the palette from `colors.toml` and nothing more. btop, Chromium and Helix
+  *do* accept a shipped file, and Marvin ships one for each.
 - **Firefox, Signal, Spotify, LibreOffice** — not themed by Omarchy at all.
 
 The system reaches past the shell into the apps Omarchy installs, in two
@@ -186,9 +202,11 @@ ways:
   Libre Baskerville, both OFL — are vendored under `fonts/` and installed per user,
   so nothing needs a package manager or `sudo`.
 
-Everything else Omarchy templates — btop, Chromium, VS Code, Claude Code,
-Helix, Neovim, the terminals — takes its colours from `colors.toml`
-automatically, and colour is all those surfaces accept.
+Beyond those, Marvin ships curated theme files for **btop** (`btop.theme`),
+**Chromium** (`chromium.theme`) and **Helix** (`helix.toml`), all generated
+from `colors.toml` by `tools/appcss.py` so the two tones stay in step. The
+terminals, VS Code, Claude Code and Neovim take the palette from `colors.toml`
+through Omarchy's templates, and colour is all they accept.
 
 Monospace survives in exactly two places: terminals and code. Nowhere else.
 
@@ -240,8 +258,10 @@ alongside the shipped ones, so anyone can extend the set without forking.
 |------|------|
 | `colors.toml`, `shell.toml`, `icons.theme` | The theme. Dark. |
 | `obsidian.css`, `hyprland-preview-share-picker.css` | The Notes app and the share picker, restyled by the theme. |
+| `btop.theme`, `chromium.theme`, `helix.toml` | btop, Chromium and Helix, in the palette. Generated by `appcss.py`. |
+| `bin/marvin-mode` | Light/dark control — toggle, schedule, or follow the system. Installed by the config layer. |
 | `light/` | The light sibling: same geometry, different tone table. |
-| `backgrounds/`, `light/backgrounds/` | 63 wallpapers: blurred gradient rooms graded to the ground (both tones) and 56 soft abstractions (dark). |
+| `backgrounds/`, `light/backgrounds/` | 65 wallpapers: a signature default, blurred gradient rooms graded to the ground (both tones), a light mist gradient, and 56 soft abstractions (dark). |
 | `preview.png`, `preview-unlock.png`, `unlock.png` | Theme-switcher preview and the Plymouth boot logo. |
 | `config/hypr/marvin.lua` | Rounding, gaps, border, shadow, motion. |
 | `config/fontconfig/60-marvin-shell.conf` | Inter for `quickshell` only. |
@@ -249,7 +269,7 @@ alongside the shipped ones, so anyone can extend the set without forking.
 | `plugins/marvin.*` | Fourteen restyled clones of the built-in widgets. |
 | `tools/restyle.py` | The rules as a script; builds a widget from upstream's. |
 | `tools/background.py` | Grades a painting (or a palette) into wallpapers. |
-| `tools/appcss.py` | Generates `obsidian.css` and the share-picker stylesheet from `colors.toml`. |
+| `tools/appcss.py` | Generates `obsidian.css`, the share-picker CSS, and the btop / Chromium / Helix theme files from `colors.toml`. |
 | `fonts/` | Inter and Libre Baskerville, vendored under the OFL. |
 | `tools/previews/build.py` | Renders `preview.png`, the boot screen and the widget sheets from the tokens (needs node + Playwright). |
 | `test/run` | Every check. |
@@ -272,9 +292,12 @@ chosen: saturation pushed up a little so the field stays rich, mixed lightly
 toward the theme ground, luminance clamped into a band the bar stays
 readable over, grain added against banding.
 
-Sixty-three backgrounds ship. The first is no image at all: the reference's
-own ground, white falling to the base grey, so the desktop reads exactly
-like the widget sheet. The next six are lit rooms, drawn by
+Sixty-five backgrounds ship. The default — `0-marvin.jpg`, the wallpaper in
+the composed-desktop shots above — sorts first, so a fresh `omarchy theme set
+marvin` lands on it rather than a plain ground. After it comes that plain
+ground: no image at all, white falling to the base grey (and a light
+`8-mist.jpg` grey-white gradient in the same key), so an empty desktop reads
+exactly like the widget sheet. Then six lit rooms, drawn by
 `tools/background.py` at 4K, nothing borrowed: a box in perspective whose
 walls, floor and ceiling are gradient planes converging on a small door or
 window at the far end, light blooming from it, a whisper of grain — then
