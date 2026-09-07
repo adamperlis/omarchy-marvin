@@ -12,13 +12,15 @@ first.
 | Plugin | Clones | What changed |
 |--------|--------|--------------|
 | `marvin.weather` | `omarchy.weather` | Temperature at `display-large` with the unit as a caption, value-over-label stats, forecast days as columns, no dividers, per-theme tint from `[marvin-weather]` in `shell.toml`. |
+| `marvin.clock` | `omarchy.clock` | Day number at `display-large` with month and weekday as its caption, year and life progress as 2px hairlines, month name left with chevrons right, 40×32 grid cells with no gutter line, today as a fill. |
+| `marvin.power` | `omarchy.power` | Charge percentage at `display-large`, charge as a 2px hairline, stats as value over label in two columns, profiles as a caption and a row of pills with no divider before them. |
 
 ## Install by hand
 
 ```
-cp -r plugins/marvin.weather ~/.config/omarchy/plugins/
+cp -r plugins/marvin.* ~/.config/omarchy/plugins/
 omarchy-shell shell rescanPlugins
-omarchy plugin enable marvin.weather
+for p in marvin.weather marvin.clock marvin.power; do omarchy plugin enable $p; done
 ```
 
 `omarchy plugin enable` talks to the running shell, so do this from a live

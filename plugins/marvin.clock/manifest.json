@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.clock",
+  "name": "Marvin Clock",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "Date/time label with a card-style calendar popup",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Marvin Clock",
+    "description": "Date/time label with a card-style calendar popup",
+    "category": "Time",
+    "allowMultiple": false
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.clock"
+  }
+}
