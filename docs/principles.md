@@ -131,7 +131,11 @@ Proposed. Direct correction of upstream.
 
 ## Motion
 
-Proposed. Compositor motion only — shell motion is not themeable.
+Confirmed, in `config/hypr/marvin.lua`. Compositor motion only — shell motion
+is not themeable. The scale is 120 / 200 / 320 ms (1.2 / 2.0 / 3.2 in
+Hyprland's deciseconds); exits run at 0.6 of their entrance; three curves —
+enter settles, leave accelerates, move is the standard in-out; border gets
+the short step and workspaces get the long one, the inverse of upstream.
 
 - Durations come from a **scale**, not a slider. Upstream's speeds (5.39,
   3.79, 4.1, 1.49, 1.73, 1.46, 3.03 …) share no rhythm.
@@ -142,7 +146,9 @@ Proposed. Compositor motion only — shell motion is not themeable.
   `workspaces` entirely, the most spatially meaningful transition in a
   tiling WM. Invert that.
 - **Exits are never linear.** Linear reads as mechanical.
-- Direct-manipulation responses stay under ~300ms.
+- Direct-manipulation responses stay under ~300ms. The workspace slide at
+  320 is the one deliberate exception, because it is the transition that
+  tells you where you went.
 
 ## Backgrounds
 

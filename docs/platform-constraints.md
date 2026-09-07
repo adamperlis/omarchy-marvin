@@ -339,3 +339,19 @@ What a plugin can and cannot restyle:
   per-widget tokens.
 - `omarchy-plugin-validate` is jq-only and checks the manifest and entry
   points; it does not parse QML. There is no QML lint in the repo.
+
+## Config layer mechanics
+
+- `~/.config/hypr/hyprland.lua` is the user's file. It `require`s
+  `hypr.looknfeel`, `hypr.bindings` etc. after `default.hypr.omarchy`, and the
+  generated theme `hyprland.lua` is loaded inside the defaults. A separate
+  `hypr/marvin.lua` required after `hypr.looknfeel` therefore wins over both
+  and never edits a file the user wrote, beyond one marked `require` line.
+- `~/.config/fontconfig/conf.d/*.conf` is included by the system
+  `fonts.conf`; `omarchy font set` only rewrites `fonts.conf`, so a scoped
+  rule there survives it.
+- `omarchy plugin enable` and `omarchy-plugin-list` go over IPC to the
+  running shell; without a session they cannot run. Files can still be
+  placed, and the shell picks them up at the next `rescanPlugins`.
+- `hyprctl reload` re-reads the Lua config; `omarchy-restart-shell`
+  restarts quickshell, which re-resolves fonts.

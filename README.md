@@ -14,9 +14,19 @@ endorsement.
 omarchy theme install https://github.com/adamperlis/omarchy-marvin
 ```
 
-That gives you `marvin` (dark). The light sibling, the Inter typeface, the
-16px rounding, shadows and motion live in the config layer — see `install/`
-once it lands.
+That gives you `marvin` (dark), and it already looks intentional: quiet
+neutral window borders, the card surfaces, the fixed grid, the pinned type
+scale. The rest of the system needs the config layer, because a theme file
+cannot carry it:
+
+```
+~/.config/omarchy/themes/marvin/install/marvin
+```
+
+That adds `marvin-light`, Inter for the shell (scoped to the shell process,
+so your terminal font is untouched), 16px rounding with gaps on the grid,
+shadows in place of borders, the motion scale, and the restyled widgets.
+`install/marvin --remove` takes every bit of it back out.
 
 ## What's here
 
@@ -29,6 +39,9 @@ once it lands.
 | `backgrounds/`, `light/backgrounds/` | Wallpapers: a colour field blurred past recognition and graded to the ground. |
 | `tools/background.py` | Makes those from a source painting (`--source`) or a named palette (`--palette`). |
 | `plugins/` | Restyled clones of built-in widgets. Config layer, not theme; see `plugins/README.md`. |
+| `config/hypr/marvin.lua` | Rounding 16, gaps 8/16, border 1, shadow, and the motion scale. |
+| `config/fontconfig/60-marvin-shell.conf` | Inter for `quickshell` only. |
+| `install/marvin` | Installs and removes the config layer. Idempotent. |
 | `test/run` | Contrast floors, parser compatibility, dark/light geometry identity, widget tint floors. |
 
 ## Rules that are tested, not eyeballed

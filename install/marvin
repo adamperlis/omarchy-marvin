@@ -1,0 +1,113 @@
+#!/bin/bash
+# Marvin config layer. Installs what `omarchy theme install` cannot carry:
+# the light sibling, Inter for the shell, rounding/gaps/shadow/motion for
+# Hyprland, and the restyled widget plugins. Every step is idempotent and
+# `install/marvin --remove` reverses all of it.
+#
+# Run from the theme directory:  ~/.config/omarchy/themes/marvin/install/marvin
+set -euo pipefail
+
+THEME_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+THEMES="$HOME/.config/omarchy/themes"
+PLUGINS="$HOME/.config/omarchy/plugins"
+HYPR="$HOME/.config/hypr"
+FONTCONF="$HOME/.config/fontconfig/conf.d"
+MARKER="-- marvin:config-layer"
+REQUIRE_LINE='require("hypr.marvin") '"$MARKER"
+
+say()  { printf '\e[1m%s\e[0m\n' "$*"; }
+note() { printf '  %s\n' "$*"; }
+
+shell_running() { pgrep -x quickshell >/dev/null 2>&1; }
+
+install_light() {
+  say "marvin-light"
+  rm -rf "$THEMES/marvin-light"
+  # A plain directory (no .git) is a theme the user wrote, so Omarchy stages
+  # it unfiltered. Nothing in light/ runs code; this only matters for symmetry.
+  cp -r "$THEME_DIR/light" "$THEMES/marvin-light"
+  note "→ $THEMES/marvin-light"
+}
+
+install_font() {
+  say "Inter for the shell"
+  if ! fc-list | grep -qi "Inter-\|Inter:\|/Inter"; then
+    note "Inter is not installed. On Arch: sudo pacman -S --needed inter-font"
+    if command -v pacman >/dev/null; then
+      sudo pacman -S --needed --noconfirm inter-font || note "could not install inter-font; the shell keeps its monospace face until it is present"
+    fi
+  fi
+  mkdir -p "$FONTCONF"
+  cp "$THEME_DIR/config/fontconfig/60-marvin-shell.conf" "$FONTCONF/60-marvin-shell.conf"
+  note "→ $FONTCONF/60-marvin-shell.conf (scoped to quickshell; terminals unchanged)"
+}
+
+install_hypr() {
+  say "Hyprland geometry and motion"
+  mkdir -p "$HYPR"
+  cp "$THEME_DIR/config/hypr/marvin.lua" "$HYPR/marvin.lua"
+  if [[ -f "$HYPR/hyprland.lua" ]] && ! grep -qF -- "$MARKER" "$HYPR/hyprland.lua"; then
+    # After the user's looknfeel so Marvin's values are what Hyprland ends on;
+    # before toggles so the user's toggles can still flip them.
+    if grep -qF 'require("hypr.looknfeel")' "$HYPR/hyprland.lua"; then
+      sed -i "/require(\"hypr.looknfeel\")/a $REQUIRE_LINE" "$HYPR/hyprland.lua"
+    else
+      printf '\n%s\n' "$REQUIRE_LINE" >>"$HYPR/hyprland.lua"
+    fi
+  fi
+  note "→ $HYPR/marvin.lua, required from hyprland.lua"
+}
+
+install_plugins() {
+  say "Widgets"
+  mkdir -p "$PLUGINS"
+  local p id
+  for p in "$THEME_DIR"/plugins/marvin.*/; do
+    id=$(basename "$p")
+    rm -rf "$PLUGINS/$id"
+    cp -r "$p" "$PLUGINS/$id"
+    note "→ $PLUGINS/$id"
+  done
+  if shell_running; then
+    omarchy-shell shell rescanPlugins >/dev/null 2>&1 || true
+    for p in "$THEME_DIR"/plugins/marvin.*/; do
+      id=$(basename "$p")
+      omarchy-plugin-enable "$id" >/dev/null 2>&1 && note "enabled $id" || note "enable $id yourself: omarchy plugin enable $id"
+    done
+  else
+    note "shell not running; enable later with: omarchy plugin enable marvin.<name>"
+  fi
+}
+
+apply() {
+  say "Applying"
+  if command -v omarchy-theme-set >/dev/null; then
+    omarchy-theme-set marvin >/dev/null 2>&1 || true
+  fi
+  command -v hyprctl >/dev/null && hyprctl reload >/dev/null 2>&1 || true
+  shell_running && omarchy-restart-shell >/dev/null 2>&1 || true
+  note "done. Light: omarchy theme set marvin-light"
+}
+
+remove() {
+  say "Removing the Marvin config layer"
+  rm -rf "$THEMES/marvin-light"
+  rm -f "$FONTCONF/60-marvin-shell.conf" "$HYPR/marvin.lua"
+  [[ -f "$HYPR/hyprland.lua" ]] && sed -i "/$MARKER/d" "$HYPR/hyprland.lua"
+  local p id
+  for p in "$THEME_DIR"/plugins/marvin.*/; do
+    id=$(basename "$p")
+    shell_running && omarchy-plugin-disable "$id" >/dev/null 2>&1 || true
+    rm -rf "$PLUGINS/$id"
+  done
+  command -v hyprctl >/dev/null && hyprctl reload >/dev/null 2>&1 || true
+  shell_running && omarchy-restart-shell >/dev/null 2>&1 || true
+  note "theme files under $THEMES/marvin are untouched; omarchy theme remove marvin drops them"
+}
+
+case "${1:-}" in
+  --remove) remove ;;
+  -h|--help) sed -n '2,8p' "$0" ;;
+  "") install_light; install_font; install_hypr; install_plugins; apply ;;
+  *) echo "usage: install/marvin [--remove]" >&2; exit 1 ;;
+esac
