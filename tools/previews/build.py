@@ -297,28 +297,29 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 .si{{height:40px;border-radius:20px;padding:0 16px;display:flex;align-items:center;gap:12px;color:var(--fg)}}.si.on{{background:rgba(var(--fg-rgb),var(--a3))}}
 .files .main{{padding:24px}}.files .top{{display:flex;align-items:center;gap:12px;margin-bottom:24px}}.files .top .pathf{{height:40px;flex:1;border-radius:20px;background:rgba(var(--fg-rgb),var(--a1));display:flex;align-items:center;padding:0 16px;gap:8px}}
 .fgrid{{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 12px}}.fd{{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11px}}
-.desk{{position:absolute;left:24px;right:24px;top:56px;bottom:24px;display:grid;gap:24px;grid-template-columns:1.35fr 1.35fr 1fr;grid-template-rows:1fr 1fr;grid-auto-flow:column}}
-.desk>.win{{position:static;width:auto;height:auto}}
-.desk>.card{{width:100%!important;height:100%!important;justify-content:center}}
+.tile{{position:absolute;border-radius:24px;overflow:hidden;box-shadow:0 10px 36px rgba(0,0,0,var(--sh)),inset 0 0 0 1px rgba(var(--fg-rgb),var(--a2))}}
+.tile>.win{{position:static;width:100%;height:100%;box-shadow:none;border-radius:0}}
+.tile>.card{{width:100%!important;height:100%!important;justify-content:center;box-shadow:none;border:none;border-radius:0}}
 </style></head><body>
 {bar(t)}
-<div class="desk">
-<div class="win focus">
+<div class="tile" style="left:24px;top:56px;width:864px;height:612px"><div class="win focus">
   <div class="obs"><div class="sb"><div class="vault">Notes</div>{obs_side}</div>
   <div class="ed"><div class="tabs"><div class="tab on">Principles</div><div class="tab">Grid</div><div class="tab">Motion</div></div>
   <div class="doc"><h1>Principles</h1>
-  <p>Understand the grid, set a type scale, art-direct a few widgets, then propagate.</p>
+  <p>Understand the grid, set a clean type scale, art-direct a few key widgets, then propagate. After that it gets rather easy.</p>
   <h2>Rules</h2>
-  <div class="chk"><i class="d"></i><s>Every step must be perceptible</s></div>
+  <div class="chk"><i class="d"></i><s>Every step in a scale must be perceptible</s></div>
   <div class="chk"><i class="d"></i><s>Depth from surfaces, not outlines</s></div>
   <div class="chk"><i></i>Tone is a property of each surface</div>
-  <div class="chk"><i></i>Large numerals, small labels</div></div>
-  <div class="status"><span>212 words</span><span>1,280 characters</span></div></div></div>
-</div>
-<div class="win">
+  <div class="chk"><i></i>Large numerals, small labels</div>
+  <p style="margin-top:16px">Padding equals radius: <code>popup-padding = 16</code>, so content sits at the centre of the corner arc.</p>
+  <blockquote>Leave a little room for the unexpected.</blockquote>
+  <p><span class="tag">#design-system</span><span class="tag">#omarchy</span></p></div>
+  <div class="status"><span>212 words</span><span>1,280 characters</span></div></div></div></div></div>
+<div class="tile" style="left:24px;top:692px;width:864px;height:294px"><div class="win">
   <div class="files"><div class="sb">{side}</div><div class="main"><div class="top">{ic("chevron_left",20)}{ic("chevron_right",20)}<div class="pathf">{ic("home",16)}Home</div>{ic("search",20)}</div><div class="fgrid">{fgrid}</div></div></div>
-</div>
-<div class="win">
+</div></div>
+<div class="tile" style="left:912px;top:56px;width:420px;height:294px"><div class="win">
   <div class="term mono"><span class="p">❯</span> omarchy theme set marvin
 <span class="c">Theme set · radius 24 · type 12–56</span>
 <span class="p">❯</span> omarchy theme list
@@ -329,11 +330,10 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 <span style="color:{t["green"]}">ok</span>  geometry identity <span class="c">94 tokens</span>
 <span style="color:{t["green"]}">ok</span>  install → revert  <span class="c">byte for byte</span>
 <span class="p">❯</span> <span style="display:inline-block;width:8px;height:16px;background:var(--fg);vertical-align:-3px"></span></div>
-</div>
-{w["media"]}
-{w["weather"]}
-{w["power"]}
-</div>
+</div></div>
+<div class="tile" style="left:1356px;top:56px;width:420px;height:294px">{w["weather"]}</div>
+<div class="tile" style="left:912px;top:374px;width:420px;height:612px">{w["clock"]}</div>
+<div class="tile" style="left:1356px;top:374px;width:420px;height:612px">{w["power"]}</div>
 </body></html>"""
 
 def boot(t, fonts):

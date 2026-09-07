@@ -1,5 +1,7 @@
 # Marvin
 
+<p align="center"><em>Inspired by, and named for, <a href="https://x.com/MSchwaibold">Marvin Schwaibold</a> — <a href="https://x.com/MSchwaibold/status/2096059496812716307">the post</a> that started this whole project.</em></p>
+
 A design system for [Omarchy 4](https://omarchy.org), delivered as a theme, a
 reversible config layer, and fourteen restyled widgets — with 63 wallpapers
 included.
