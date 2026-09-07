@@ -34,3 +34,9 @@ session. Validate a plugin without the shell: `omarchy-plugin-validate plugins/m
 transforms and prints how often each fired plus every upstream habit it
 could not classify. A module with no supplied design is built exactly this
 way: the system, no new rules.
+
+## License
+
+Every plugin here reproduces the built-in it clones, which is Omarchy's code
+under MIT; that notice is in `LICENSE-omarchy`. The changes are MIT under the
+repository's `LICENSE`.

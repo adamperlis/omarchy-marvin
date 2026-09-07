@@ -138,6 +138,13 @@ the shell journal open) and what to send back.
 | `docs/principles.md` | Every design rule, confirmed or proposed, and why. |
 | `docs/platform-constraints.md` | What Omarchy 4 lets a theme control, and what it doesn't. |
 | `docs/testing.md` | The on-machine test plan. |
+| `LICENSE`, `plugins/LICENSE-omarchy` | MIT, and Omarchy's MIT notice for the code the plugins reproduce. |
+
+## License
+
+MIT. Use it, fork it, change every value in it. The widget plugins and the
+test fixtures contain Omarchy's own code, which is also MIT; its notice
+travels with them in `plugins/LICENSE-omarchy`.
 
 ## Backgrounds
 
