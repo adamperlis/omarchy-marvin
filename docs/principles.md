@@ -214,15 +214,16 @@ the short step and workspaces get the long one, the inverse of upstream.
 ## Backgrounds
 
 Confirmed. A lit room drawn in perspective from the system's own colours,
-four gradient planes converging on a far opening, light bloomed; or, for a
-painting of your own, blurred into a
-colour field, graded so it complements the palette: saturation up (1.5,
-the reference's imagery is rich, not pastel), mixed lightly toward the
-ground, luminance in a band the bar reads over (dark 0.02–0.34, light
-0.30–0.90), fine grain against banding. `tools/background.py` is the
-rule made executable. Shipped set: Monet's *Houses of Parliament, Sunset*,
-Van Gogh's *Starry Night*, Kandinsky's *Composition VII*, all public domain,
-chosen for sharing the system's sky blue, navy, pale yellow and orange.
+four gradient planes converging on a far opening, light bloomed — then fully
+blurred, so each room reads as a soft field of its own colour; or, for a
+painting of your own, blurred into a colour field, graded so it complements
+the palette: saturation up (1.5, the reference's imagery is rich, not
+pastel), mixed lightly toward the ground, luminance in a band the bar reads
+over (dark 0.02–0.34, light 0.30–0.90), fine grain against banding.
+`tools/background.py` is the rule made executable. Shipped set: a plain
+ground, six blurred gradient rooms (ember, lilac, sky, citrus, dusk,
+magenta), and fifty-six soft colour abstractions — sixty-three wallpapers,
+every one selectable from Omarchy's switcher.
 
 ## Apps
 

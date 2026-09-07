@@ -16,6 +16,15 @@ understand the grid, set a clean type scale, art-direct a few key widgets,
 then propagate — is his, and his widget studies are the visual reference. He
 is not involved in this project; the name is a credit, not an endorsement.
 
+![Marvin backgrounds](docs/images/backgrounds-dark.png)
+
+Sixty-three wallpapers ship, and the wallpaper is the ground the whole
+system sits on. Seven are gradient rooms drawn from the palette — lit boxes
+in perspective, now fully blurred into soft colour fields and graded so the
+bar and every card read as surfaces over them. The other fifty-six are soft
+colour abstractions. The plain ground comes first, so an empty desktop reads
+exactly like the widget sheet.
+
 ![Marvin, light](light/preview.png)
 
 ![Marvin, dark](preview.png)
@@ -37,8 +46,6 @@ with one notification, then the shipped backgrounds themselves:
 ![Workspace, dark](docs/images/workspace-dark.png)
 
 ![Backgrounds, light](docs/images/backgrounds-light.png)
-
-![Backgrounds, dark](docs/images/backgrounds-dark.png)
 
 These are renders from the tokens, not screenshots of the shell — see
 [Testing it](#testing-it).
@@ -233,20 +240,23 @@ travels with them in `plugins/LICENSE-omarchy`.
 ## Backgrounds
 
 The wallpaper is the ground the whole system sits on, so it is graded, not
-chosen: a painting left sharp, so the brushwork stays, saturation
-pushed up a little so the field stays rich, mixed lightly toward the theme
-ground, luminance clamped into a band the bar stays readable over, grain
-added against banding.
+chosen: saturation pushed up a little so the field stays rich, mixed lightly
+toward the theme ground, luminance clamped into a band the bar stays
+readable over, grain added against banding.
 
-Seven backgrounds ship. The first is no image at all: the reference's own
-ground, white falling to the base grey, so the desktop reads exactly like
-the widget sheet. The other six are lit rooms, drawn by
-`tools/background.py` at 4K, nothing borrowed: a box in perspective whose walls, floor and ceiling are gradient
-planes converging on a small door or window at the far end, light blooming
-from it, a whisper of grain. Each room is one run of the system's colours
-plus the hot magenta and orange the idiom wants. The same six, ungraded,
-are the imagery inside the widgets (`docs/images/art/`): album art,
-thumbnails, screen-share previews, the mood board.
+Sixty-three backgrounds ship. The first is no image at all: the reference's
+own ground, white falling to the base grey, so the desktop reads exactly
+like the widget sheet. The next six are lit rooms, drawn by
+`tools/background.py` at 4K, nothing borrowed: a box in perspective whose
+walls, floor and ceiling are gradient planes converging on a small door or
+window at the far end, light blooming from it, a whisper of grain — then
+fully blurred, so each room reads as a soft field of its own colour rather
+than a hard-edged box. The same six, ungraded and left sharp, are the
+imagery inside the widgets (`docs/images/art/`): album art, thumbnails,
+screen-share previews, the mood board. The remaining fifty-six
+(`backgrounds/abstract-*.jpg`) are soft colour abstractions, cover-cropped
+to 3840 × 2160 and compressed — no grading and no extra blur, since they are
+already fields. Every wallpaper is selectable from Omarchy's switcher.
 
 | | Background | Colours |
 |---|---|---|
@@ -258,16 +268,20 @@ thumbnails, screen-share previews, the mood board.
 | 6 | Dusk | violet meets orange, a pink door |
 | 7 | Magenta | violet, cyan and magenta, an orange-edged door |
 
-They are original, so they carry this repository's licence. To draw more,
-or to grade a painting or photo of your own:
+The gradient rooms are original, so they carry this repository's licence. The
+fifty-six abstractions are external images added as wallpapers — confirm you
+have the right to redistribute them before publishing a fork. To draw more
+rooms, or to grade a painting or photo of your own:
 
 ```
-tools/background.py --style corridors --palette sky --index 7 --seed 21 --crop-out docs/images/art
-tools/background.py --source path/to/yours.jpg --name mine --index 8 --blur 0.045 --crop-out docs/images/art
+tools/background.py --style corridors --palette sky --index 8 --seed 21 --blur 0.16 --crop-out docs/images/art
+tools/background.py --source path/to/yours.jpg --name mine --index 9 --blur 0.045 --crop-out docs/images/art
 ```
 
 Seven palettes are built in (`ember lilac sky citrus dusk tide magenta`);
-every seed is a different room. Rooms ship unblurred, since their softness
-is drawn in; a painting gets a 4.5 % blur so the desktop stays a field.
+every seed is a different room. Rooms now ship fully blurred — a Gaussian
+radius of 0.16 × the height, so each reads as a soft field; a painting gets
+a 4.5 % blur so the desktop stays a field. The `--crop-out` crop is taken
+before the blur, so the UI art stays sharp.
 
 It writes both tones. Needs Pillow and numpy.
