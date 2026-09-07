@@ -311,3 +311,31 @@ should pin to those sizes rather than derive from the type scale
 (`icon = title` gives 14 by default).
 
 Config layer only. Degraded install shows Nerd Font glyphs.
+
+## Plugins
+
+Shell widgets are plugins: a directory with `manifest.json` and QML entry
+points. Third-party plugins live at the top level of
+`~/.config/omarchy/plugins/<id>/` and are plain QML with the same `Style` and
+`Color` singletons the shell uses. They run **unsandboxed** inside
+`omarchy-shell`, land disabled, and `omarchy plugin enable` talks to the
+running shell over IPC.
+
+`omarchy plugin clone omarchy.<id>` copies a built-in and replaces it: the
+manifest gains `omarchy.clonedFrom`, the shell disables the source, and the
+source's IPC targets keep routing to the clone. A hand-written plugin with
+the same `clonedFrom` key behaves identically.
+
+What a plugin can and cannot restyle:
+
+- The popup card chrome — padding, radius, border, background — comes from
+  `PopupCard` / `KeyboardPanel`, which read `[popups]` and `cornerRadius`.
+  A plugin does not draw it and cannot set the card colour directly.
+- `contentHolder` does not clip, so a Rectangle with
+  `anchors.margins: -padding` and `radius: Style.cornerRadius` reproduces
+  the card's shape beneath the content: that is how a per-widget tint works.
+- `Color.shellValues` exposes every `shell.toml` key as `"section.key"`,
+  including sections the shell itself never reads, so a theme can carry
+  per-widget tokens.
+- `omarchy-plugin-validate` is jq-only and checks the manifest and entry
+  points; it does not parse QML. There is no QML lint in the repo.

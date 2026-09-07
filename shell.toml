@@ -92,7 +92,9 @@ number-field-width          = 120
 searchable-popup-min-height = 224
 
 [font]
-# Pinned. 11 / 13 / 15 / 18 / 24 / 32. Minimum step 2px. caption and
+# Pinned. 11 / 13 / 15 / 18 / 24 / 48. Minimum step 2px. display-large is the
+# hero numeral (battery percentage, temperature); display stays 24 so panel
+# hero glyphs match icon-large. caption and
 # body-small collapse to 11; body and subtitle collapse to 13. Two tokens
 # that cannot be told apart are one value.
 base-size     = 13
@@ -103,7 +105,7 @@ subtitle      = 13
 title         = 15
 heading       = 18
 display       = 24
-display-large = 32
+display-large = 48
 # Icons are Material Design Icons on their own grid, not the type scale.
 icon-small = 16
 icon       = 20
@@ -210,3 +212,11 @@ selected-border         = "#7aa6ff"
 selected-border-alpha   = 1.0
 unselected-border       = "#d6d6d6"
 unselected-border-alpha = 0.2
+
+# ---------------------------------------------------------------- widgets
+# Per-widget tone. Structure never changes; only the surface does.
+
+[marvin-weather]
+background = "#1c3556"
+text       = "#eaf1fa"
+muted      = "#a9bfd9"

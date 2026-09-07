@@ -54,5 +54,22 @@ distinct = dark["controls.focus-border-width"] != dark["controls.hover-cursor-bo
 print(f"focus vs hover border width: {'distinct' if distinct else 'IDENTICAL'}")
 failed += not distinct
 
+# Per-widget tone sections must clear the same floors as the main palette.
+def lum(h):
+    r, g, b = (int(h[i:i+2], 16) / 255 for i in (1, 3, 5))
+    f = lambda c: c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+def contrast(a, b):
+    la, lb = lum(a), lum(b)
+    return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+for name, d in (("shell.toml", dark), ("light/shell.toml", light)):
+    for sec in sorted({k.split(".")[0] for k in d if k.startswith("marvin-")}):
+        bg, tx, mu = d.get(f"{sec}.background"), d.get(f"{sec}.text"), d.get(f"{sec}.muted")
+        for label, fg, floor in (("text", tx, 10.0), ("muted", mu, 4.5)):
+            v = contrast(fg, bg)
+            ok = v >= floor
+            failed += not ok
+            print(f"{name} [{sec}] {label} {fg} on {bg}: {v:5.2f} floor {floor} {'ok' if ok else 'BAD'}")
+
 print(f"\n{failed} failures")
 sys.exit(1 if failed else 0)

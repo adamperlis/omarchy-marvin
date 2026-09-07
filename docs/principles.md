@@ -60,9 +60,12 @@ Proposed.
 - **Family: Inter** — proposed. Installed through a `prgname`-scoped
   fontconfig rule so terminals keep their monospace face. In the official
   Arch repos as `inter-font`. Config layer only.
-- **Scale, pinned: 11 / 13 / 15 / 18 / 24 / 32** — proposed. Minimum step
+- **Scale, pinned: 11 / 13 / 15 / 18 / 24 / 48** — confirmed. Minimum step
   2px. `caption` and `body-small` both pin to 11; `body` and `subtitle`
   both pin to 13. Two tokens that cannot be told apart become one value.
+  `display-large` is 48 because every consumer of it in the shell is a
+  hero numeral or glyph — the battery percentage, the media art placeholder,
+  the clipboard preview — and a hero numeral has to be large to be one.
 - **Large numerals, small labels** — confirmed as a rule from the
   reference. The number is the biggest thing on the surface; its unit or
   label drops to caption beside it. Applies to the lock clock, bar clock,
@@ -89,7 +92,11 @@ Extracted from the reference; proposed as rules.
   hairlines.
 - **Tone is a surface property.** Structure is invariant; each surface
   picks a tone: default, inverted, tinted, media. Omarchy exposes this
-  directly through per-section `background` / `text`.
+  directly through per-section `background` / `text`. Per-widget tone goes
+  in a `[marvin-<widget>]` section of `shell.toml` (the shell's parser takes
+  any section name) and the widget reads it from `Color.shellValues`; the
+  theme owns the tint, the plugin owns only geometry. Tint text and muted
+  clear the same 10:1 and 4.5:1 floors as the palette, tested.
 - **Controls are the text color at alpha**, so they survive any tone.
   Upstream's model is right and its values are too faint (0.04 normal).
   Target roughly 0.06–0.08 on light surfaces, 0.12–0.16 on dark.
@@ -136,6 +143,13 @@ Proposed. Compositor motion only — shell motion is not themeable.
   tiling WM. Invert that.
 - **Exits are never linear.** Linear reads as mechanical.
 - Direct-manipulation responses stay under ~300ms.
+
+## Widgets
+
+Confirmed: panels first, dashboard later. System widgets are restyled as
+`clonedFrom` plugins under `plugins/` — upstream's data code verbatim, the
+layout rewritten. Plugins are unsandboxed QML and belong to the config
+layer, never the theme. First: `marvin.weather`.
 
 ## Open
 

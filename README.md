@@ -26,7 +26,8 @@ once it lands.
 | `light/` | The same geometry over a light tone table. |
 | `docs/principles.md` | Every design decision, marked confirmed or proposed. |
 | `docs/platform-constraints.md` | What Omarchy 4 lets a theme control, and what it doesn't. |
-| `test/run` | Contrast floors, parser compatibility, dark/light geometry identity. |
+| `plugins/` | Restyled clones of built-in widgets. Config layer, not theme; see `plugins/README.md`. |
+| `test/run` | Contrast floors, parser compatibility, dark/light geometry identity, widget tint floors. |
 
 ## Rules that are tested, not eyeballed
 

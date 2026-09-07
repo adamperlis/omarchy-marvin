@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.weather",
+  "name": "Marvin Weather",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "Weather pill with a card-style forecast popup, restyled to the Marvin design system",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Marvin Weather",
+    "description": "Weather pill with a card-style forecast popup",
+    "category": "Info",
+    "allowMultiple": false,
+    "settingsForm": "weatherSettings"
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.weather"
+  }
+}
