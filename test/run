@@ -1,0 +1,10 @@
+#!/bin/bash
+# Run every check. From the repo root: ./test/run
+set -u
+cd "$(dirname "$0")/.."
+rc=0
+for t in test/contrast test/shell-toml test/install-revert; do
+  printf '\n==> %s\n' "$t"
+  "$t" || rc=1
+done
+exit $rc

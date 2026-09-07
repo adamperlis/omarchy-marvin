@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+"""shell.toml checks.
+
+1. Every key line matches one of the four regexes in Color.qml parseShell();
+   a line that matches none is silently dropped by the shell.
+2. Dark and light share every geometry token exactly. Only colors and the
+   scrim alphas (a tone property) may differ.
+3. Control fill alphas rise monotonically, and focus is distinct from hover.
+Run from the repo root: ./test/shell-toml
+"""
+import re, sys
+
+stringKv = re.compile(r'^([A-Za-z0-9_-]+)\s*=\s*["\']([^"\']+)["\']\s*(#.*)?$')
+numKv    = re.compile(r'^([A-Za-z0-9_-]+)\s*=\s*(-?\d+(?:\.\d+)?)\s*(#.*)?$')
+widthKv  = re.compile(r'^([A-Za-z0-9_-]+)\s*=\s*(-?\d+(?:\.\d+)?(?:\s+-?\d+(?:\.\d+)?){1,3})\s*(#.*)?$')
+bareKv   = re.compile(r'^([A-Za-z0-9_-]+)\s*=\s*([A-Za-z][A-Za-z0-9_-]*)\s*(#.*)?$')
+section  = re.compile(r'^\[([A-Za-z0-9_-]+)\]\s*(#.*)?$')
+color    = re.compile(r'^"?(#[0-9a-fA-F]{6}|rgba?\()')
+
+def load(path):
+    d, sec, dropped = {}, "", []
+    for i, raw in enumerate(open(path), 1):
+        line = raw.strip()
+        if not line or line.startswith("#"): continue
+        m = section.match(line)
+        if m: sec = m.group(1); continue
+        kv = next((r.match(line) for r in (stringKv, numKv, widthKv, bareKv) if r.match(line)), None)
+        if not kv or not sec: dropped.append((i, line)); continue
+        d[f"{sec}.{kv.group(1)}"] = kv.group(2)
+    return d, dropped
+
+failed = 0
+dark, dd = load("shell.toml")
+light, ld = load("light/shell.toml")
+for name, dropped in (("shell.toml", dd), ("light/shell.toml", ld)):
+    print(f"{name}: {len(dropped)} lines the shell would drop")
+    for i, l in dropped: print(f"   line {i}: {l}")
+    failed += len(dropped)
+
+tone_dependent = lambda k: k.endswith("scrim-alpha")
+geo = [k for k in dark if not color.match(dark[k]) and not tone_dependent(k)]
+mismatch = [k for k in geo if dark.get(k) != light.get(k)]
+keys = sorted(set(dark) ^ set(light))
+print(f"geometry tokens: {len(geo)}, mismatches: {mismatch or 'none'}")
+print(f"key set differences: {keys or 'none'}")
+failed += len(mismatch) + len(keys)
+
+ramp = [float(dark[f"controls.{k}"]) for k in
+        ("normal-fill-alpha", "hover-cursor-fill-alpha", "selected-fill-alpha", "pressed-fill-alpha")]
+mono = ramp == sorted(ramp) and len(set(ramp)) == len(ramp)
+print(f"control fill ramp {ramp}: {'monotonic' if mono else 'NOT MONOTONIC'}")
+failed += not mono
+distinct = dark["controls.focus-border-width"] != dark["controls.hover-cursor-border-width"]
+print(f"focus vs hover border width: {'distinct' if distinct else 'IDENTICAL'}")
+failed += not distinct
+
+# Per-widget tone sections must clear the same floors as the main palette.
+def lum(h):
+    r, g, b = (int(h[i:i+2], 16) / 255 for i in (1, 3, 5))
+    f = lambda c: c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+def contrast(a, b):
+    la, lb = lum(a), lum(b)
+    return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+for name, d in (("shell.toml", dark), ("light/shell.toml", light)):
+    for sec in sorted({k.split(".")[0] for k in d if k.startswith("marvin-")}):
+        bg, tx, mu = d.get(f"{sec}.background"), d.get(f"{sec}.text"), d.get(f"{sec}.muted")
+        for label, fg, floor in (("text", tx, 10.0), ("muted", mu, 4.5)):
+            v = contrast(fg, bg)
+            ok = v >= floor
+            failed += not ok
+            print(f"{name} [{sec}] {label} {fg} on {bg}: {v:5.2f} floor {floor} {'ok' if ok else 'BAD'}")
+
+print(f"\n{failed} failures")
+sys.exit(1 if failed else 0)

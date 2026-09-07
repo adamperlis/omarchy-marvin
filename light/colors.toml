@@ -1,0 +1,35 @@
+# Marvin — light. Same roles as the dark palette, tone table flipped.
+# Ramp reads lightest to darkest, as Omarchy expects for light themes.
+mode = "light"
+
+accent    = "#2a63d8"
+attention = "#9c5f00"
+selection = "#d9d9d9"
+muted     = "#6b6b6b"
+
+background         = "#f5f5f5"
+dark_background    = "#ebebeb"
+darker_background  = "#e0e0e0"
+lighter_background = "#ffffff"
+
+foreground        = "#1a1a1a"
+dark_foreground   = "#6b6b6b"
+light_foreground  = "#2e2e2e"
+bright_foreground = "#0a0a0a"
+
+red     = "#c03a3a"
+green   = "#2e7d2e"
+yellow  = "#8f6a00"
+blue    = "#2a63d8"
+magenta = "#9448b8"
+cyan    = "#177a7a"
+
+bright_red     = "#a82f2f"
+bright_green   = "#256b25"
+bright_yellow  = "#7a5a00"
+bright_blue    = "#1f52bd"
+bright_magenta = "#7f3aa0"
+bright_cyan    = "#126666"
+
+hyprland_active_border   = "rgba(1a1a1a8c)"
+hyprland_inactive_border = "rgba(1a1a1a1f)"

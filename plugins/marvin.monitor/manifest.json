@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.monitor",
+  "name": "Marvin Monitor",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "Brightness, night light and display settings as a card",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Marvin Monitor",
+    "description": "Brightness, night light and display settings as a card",
+    "category": "System",
+    "allowMultiple": false
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.monitor"
+  }
+}

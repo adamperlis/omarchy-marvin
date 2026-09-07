@@ -1,0 +1,38 @@
+# Marvin — dark. Neutral ramp, one accent, one attention role.
+# Every pair that matters is measured against a contrast floor; see
+# docs/principles.md. Do not tune by eye.
+mode = "dark"
+
+accent    = "#7aa6ff"
+attention = "#e0a54a"
+selection = "#303030"
+muted     = "#8c8c8c"
+
+background         = "#161616"
+dark_background    = "#0f0f0f"
+darker_background  = "#0a0a0a"
+lighter_background = "#1e1e1e"
+
+foreground        = "#d6d6d6"
+dark_foreground   = "#8c8c8c"
+light_foreground  = "#e6e6e6"
+bright_foreground = "#f5f5f5"
+
+red     = "#e38484"
+green   = "#98c78c"
+yellow  = "#dfbf72"
+blue    = "#7aa6ff"
+magenta = "#c4a0dc"
+cyan    = "#82c9c9"
+
+bright_red     = "#ee9a9a"
+bright_green   = "#aed6a3"
+bright_yellow  = "#ead08e"
+bright_blue    = "#98baff"
+bright_magenta = "#d5b8e8"
+bright_cyan    = "#9cd8d8"
+
+# Window focus is the one border that must stay visible. Foreground at 55%
+# for the focused window, 12% for the rest. Feeds hyprland.lua.tpl.
+hyprland_active_border   = "rgba(d6d6d68c)"
+hyprland_inactive_border = "rgba(d6d6d61f)"

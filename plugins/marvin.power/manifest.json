@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.power",
+  "name": "Marvin Power",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "Battery, power profile, and system stats as a card",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Marvin Power",
+    "description": "Battery, power profile, and system stats as a card",
+    "category": "System",
+    "allowMultiple": false
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.power"
+  }
+}

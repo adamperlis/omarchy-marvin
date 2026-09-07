@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""Contrast floors, measured from the shipped colors.toml files.
+
+Every pair that carries text or a state signal must clear its floor. Run from
+the repo root: ./test/contrast
+"""
+import re, sys, pathlib
+
+def load(path):
+    d = {}
+    for line in pathlib.Path(path).read_text().splitlines():
+        m = re.match(r'^\s*([A-Za-z0-9_]+)\s*=\s*"(#[0-9a-fA-F]{6})"', line)
+        if m: d[m.group(1)] = m.group(2)
+    return d
+
+def lum(h):
+    r, g, b = (int(h[i:i+2], 16) / 255 for i in (1, 3, 5))
+    f = lambda c: c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+
+def contrast(a, b):
+    la, lb = lum(a), lum(b)
+    return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+
+ANSI = ("red", "green", "yellow", "blue", "magenta", "cyan")
+CHECKS = [
+    ("body text",        "foreground",        "background",         10.0),
+    ("body on raised",   "foreground",        "lighter_background", 10.0),
+    ("muted text",       "muted",             "background",          4.5),
+    ("muted on raised",  "muted",             "lighter_background",  4.5),
+    ("accent as text",   "accent",            "background",          4.5),
+    ("accent on raised", "accent",            "lighter_background",  4.5),
+    ("attention",        "attention",         "background",          4.5),
+    ("selected text",    "bright_foreground", "selection",           4.5),
+] + [(f"ansi {c}", c, "background", 4.5) for c in ANSI] \
+  + [(f"ansi bright_{c}", "bright_" + c, "background", 4.5) for c in ANSI]
+
+failed = 0
+for path in ("colors.toml", "light/colors.toml"):
+    p = load(path)
+    print(f"== {path}")
+    for label, fg, bg, floor in CHECKS:
+        v = contrast(p[fg], p[bg])
+        ok = v >= floor
+        failed += not ok
+        print(f"  {'ok ' if ok else 'BAD'} {label:18} {p[fg]} on {p[bg]}  {v:5.2f}  floor {floor}")
+print(f"\n{failed} failures")
+sys.exit(1 if failed else 0)

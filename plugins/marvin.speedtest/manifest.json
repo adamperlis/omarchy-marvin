@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.speedtest",
+  "name": "Marvin Speedtest",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "Speed test as a card",
+  "kinds": [
+    "panel"
+  ],
+  "entryPoints": {
+    "panel": "Panel.qml"
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.speedtest"
+  }
+}

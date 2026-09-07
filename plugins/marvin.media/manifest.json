@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.media",
+  "name": "Marvin Media",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "MPRIS media control with a card-style now-playing popup",
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Marvin Media",
+    "description": "Now playing as a card: art, two text tones, an inverted play button, a hairline scrub",
+    "category": "Media",
+    "allowMultiple": false
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.media"
+  }
+}
