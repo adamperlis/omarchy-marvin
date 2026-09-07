@@ -76,8 +76,10 @@ def prepare_source(path):
         sys.exit(f"{path}: {w}x{h} crops to {im.size[0]}x{im.size[1]}, under {OUT_W}x{OUT_H}; a 4K screen would have to upscale it. Find a larger reproduction.")
     return im.resize((OUT_W, OUT_H), Image.LANCZOS)
 
-def grade(im, tone, seed, blur=0.0):
-    t = TONES[tone]
+def grade(im, tone, seed, blur=0.0, sat=None, mix=None, grain=1.6):
+    t = dict(TONES[tone])
+    if sat is not None: t["sat"] = sat
+    if mix is not None: t["mix"] = mix
     if im.size != (OUT_W, OUT_H):
         im = im.resize((OUT_W, OUT_H), Image.BICUBIC)   # synthesized fields come in small
     if blur > 0:
@@ -101,7 +103,8 @@ def grade(im, tone, seed, blur=0.0):
     # grain
     b = a * 255
     rng = np.random.default_rng(seed + 1)
-    b = np.clip(b + rng.normal(0, 1.6, b.shape).astype(np.float32), 0, 255)
+    if grain > 0:
+        b = np.clip(b + rng.normal(0, grain, b.shape).astype(np.float32), 0, 255)
     return Image.fromarray(b.astype(np.uint8))
 
 def main():
@@ -112,6 +115,9 @@ def main():
     p.add_argument("--index", type=int, default=1, help="ordering prefix in backgrounds/")
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--quality", type=int, default=88, help="JPEG quality (default 88)")
+    p.add_argument("--sat", type=float, help="saturation multiplier; defaults to the tone's (1.3)")
+    p.add_argument("--mix", type=float, help="mix toward the theme ground, 0..1; defaults to the tone's (0.05 dark, 0.06 light)")
+    p.add_argument("--grain", type=float, default=1.6, help="grain sigma in 8-bit levels; 0 for none (default 1.6)")
     p.add_argument("--blur", type=float, default=0.0, help="Gaussian radius as a fraction of the height; 0 (default) for none")
     args = p.parse_args()
     if not args.source and not args.palette:
@@ -122,7 +128,7 @@ def main():
     for tone, t in TONES.items():
         out = root / t["out"] / f"{args.index}-{name}.jpg"
         out.parent.mkdir(parents=True, exist_ok=True)
-        img = grade(base, tone, args.seed, args.blur)
+        img = grade(base, tone, args.seed, args.blur, args.sat, args.mix, args.grain)
         img.save(out, "JPEG", quality=args.quality, optimize=True, progressive=True)
         L = luminance(np.asarray(img, dtype=np.float32) / 255)
         print(f"{out.relative_to(root)}  {img.size[0]}x{img.size[1]}  L p1/p50/p99 = {np.percentile(L,1):.3f}/{np.percentile(L,50):.3f}/{np.percentile(L,99):.3f}  {out.stat().st_size//1024} KB")
