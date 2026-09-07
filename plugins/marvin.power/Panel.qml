@@ -353,7 +353,7 @@ Panel {
             text: "Battery"
             color: root.ink
             font.family: root.bar.fontFamily
-            font.pixelSize: Style.font.title
+            font.pixelSize: Style.font.heading
             font.weight: Font.Medium
           }
 
@@ -424,7 +424,7 @@ Panel {
               font.family: root.bar.fontFamily
               font.pixelSize: Style.font.displayLarge
               font.letterSpacing: -Style.font.displayLarge * 0.03
-              font.weight: Font.Medium
+              font.weight: Font.Normal
             }
           }
         }

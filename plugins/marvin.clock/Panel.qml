@@ -301,7 +301,7 @@ Panel {
                 font.family: root.contentFontFamily
                 font.pixelSize: Style.font.displayLarge
                 font.letterSpacing: -Style.font.displayLarge * 0.03
-                font.weight: Font.Medium
+                font.weight: Font.Normal
               }
 
               Column {
@@ -508,7 +508,7 @@ Panel {
               text: Qt.formatDate(root.viewDate, "MMMM yyyy")
               color: root.contentForeground
               font.family: root.contentFontFamily
-              font.pixelSize: Style.font.title
+              font.pixelSize: Style.font.heading
               font.weight: Font.Medium
             }
 

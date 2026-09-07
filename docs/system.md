@@ -51,9 +51,9 @@ amber rather than the terminal's error red.
 
 - `Color` — per-surface roles: `[bar] [popups] [tooltip] [notifications]
   [launcher] [menu] [polkit] [lock] [image-picker]`, each with background,
-  text, border and alphas. Marvin sets `border-width = 0` on every surface
-  and gives the bar the base tone and everything that opens over it the
-  raised tone.
+  text, border and alphas. Marvin gives every surface a 1px hairline at 8% of
+  the text colour, the bar the base tone, and everything that opens over it
+  the raised tone.
 - `Style` — `[spacing]`, `[font]`, `[bar]` sizes and `[controls]` states.
   Marvin pins every spacing and type token to the grid and turns
   `scale-with-font` off everywhere, because pinned tokens do not scale and
@@ -164,8 +164,8 @@ height = row height; radius = unit/2; padding = radius), and run the
 geometry test against the light sibling.
 
 **Radius.** One number, `decoration.rounding` in `config/hypr/marvin.lua`;
-cards, pills and windows all follow it. A 32px control is a pill only while
-the radius is 16.
+cards, pills and windows all follow it. Controls are pills at any radius
+of 20 or more.
 
 **Motion.** `config/hypr/marvin.lua`. Three curves and one scale; keep exits
 at 0.6 of entrances and keep everything a direct action triggers at or

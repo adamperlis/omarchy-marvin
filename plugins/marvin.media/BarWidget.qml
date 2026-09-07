@@ -186,7 +186,7 @@ BarWidget {
             text: root.title || "Nothing playing"
             color: root.bar.foreground
             font.family: root.bar.fontFamily
-            font.pixelSize: Style.font.title
+            font.pixelSize: Style.font.heading
             font.weight: Font.Medium
             elide: Text.ElideRight
             width: parent.width

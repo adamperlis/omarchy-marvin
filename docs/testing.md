@@ -28,9 +28,9 @@ journalctl --user -t omarchy-shell -f
 No config layer yet. This is the degraded install and it has to look
 intentional on its own.
 
-- Bar is 32px, popups have 16px padding and no border, text is 13px.
+- Bar is 32px, popups have 24px padding, a hairline border, 14px text.
 - Window borders are quiet neutral hairlines, not the cyan–green gradient.
-- Launcher rows are 32px pills; the selected row is a fill, text stays
+- Launcher rows are 40px pills; the selected row is a fill, text stays
   foreground; the search field shows a 2px accent focus ring.
 - Notifications: no border, two text tones, accent countdown hairline.
 - Lock screen: no idle border; typing shows the accent ring; a wrong
@@ -49,7 +49,7 @@ still your monospace, shadows are off. Those are the config layer's.
 It snapshots first, then applies. `sudo` will prompt once if Inter is not
 installed. Then check:
 
-- Windows and every card round at 16; gaps are 8 inside, 16 at the edge.
+- Windows and every card round at 24; gaps are 8 inside, 24 at the edge.
 - Shadows under cards and windows; the focused window has a 1px hairline.
 - The bar and every popup are in Inter. Open a terminal: still monospace.
 - Motion: open and close a window, switch workspaces (they slide now),

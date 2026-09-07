@@ -1,6 +1,6 @@
 # Marvin shell surfaces. Hand-written; replaces the generated shell.toml.
-# Depth comes from surfaces, not outlines: border-width is 0 everywhere a
-# surface would otherwise be outlined. Tone is a surface property — base
+# Depth comes from surfaces: a hairline at 8% of the text colour and, in the
+# config layer, a wide faint shadow. Never a structural border. Tone is a surface property — base
 # for the bar, raised for anything that opens over it.
 
 [bar]
@@ -52,8 +52,8 @@ pressed-fill-alpha   = 0.18
 selection-fill-alpha = 0.35
 
 # ---------------------------------------------------------------- geometry
-# Base 4. Unit 32. Radius 16 = unit / 2 (from Hyprland decoration:rounding,
-# config layer). Padding = radius. Every value here is on the 4px grid except
+# Base 4. Unit 32. Radius 24 (from Hyprland decoration:rounding, config layer);
+# padding = radius = 24. Every value here is on the 4px grid except
 # xxs, a deliberate half-unit for hairline insets. The reference grid is 8px;
 # 8 is the module here, 4 its subdivision. md (12) and xl (20) are the two
 # sub-module steps, kept only because upstream names nine ramp slots.
@@ -75,37 +75,37 @@ xxl  = 24
 xxxl = 32
 huge = 48
 control-gap                 = 8
-control-padding-x           = 16
+control-padding-x           = 20
 control-padding-y           = 8
 input-padding-y             = 8
-control-height              = 32
-popup-row-height            = 32
-row-gap                     = 8
+control-height              = 40
+popup-row-height            = 40
+row-gap                     = 12
 row-padding-x               = 16
 label-gap                   = 4
 panel-gap                   = 16
-panel-padding               = 16
-popup-padding               = 16
+panel-padding               = 24
+popup-padding               = 24
 dropdown-width              = 240
 searchable-dropdown-width   = 260
 number-field-width          = 120
 searchable-popup-min-height = 224
 
 [font]
-# Pinned. 11 / 13 / 15 / 18 / 24 / 48. Minimum step 2px. display-large is the
+# Pinned. 12 / 14 / 16 / 18 / 24 / 56. Minimum step 2px. display-large is the
 # hero numeral (battery percentage, temperature); display stays 24 so panel
 # hero glyphs match icon-large. caption and
 # body-small collapse to 11; body and subtitle collapse to 13. Two tokens
 # that cannot be told apart are one value.
-base-size     = 13
-caption       = 11
-body-small    = 11
-body          = 13
-subtitle      = 13
-title         = 15
+base-size     = 14
+caption       = 12
+body-small    = 12
+body          = 14
+subtitle      = 14
+title         = 16
 heading       = 18
 display       = 24
-display-large = 48
+display-large = 56
 # Icons are Material Design Icons on their own grid, not the type scale.
 icon-small = 16
 icon       = 20
@@ -117,9 +117,9 @@ icon-large = 24
 background       = "#ffffff"
 background-alpha = 1.0
 text             = "#1a1a1a"
-border           = "#ffffff"
-border-alpha     = 0
-border-width     = 0
+border           = "#1a1a1a"
+border-alpha     = 0.08
+border-width     = 1
 
 [tooltip]
 background       = "#ffffff"
@@ -133,9 +133,9 @@ border-width     = 0
 background       = "#ffffff"
 background-alpha = 1.0
 text             = "#1a1a1a"
-border           = "#ffffff"
-border-alpha     = 0
-border-width     = 0
+border           = "#1a1a1a"
+border-alpha     = 0.08
+border-width     = 1
 # Progress is a hairline; its fill is accent because time left means something.
 countdown        = "#2a63d8"
 
@@ -143,9 +143,9 @@ countdown        = "#2a63d8"
 background                = "#ffffff"
 background-alpha          = 1.0
 text                      = "#1a1a1a"
-border                    = "#ffffff"
-border-alpha              = 0
-border-width              = 0
+border           = "#1a1a1a"
+border-alpha     = 0.08
+border-width     = 1
 scrim                     = "#1a1a1a"
 scrim-alpha               = 0.3
 # Selection is a fill, not a color change. Accent stays rationed.
@@ -160,9 +160,9 @@ selected-border-width     = 0
 background                = "#ffffff"
 background-alpha          = 1.0
 text                      = "#1a1a1a"
-border                    = "#ffffff"
-border-alpha              = 0
-border-width              = 0
+border           = "#1a1a1a"
+border-alpha     = 0.08
+border-width     = 1
 scrim                     = "#1a1a1a"
 scrim-alpha               = 0.3
 selected-background       = "#1a1a1a"

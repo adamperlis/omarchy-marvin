@@ -47,13 +47,13 @@ These are renders from the tokens, not screenshots of the shell — see
 
 | | Rule | Value |
 |---|---|---|
-| **Grid** | base 4, module 8, unit 32 | bar, controls and popup rows are all 32px |
-| **Radius** | half the unit, one radius for everything | 16px — cards, pills, windows |
-| **Padding** | equals the radius | 16px, so content sits at the centre of the corner arc |
-| **Type** | Inter, pinned scale, every step perceptible | 11 / 13 / 15 / 18 / 24 / 48; hero numerals tracked −0.03em |
+| **Grid** | base 4, module 8, unit 32 | bar 32; rows and controls 40 |
+| **Radius** | one radius for everything | 24px — cards, windows; controls are pills |
+| **Padding** | equals the radius | 24px, so content sits at the centre of the corner arc |
+| **Type** | Inter, pinned scale, every step perceptible | 12 / 14 / 16 / 18 / 24 / 56; hero numerals regular weight, tracked −0.03em |
 | **Colour** | true-neutral ramp, one accent, one attention role | accent `#7aa6ff` / `#2a63d8`; attention amber, not terminal red; semantic colour is a soft-fill chip |
 | **Text** | two tones, no third | foreground and muted |
-| **Depth** | surfaces, not outlines | no borders, no dividers; shadow in the config layer |
+| **Depth** | surfaces, not outlines | a hairline at 8% and a wide faint shadow; no dividers, no structural borders |
 | **Tone** | a property of each surface | bar is base, popups are raised, weather is a gradient, battery is inverted |
 | **State** | emphasis rises in one direction; focus ≠ hover | fills 0.06 → 0.10 → 0.14 → 0.18; focus is a 2px accent ring |
 | **Progress** | a hairline | 2px, track at 0.06, fill foreground or accent |
@@ -75,7 +75,7 @@ omarchy theme install https://github.com/adamperlis/omarchy-marvin
 omarchy theme set marvin
 ```
 
-This alone gives you the palette, the grid, the type scale, borderless
+This alone gives you the palette, the grid, the type scale, hairline
 surfaces, the state model, quiet neutral window borders, wallpapers, and the
 boot logo. It is everything a theme file can carry, and it has to look
 intentional by itself — a plain install is the honest baseline.

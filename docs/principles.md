@@ -48,12 +48,14 @@ Proposed.
 - Base unit **4px**. Spacing ramp: 2, 4, 8, 12, 16, 20, 24, 32, 48.
   `xxs = 2` is a deliberate half-unit for hairline insets; everything else
   is on-grid.
-- **Unit 32.** Bar height, control height, and popup row height all equal
-  32, so the bar is never off by a pixel from the popups it opens.
-- **Radius 16 = unit / 2.** A 32px control is automatically a pill. Cards
-  get a 16px corner.
-- **Padding = radius.** Popup padding 16. Content origin sits at the center
+- **Unit 32** for the bar; **rows and controls 40** inside cards, so they
+  breathe like the reference. Both on the 8 module.
+- **Radius 24.** One radius for cards and windows; a 40px control is a pill
+  at radius 20. Chosen to match the reference after seeing it at full size.
+- **Padding = radius.** Popup padding 24. Content origin sits at the center
   of the corner arc, so content never collides with the curve.
+- Card widths are 360 (content 312), captions above cards in the muted
+  tone, columns 56 apart.
 - The grid is **fixed**, not fluid. `[font]` and `[spacing]` per-token
   overrides do not scale with `base-size` (only `[bar]` does), so a pinned
   grid must set `scale-with-font = false` everywhere and ship density
@@ -64,12 +66,13 @@ Proposed.
 - **Family: Inter** — proposed. Installed through a `prgname`-scoped
   fontconfig rule so terminals keep their monospace face. In the official
   Arch repos as `inter-font`. Config layer only.
-- **Scale, pinned: 11 / 13 / 15 / 18 / 24 / 48** — confirmed. Minimum step
+- **Scale, pinned: 12 / 14 / 16 / 18 / 24 / 56** — confirmed, one step up
+  from the first pass after comparing against the reference at full size. Minimum step
   2px. `caption` and `body-small` both pin to 11; `body` and `subtitle`
   both pin to 13. Two tokens that cannot be told apart become one value.
-  `display-large` is 48 because every consumer of it in the shell is a
-  hero numeral or glyph — the battery percentage, the media art placeholder,
-  the clipboard preview — and a hero numeral has to be large to be one.
+  `display-large` is 56, regular weight, because every consumer of it in
+  the shell is a hero numeral or glyph, and a hero numeral has to be large
+  and light to be one.
 - **Large type is tracked in.** Inter is fit for text sizes; at 48 the
   numerals sit loose. Tracking derives from the size so it scales with the
   token: `−0.03em` at `display-large`, `−0.01em` at `display`, none below.
@@ -100,9 +103,10 @@ Confirmed.
 
 Extracted from the reference; proposed as rules.
 
-- **Depth from surfaces, not outlines.** `border-width = 0` on shell
-  surfaces. Edge comes from tone difference and, in the config layer,
-  `decoration.shadow`.
+- **Depth from surfaces, not outlines.** Every card gets a hairline at 8%
+  of the text colour and, in the config layer, a wide faint shadow (range
+  40, 12%). Never a structural border: no accent, no gradient, never more
+  than 1px. The reference uses exactly this pair.
 - **No dividers.** Rows separate by whitespace — a full unit — not
   hairlines.
 - **Tone is a surface property.** Structure is invariant; each surface
