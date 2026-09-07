@@ -362,7 +362,7 @@ Panel {
             color: root.bar.foreground
             font.family: root.bar.fontFamily
             font.pixelSize: Style.font.displayLarge
-            font.letterSpacing: -Style.font.displayLarge * 0.02
+            font.letterSpacing: -Style.font.displayLarge * 0.03
             font.weight: Font.Medium
             Behavior on color { ColorAnimation { duration: 200 } }
           }
@@ -453,21 +453,18 @@ Panel {
             font.pixelSize: Style.font.caption
           }
 
-          Row {
+          // Pills size to their label and wrap; a third of the row does not
+          // fit "Performance" and a clipped label is a bug.
+          Flow {
             id: profileRow
             width: parent.width
             spacing: Style.spacing.sm
-
-            readonly property real cellWidth: root.profiles.length > 0
-              ? (width - spacing * (root.profiles.length - 1)) / root.profiles.length
-              : 0
 
             Repeater {
               model: root.profiles
               Button {
                 required property var modelData
                 required property int index
-                width: profileRow.cellWidth
                 iconText: root.profileIcon(String(modelData))
                 iconSize: Style.font.iconSmall
                 text: String(modelData).charAt(0).toUpperCase() + String(modelData).slice(1)

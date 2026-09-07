@@ -300,7 +300,7 @@ Panel {
                 color: heroMouse.containsMouse ? Color.accent : root.contentForeground
                 font.family: root.contentFontFamily
                 font.pixelSize: Style.font.displayLarge
-                font.letterSpacing: -Style.font.displayLarge * 0.02
+                font.letterSpacing: -Style.font.displayLarge * 0.03
                 font.weight: Font.Medium
               }
 

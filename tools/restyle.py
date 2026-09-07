@@ -31,9 +31,9 @@ def _(s):
 @rule("no letter-spacing")
 def _(s): return re.subn(r"\n\s*font\.letterSpacing: [0-9.]+", "", s)
 
-@rule("large type is tracked in: −0.02em at display-large, −0.01em at display")
+@rule("large type is tracked in: −0.03em at display-large, −0.01em at display")
 def _(s):
-    s, a = re.subn(r"(\n(\s+)font\.pixelSize: Style\.font\.displayLarge\n)", r"\1\2font.letterSpacing: -Style.font.displayLarge * 0.02\n", s)
+    s, a = re.subn(r"(\n(\s+)font\.pixelSize: Style\.font\.displayLarge\n)", r"\1\2font.letterSpacing: -Style.font.displayLarge * 0.03\n", s)
     s, b = re.subn(r"(\n(\s+)font\.pixelSize: Style\.font\.display\n)(?!\2font\.letterSpacing)", r"\1\2font.letterSpacing: -Style.font.display * 0.01\n", s)
     return s, a + b
 

@@ -68,8 +68,10 @@ Proposed.
   the clipboard preview — and a hero numeral has to be large to be one.
 - **Large type is tracked in.** Inter is fit for text sizes; at 48 the
   numerals sit loose. Tracking derives from the size so it scales with the
-  token: `−0.02em` at `display-large`, `−0.01em` at `display`, none below.
-  In QML: `font.letterSpacing: -Style.font.displayLarge * 0.02`. Confirmed.
+  token: `−0.03em` at `display-large`, `−0.01em` at `display`, none below.
+  In QML: `font.letterSpacing: -Style.font.displayLarge * 0.03`. Hero
+  numerals use proportional figures, never tabular — tabular spacing is
+  for columns, and a hero number is not in a column. Confirmed.
 - **Large numerals, small labels** — confirmed as a rule from the
   reference. The number is the biggest thing on the surface; its unit or
   label drops to caption beside it. Applies to the lock clock, bar clock,
@@ -107,6 +109,9 @@ Extracted from the reference; proposed as rules.
 - **One inverted element per surface, and it is the primary action.**
 - **Progress is a hairline.** 2–3px; track is foreground at low alpha,
   fill is foreground or accent.
+- **Controls size to their label.** A pill never gets a fixed share of a
+  row; it takes its content width and the row wraps. Clipped text is a
+  bug.
 - **Nested radius is concentric**: inner = outer − padding. Not
   enforceable in the shell; a rule for anything we draw ourselves.
 
