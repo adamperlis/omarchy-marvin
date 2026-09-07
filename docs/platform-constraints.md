@@ -234,3 +234,80 @@ Easings are `OutCubic` (26 uses), `OutQuad` (7), `InQuad` (5), `InOutCubic`
 **Consequence:** a theme cannot change how the bar, menus, popups,
 notifications, or OSD move. Only compositor-level motion — windows, layers,
 fades, borders, workspaces — is ours, and only through the config layer.
+
+## Typography
+
+The shell font family is the fontconfig `monospace` alias, hardcoded in
+`Style.qml` (`property string fontFamily: "monospace"`). `docs/omarchy-shell.md`
+is explicit: *"themes don't set it, the user does via `omarchy font set`."*
+The only override is `OMARCHY_MENU_FONT`, an environment variable that
+changes the family for menus alone.
+
+`omarchy font set <name>` rewrites every terminal config (alacritty, kitty,
+ghostty, foot) **and** writes `~/.config/fontconfig/fonts.conf` with a
+`prepend_first` rule on `monospace`. So setting a proportional UI face that
+way would also set every terminal to it. Not viable.
+
+### The scoped-alias path
+
+fontconfig `<test>` accepts `prgname`, and the shell runs as `quickshell`
+(`omarchy-restart-shell` calls `quickshell kill -p`). A rule scoped to that
+process gives the shell a different `monospace` resolution than everything
+else:
+
+```xml
+<match target="pattern">
+  <test name="prgname"><string>quickshell</string></test>
+  <test name="family" qual="any"><string>monospace</string></test>
+  <edit name="family" mode="prepend_first" binding="strong">
+    <string>Inter</string>
+  </edit>
+</match>
+```
+
+Placed in `~/.config/fontconfig/conf.d/`, it survives `omarchy font set`
+(which only rewrites `fonts.conf`). Nerd Font icon glyphs are private-use
+codepoints Inter does not carry, so fontconfig's charset fallback walks
+the remaining chain and lands on the Nerd Font as before.
+
+`OpticalGlyph` measures glyphs with `TextMetrics.tightBoundingRect` and
+corrects horizontally, so proportional families do not break its
+centering. `Style.resolvedFontFamily` runs `fc-match monospace` without
+`prgname` and will report the terminal font — cosmetic only.
+
+Config layer only. A plain `omarchy theme install` keeps the monospace UI.
+
+## Icons
+
+Shell icons are **text glyphs**, not images. `shell/Ui/OpticalGlyph.qml`
+renders a single character from `Style.font.family` at a `Style.font.icon*`
+size. The characters are Nerd Font private-use codepoints hardcoded in each
+component: 117 distinct glyphs, 185 uses, across 35 files. There is no
+central icon map — `weather/Model.js`, `osd/OsdModel.js`, `power/Model.js`
+and `audio/Model.js` each keep their own small lookup, and the rest are
+inline literals.
+
+Three consequences:
+
+- A theme cannot change which codepoint a component uses.
+- An SVG icon set cannot be dropped in; the shell never loads SVG for UI
+  glyphs. (`Image` is used only for app icons: tray, notification app
+  icons, launcher entries — those come from the freedesktop icon theme
+  named in `icons.theme`, a separate axis.)
+- The only way to substitute a different icon style is a **font** whose
+  glyphs sit at the same codepoints, placed ahead of the Nerd Font in the
+  scoped fontconfig chain above.
+
+IBM Carbon ships icons as SVG (`@carbon/icons`); there is no official
+Carbon icon font, and Nerd Fonts include no Carbon set. Substituting Carbon
+means building a font: map each Nerd Font codepoint the shell uses to a
+Carbon SVG, compile with fontTools or FontForge, and prepend it for
+`quickshell`. Coverage is bounded by the inventory above plus whatever the
+per-model lookups emit at runtime. Glyph advance widths need not match a
+monospace cell — `OpticalGlyph` centers on painted bounds.
+
+Carbon draws on a 16px grid with 20, 24 and 32 variants, so icon tokens
+should pin to those sizes rather than derive from the type scale
+(`icon = title` gives 14 by default).
+
+Config layer only. Degraded install shows Nerd Font glyphs.
