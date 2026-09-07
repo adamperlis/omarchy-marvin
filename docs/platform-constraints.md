@@ -167,3 +167,70 @@ m4v, avi), `preview.png`, `preview-unlock.png`, `unlock.png`, `icons.theme`,
 Users overlay their own backgrounds at `~/.config/omarchy/backgrounds/<name>/`.
 The active one is the `~/.local/state/omarchy/current/background` symlink;
 `omarchy-theme-set` advances it one file per invocation.
+
+## Motion
+
+Motion splits across two engines, and only one of them is reachable.
+
+### Compositor motion — fully controllable, config layer only
+
+Hyprland animation lives in `looknfeel.lua`. Defaults from
+`default/hypr/looknfeel.lua`; users override in `~/.config/hypr/looknfeel.lua`.
+Hyprland's `speed` unit is deciseconds, so `3.79` is 379ms.
+
+Named curves are declared with `hl.curve(name, { type = "bezier", points = {...} })`.
+Upstream declares five:
+
+| Curve | Control points |
+|-------|----------------|
+| `easeOutQuint` | `{0.23, 1}, {0.32, 1}` |
+| `easeInOutCubic` | `{0.65, 0.05}, {0.36, 1}` |
+| `linear` | `{0, 0}, {1, 1}` |
+| `almostLinear` | `{0.5, 0.5}, {0.75, 1.0}` |
+| `quick` | `{0.15, 0}, {0.1, 1}` |
+
+Per-leaf animation is set with
+`hl.animation({ leaf, enabled, speed, bezier, style })`:
+
+| Leaf | Speed | ms | Curve | Style |
+|------|-------|-----|-------|-------|
+| `global` | 10 | 1000 | `default` | |
+| `border` | 5.39 | 539 | `easeOutQuint` | |
+| `windows` | 3.79 | 379 | `easeOutQuint` | |
+| `windowsIn` | 4.1 | 410 | `easeOutQuint` | `popin 87%` |
+| `windowsOut` | 1.49 | 149 | `linear` | `popin 87%` |
+| `fadeIn` | 1.73 | 173 | `almostLinear` | |
+| `fadeOut` | 1.46 | 146 | `almostLinear` | |
+| `fade` | 3.03 | 303 | `quick` | |
+| `fadeSwitch` | — | — | disabled | |
+| `layers` | 3.81 | 381 | `easeOutQuint` | |
+| `layersIn` | 4 | 400 | `easeOutQuint` | `fade` |
+| `layersOut` | 1.5 | 150 | `linear` | `fade` |
+| `fadeLayersIn` | 1.79 | 179 | `almostLinear` | |
+| `fadeLayersOut` | 1.39 | 139 | `almostLinear` | |
+| `workspaces` | — | — | disabled | |
+
+`qconsole.lua` adds `specialWorkspaceIn` (300ms, `easeOutQuint`, `slide top`)
+and `specialWorkspaceOut` (200ms, `easeInOutCubic`, `slide bottom`).
+
+Shell surfaces opt out of compositor animation entirely via layer rules in
+`default/hypr/apps/omarchy-shell.lua` — the bar, launcher, menu, image
+selector, emoji and clipboard overlays all carry `no_anim = true` and
+`animation = "none"`, because they animate themselves in QML.
+
+### Shell motion — not themeable
+
+There are no motion tokens anywhere in the theme system. `shell.toml.tpl`
+contains no animation keys, and `Style.qml` parses only four sections —
+`font`, `bar`, `spacing`, and `controls`/`style`. There is no `Anim` or
+`Motion` singleton in `shell/Commons/`.
+
+Shell motion is hardcoded per component. Across `shell/`, 26 distinct
+duration values appear: 0, 35, 50, 55, 60, 70, 100, 110, 120, 140, 160, 180,
+200, 220, 240, 260, 320, 400, 420, 550, 600, 650, 800, 900, 950, 1200.
+Easings are `OutCubic` (26 uses), `OutQuad` (7), `InQuad` (5), `InOutCubic`
+(5), `InOutQuad` (3), `InOutSine` (2), `Linear` (1).
+
+**Consequence:** a theme cannot change how the bar, menus, popups,
+notifications, or OSD move. Only compositor-level motion — windows, layers,
+fades, borders, workspaces — is ours, and only through the config layer.
