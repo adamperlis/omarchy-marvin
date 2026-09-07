@@ -54,7 +54,9 @@ selection-fill-alpha = 0.35
 # ---------------------------------------------------------------- geometry
 # Base 4. Unit 32. Radius 16 = unit / 2 (from Hyprland decoration:rounding,
 # config layer). Padding = radius. Every value here is on the 4px grid except
-# xxs, a deliberate half-unit for hairline insets.
+# xxs, a deliberate half-unit for hairline insets. The reference grid is 8px;
+# 8 is the module here, 4 its subdivision. md (12) and xl (20) are the two
+# sub-module steps, kept only because upstream names nine ramp slots.
 #
 # The grid is fixed. [font] and [spacing] per-token overrides do not scale
 # with base-size (only [bar] does), so scale-with-font is off everywhere and
@@ -73,7 +75,7 @@ xxl  = 24
 xxxl = 32
 huge = 48
 control-gap                 = 8
-control-padding-x           = 12
+control-padding-x           = 16
 control-padding-y           = 8
 input-padding-y             = 8
 control-height              = 32
