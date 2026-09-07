@@ -1,5 +1,9 @@
 # Marvin: design principles
 
+The rules and why. For how the parts fit together see `system.md`; for what
+the platform allows see `platform-constraints.md`; to test it see
+`testing.md`.
+
 A theme for Omarchy 4, built as a design system first. Each entry is marked
 **confirmed** (agreed) or **proposed** (on the table, not yet accepted).
 `docs/platform-constraints.md` records what the platform allows; this file
