@@ -48,12 +48,14 @@ Proposed.
 - Base unit **4px**. Spacing ramp: 2, 4, 8, 12, 16, 20, 24, 32, 48.
   `xxs = 2` is a deliberate half-unit for hairline insets; everything else
   is on-grid.
-- **Unit 32.** Bar height, control height, and popup row height all equal
-  32, so the bar is never off by a pixel from the popups it opens.
-- **Radius 16 = unit / 2.** A 32px control is automatically a pill. Cards
-  get a 16px corner.
-- **Padding = radius.** Popup padding 16. Content origin sits at the center
+- **Unit 32** for the bar; **rows and controls 40** inside cards, so they
+  breathe like the reference. Both on the 8 module.
+- **Radius 24.** One radius for cards and windows; a 40px control is a pill
+  at radius 20. Chosen to match the reference after seeing it at full size.
+- **Padding = radius.** Popup padding 24. Content origin sits at the center
   of the corner arc, so content never collides with the curve.
+- Cards are 352 wide (content 304 inside the 24 inset), captions above cards in the muted
+  tone, columns 56 apart.
 - The grid is **fixed**, not fluid. `[font]` and `[spacing]` per-token
   overrides do not scale with `base-size` (only `[bar]` does), so a pinned
   grid must set `scale-with-font = false` everywhere and ship density
@@ -64,18 +66,23 @@ Proposed.
 - **Family: Inter** — proposed. Installed through a `prgname`-scoped
   fontconfig rule so terminals keep their monospace face. In the official
   Arch repos as `inter-font`. Config layer only.
-- **Scale, pinned: 11 / 13 / 15 / 18 / 24 / 48** — confirmed. Minimum step
+- **Scale, pinned: 12 / 14 / 16 / 18 / 24 / 56** — confirmed, one step up
+  from the first pass after comparing against the reference at full size. Minimum step
   2px. `caption` and `body-small` both pin to 11; `body` and `subtitle`
   both pin to 13. Two tokens that cannot be told apart become one value.
-  `display-large` is 48 because every consumer of it in the shell is a
-  hero numeral or glyph — the battery percentage, the media art placeholder,
-  the clipboard preview — and a hero numeral has to be large to be one.
+  `display-large` is 56, regular weight, because every consumer of it in
+  the shell is a hero numeral or glyph, and a hero numeral has to be large
+  and light to be one.
 - **Large type is tracked in.** Inter is fit for text sizes; at 48 the
   numerals sit loose. Tracking derives from the size so it scales with the
   token: `−0.03em` at `display-large`, `−0.01em` at `display`, none below.
   In QML: `font.letterSpacing: -Style.font.displayLarge * 0.03`. Hero
   numerals use proportional figures, never tabular — tabular spacing is
   for columns, and a hero number is not in a column. Confirmed.
+- **A second voice only for the words that are yours.** The interface is
+  Inter everywhere. Note text in Obsidian is a serif — Libre Baskerville — because
+  the reference does exactly this for its note card, and reading prose is
+  the one place a second voice belongs. Confirmed.
 - **No monospace outside terminals and code.** The reference has none.
   The shell is Inter through the config layer; GTK apps through
   `gsettings`; the group bar through `marvin.lua`; Obsidian and the share
@@ -94,15 +101,19 @@ Confirmed.
   96 of 117 glyphs. No substitution font.
 - Sizes pin to **16 / 20 / 24** (`icon-small`, `icon`, `icon-large`), on
   the 4px grid, not derived from the type scale.
-- App icons resolve through **Yaru**; the color variant follows the accent.
+- App icons resolve through **Yaru**, in its yellow variant, so folders
+  read as manila rather than a saturated block of accent. The reference's
+  files view is warm paper, not blue.
 
 ## Surfaces and depth
 
 Extracted from the reference; proposed as rules.
 
-- **Depth from surfaces, not outlines.** `border-width = 0` on shell
-  surfaces. Edge comes from tone difference and, in the config layer,
-  `decoration.shadow`.
+- **Depth from surfaces, not outlines.** Every card gets a hairline at 10%
+  of the text colour (a hair darker than it first looks right; the
+  reference's border is just visible) and, in the config layer, a wide
+  faint shadow (range 40, 12%). Never a structural border: no accent, no gradient, never more
+  than 1px. The reference uses exactly this pair.
 - **No dividers.** Rows separate by whitespace — a full unit — not
   hairlines.
 - **Tone is a surface property.** Structure is invariant; each surface
@@ -115,15 +126,23 @@ Extracted from the reference; proposed as rules.
   gradient stop, tested.
 - **Tone varies across the set, not within a card.** The reference's life
   comes from one gradient card, one dark card and white for the rest. So:
-  weather is a vertical gradient (`background` → `background-end`), power
+  weather is a sky, a vertical gradient that follows the hour: day
+  (`background` → `background-end`), sunset in the first and last hour of
+  daylight (`sunset` → `sunset-end`), night after dark (`night` →
+  `night-end`), read from Open-Meteo's `is_day` and the clock; power
   is the inverted card in both tones with a ring of sixty ticks around the
   numeral, and every other surface stays raised. Applied.
-- **Semantic colour is a soft-fill chip**: the hue at a light fill with
-  darker text of the same hue (`attention-fill` / `attention-text`), never
-  a saturated block. The battery's charging state is the first one.
+- **State is muted text.** The reference's focus card says "In progress"
+  in the muted tone, no chip, no colour; the battery's charging state does
+  the same. The one chip in the reference is the note's "Draft", pale
+  yellow `#f9ecad` with olive text, and that is the only chip we ship
+  (`[marvin-chip]`).
 - **Controls are the text color at alpha**, so they survive any tone.
   Upstream's model is right and its values are too faint (0.04 normal).
-  Target roughly 0.06–0.08 on light surfaces, 0.12–0.16 on dark.
+  The reference's Search pill is #f4f4f4 on white and its button #f1f1f1:
+  0.05 of the text colour. Light runs 0.04 / 0.05 / 0.07 / 0.09; dark needs
+  more to read at all and runs 0.06 / 0.10 / 0.14 / 0.18. Alphas are the one geometry
+  token that differs by tone.
 - **One inverted element per surface, and it is the primary action.**
 - **Progress is a hairline.** 2–3px; track is foreground at low alpha,
   fill is foreground or accent.
@@ -155,6 +174,21 @@ Proposed. Direct correction of upstream.
   border down on hover).
 - **Focus is always visible and always distinct from hover.** Upstream
   defaults focus to identical values as hover.
+- **Never an accent outline on an input.** A focused field is the
+  selected fill with a 1px ring of the text colour (0.12 light, 0.24
+  dark).
+- **One blue, pulled from the reference.** The inbox dots, the activity
+  bars and the flight line are all the same sky blue, `#2f93d3`. It is
+  the accent and the attention colour both; there is no amber. It clears
+  3:1 on white as a graphic; text set in it (links, tags) uses the deeper
+  `accent_text`, `#1a72ad`, which clears 4.5. The reference never draws a blue ring; the field
+  itself darkens. Applies to the launcher, lock, polkit, Obsidian and the
+  share picker.
+- **Card geometry is 352 wide, radius 24, inset 24, rows on the 8
+  grid.** Music: art beside title (16 · 500), artist (14 · 400) and the
+  transport, then a hairline with elapsed and remaining (12 · 400).
+  Quick note: the text sits in its own hairline field in the serif, with
+  a soft-fill chip below. Both measured off the reference at 1:1.
 
 ## Motion
 
@@ -179,12 +213,16 @@ the short step and workspaces get the long one, the inverse of upstream.
 
 ## Backgrounds
 
-Confirmed. A famous painting, public domain, blurred past recognition into a
-colour field, graded so it complements the palette: saturation down, mixed
-toward the ground, luminance in a band the bar reads over (dark 0.01–0.17,
-light 0.60–0.86), fine grain against banding. `tools/background.py` is the
-rule made executable. Shipped set is palette-synthesised until a source
-painting is supplied.
+Confirmed. A lit room drawn in perspective from the system's own colours,
+four gradient planes converging on a far opening, light bloomed; or, for a
+painting of your own, blurred into a
+colour field, graded so it complements the palette: saturation up (1.5,
+the reference's imagery is rich, not pastel), mixed lightly toward the
+ground, luminance in a band the bar reads over (dark 0.02–0.34, light
+0.30–0.90), fine grain against banding. `tools/background.py` is the
+rule made executable. Shipped set: Monet's *Houses of Parliament, Sunset*,
+Van Gogh's *Starry Night*, Kandinsky's *Composition VII*, all public domain,
+chosen for sharing the system's sky blue, navy, pale yellow and orange.
 
 ## Apps
 

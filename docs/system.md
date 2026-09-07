@@ -43,17 +43,17 @@ gaps, typeface and motion might never arrive.
   `muted` and `red` (as the urgent role) directly.
 
 `attention` is Marvin's own key. No template reads it; `shell.toml`'s
-`[bar] active` carries the same hex, so the bar's alert colour is a designed
-amber rather than the terminal's error red.
+`[bar] active` carries the same value for the update indicator. It is the
+same sky blue as the accent, pulled from the reference, which has no amber.
 
 **`shell.toml`** is the design token file. The shell parses it into a flat
 `section.key` dictionary and two singletons read from it:
 
 - `Color` — per-surface roles: `[bar] [popups] [tooltip] [notifications]
   [launcher] [menu] [polkit] [lock] [image-picker]`, each with background,
-  text, border and alphas. Marvin sets `border-width = 0` on every surface
-  and gives the bar the base tone and everything that opens over it the
-  raised tone.
+  text, border and alphas. Marvin gives every surface a 1px hairline at 8% of
+  the text colour, the bar the base tone, and everything that opens over it
+  the raised tone.
 - `Style` — `[spacing]`, `[font]`, `[bar]` sizes and `[controls]` states.
   Marvin pins every spacing and type token to the grid and turns
   `scale-with-font` off everywhere, because pinned tokens do not scale and
@@ -81,9 +81,10 @@ Two generated files are replaced by hand-written ones the theme ships,
 because staging never overwrites a file the theme already carries:
 
 - `obsidian.css` — Omarchy copies it into every vault as the "Omarchy"
-  theme on each switch. Ours carries fonts (`--font-interface-theme`,
-  `--font-text-theme`, monospace only for code), radii, spacing, and every
-  surface and state role, generated from `colors.toml` by the tone.
+  theme on each switch. Ours carries fonts (Inter for the interface,
+  Libre Baskerville for note text, monospace only for code), radii, spacing, and
+  every surface and state role. Generated from `colors.toml` by
+  `tools/appcss.py`; regenerate after changing a colour.
 - `hyprland-preview-share-picker.css` — GTK CSS for the screen-share
   picker; upstream's hardcodes `JetBrains Mono NF`.
 
@@ -98,9 +99,10 @@ because staging never overwrites a file the theme already carries:
    absent, plus the active theme name. Taken once; a re-run keeps the
    original.
 2. **marvin-light.** Copies `light/` to `~/.config/omarchy/themes/marvin-light`.
-3. **Inter.** Installs `inter-font` if missing, then places a fontconfig
-   rule that says: for the process named `quickshell`, `monospace` resolves
-   to Inter first. Terminals never see it; Nerd Font icon glyphs fall
+3. **Fonts.** Copies `fonts/*.ttf` (Inter, Libre Baskerville — OFL, vendored) to
+   `~/.local/share/fonts/marvin/` and runs `fc-cache`, then places a
+   fontconfig rule that says: for the process named `quickshell`, `monospace`
+   resolves to Inter first. Terminals never see it; Nerd Font icon glyphs fall
    through to the Nerd Font as before.
 3a. **GTK.** `gsettings` sets the interface font to Inter 10 and the accent
    to blue; libadwaita derives per-scheme accent colours from the name, so
@@ -164,8 +166,8 @@ height = row height; radius = unit/2; padding = radius), and run the
 geometry test against the light sibling.
 
 **Radius.** One number, `decoration.rounding` in `config/hypr/marvin.lua`;
-cards, pills and windows all follow it. A 32px control is a pill only while
-the radius is 16.
+cards, pills and windows all follow it. Controls are pills at any radius
+of 20 or more.
 
 **Motion.** `config/hypr/marvin.lua`. Three curves and one scale; keep exits
 at 0.6 of entrances and keep everything a direct action triggers at or

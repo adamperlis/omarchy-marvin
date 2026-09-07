@@ -28,9 +28,9 @@ journalctl --user -t omarchy-shell -f
 No config layer yet. This is the degraded install and it has to look
 intentional on its own.
 
-- Bar is 32px, popups have 16px padding and no border, text is 13px.
+- Bar is 32px, popups have 24px padding, a hairline border, 14px text.
 - Window borders are quiet neutral hairlines, not the cyan–green gradient.
-- Launcher rows are 32px pills; the selected row is a fill, text stays
+- Launcher rows are 40px pills; the selected row is a fill, text stays
   foreground; the search field shows a 2px accent focus ring.
 - Notifications: no border, two text tones, accent countdown hairline.
 - Lock screen: no idle border; typing shows the accent ring; a wrong
@@ -49,15 +49,16 @@ still your monospace, shadows are off. Those are the config layer's.
 It snapshots first, then applies. `sudo` will prompt once if Inter is not
 installed. Then check:
 
-- Windows and every card round at 16; gaps are 8 inside, 16 at the edge.
+- Windows and every card round at 24; gaps are 8 inside, 24 at the edge.
 - Shadows under cards and windows; the focused window has a 1px hairline.
 - The bar and every popup are in Inter. Open a terminal: still monospace.
 - Motion: open and close a window, switch workspaces (they slide now),
   change focus (the border recolours quickly, not over half a second).
 - `omarchy theme set marvin-light` works and swaps only tone.
-- Open Files: Inter, blue accent on selection. Open Obsidian: Inter, no
-  pane borders, neutral headings, tag chips; code blocks are the only
-  monospace. Group two windows (`SUPER+G`): the group bar is Inter on a
+- Open Files: Inter, blue accent on selection. Open Obsidian: Inter chrome, note text in Libre Baskerville, hairline panes,
+  neutral headings, tag chips; code blocks are the only monospace. Lock the
+  screen: the wordmark and a pill input with an accent ring while typing.
+  Trigger a polkit prompt (change the power profile): the dialog is a card. Group two windows (`SUPER+G`): the group bar is Inter on a
   32px row.
 - `install/marvin --status` lists everything and the snapshot.
 
@@ -80,7 +81,7 @@ Enabling a clone replaces the built-in in its bar slot. For each:
 | clock | click the clock | 48px day number, month/weekday caption, 2px year hairline, grid with no lines, today as a fill |
 | power | click the battery | 48px percentage, 2px charge hairline, stats value-over-label, profile pills sized to their label |
 | media | right-click the now-playing strip | art at 8px radius, inverted play circle, 2px scrub hairline with times |
-| audio, bluetooth, monitor, network, tailscale, agents … | click each | no separators, sentence-case muted section captions, hairline sliders, 32px rows, card width 360 |
+| audio, bluetooth, monitor, network, tailscale, agents … | click each | no separators, sentence-case muted section captions, hairline sliders, 32px rows, card width 352 |
 
 If a panel does not open, the log has the QML error. Paste it back; the
 fix is usually one line.

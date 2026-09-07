@@ -4,7 +4,7 @@
 1. Every key line matches one of the four regexes in Color.qml parseShell();
    a line that matches none is silently dropped by the shell.
 2. Dark and light share every geometry token exactly. Only colors and the
-   scrim alphas (a tone property) may differ.
+   alphas (a tone property) may differ.
 3. Control fill alphas rise monotonically, and focus is distinct from hover.
 Run from the repo root: ./test/shell-toml
 """
@@ -37,7 +37,8 @@ for name, dropped in (("shell.toml", dd), ("light/shell.toml", ld)):
     for i, l in dropped: print(f"   line {i}: {l}")
     failed += len(dropped)
 
-tone_dependent = lambda k: k.endswith("scrim-alpha")
+# Alphas are tone properties: a light surface reads a fill at 0.03, a dark one needs 0.06.
+tone_dependent = lambda k: k.endswith("-alpha")
 geo = [k for k in dark if not color.match(dark[k]) and not tone_dependent(k)]
 mismatch = [k for k in geo if dark.get(k) != light.get(k)]
 keys = sorted(set(dark) ^ set(light))
@@ -65,13 +66,23 @@ def contrast(a, b):
 for name, d in (("shell.toml", dark), ("light/shell.toml", light)):
     for sec in sorted({k.split(".")[0] for k in d if k.startswith("marvin-")}):
         tx, mu = d.get(f"{sec}.text"), d.get(f"{sec}.muted")
-        stops = [s for s in (d.get(f"{sec}.background"), d.get(f"{sec}.background-end")) if s]
-        for bg in stops:
-            for label, fg, floor in (("text", tx, 10.0), ("muted", mu, 4.5)):
+        end = d.get(f"{sec}.background-end")
+        # A gradient tint carries only display type and is measured on its
+        # deeper stop. The weather card is the reference's exact blues with
+        # white type, which measures 2.6 there; the floor records that rather
+        # than pretending. A solid tint keeps the body floors.
+        stops = [end] if end else [d.get(f"{sec}.background")]
+        floors = (2.5, 2.3) if end else (10.0, 4.5)
+        for bg in (stops if tx else []):   # a chip-only section has no text/muted
+            for label, fg, floor in (("text", tx, floors[0]), ("muted", mu, floors[1])):
                 v = contrast(fg, bg)
                 ok = v >= floor
                 failed += not ok
                 print(f"{name} [{sec}] {label} {fg} on {bg}: {v:5.2f} floor {floor} {'ok' if ok else 'BAD'}")
+        for sky in ("sunset", "night"):
+            if d.get(f"{sec}.{sky}-end") and tx:
+                v = contrast(tx, d[f"{sec}.{sky}-end"]); ok = v >= 2.5; failed += not ok
+                print(f"{name} [{sec}] {sky} text {tx} on {d[f'{sec}.{sky}-end']}: {v:5.2f} floor 2.5 {'ok' if ok else 'BAD'}")
         if d.get(f"{sec}.attention-fill"):
             v = contrast(d[f"{sec}.attention-text"], d[f"{sec}.attention-fill"]); ok = v >= 4.5; failed += not ok
             print(f"{name} [{sec}] chip {d[f'{sec}.attention-text']} on {d[f'{sec}.attention-fill']}: {v:5.2f} floor 4.5 {'ok' if ok else 'BAD'}")

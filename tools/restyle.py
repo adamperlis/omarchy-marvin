@@ -16,8 +16,8 @@ def rule(name):
     def wrap(f): RULES.append((name, f)); return f
     return wrap
 
-@rule("card width 380 → 328 (content 328 like every other card)")
-def _(s): return re.subn(r"panel\.fittedContentWidth\(Style\.space\(380\)\)", "panel.fittedContentWidth(Style.space(328))", s)
+@rule("card width 380 → 304 (352 outside the 24 inset, like every other card)")
+def _(s): return re.subn(r"panel\.fittedContentWidth\(Style\.space\(380\)\)", "panel.fittedContentWidth(Style.space(304))", s)
 
 @rule("column rhythm: spacing 14 is the section rhythm → xxl")
 def _(s): return re.subn(r"spacing: Style\.space\(14\)", "spacing: Style.spacing.xxl", s)

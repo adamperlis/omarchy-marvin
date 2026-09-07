@@ -23,6 +23,7 @@ run
 grep -qF 'require("hypr.marvin")' "$FAKE/.config/hypr/hyprland.lua" || { echo "BAD require line missing"; fail=1; }
 [[ -d "$FAKE/.config/omarchy/plugins/marvin.weather" ]] || { echo "BAD plugins not placed"; fail=1; }
 [[ -f "$FAKE/.local/state/marvin/snapshot/state" ]] || { echo "BAD no snapshot"; fail=1; }
+[[ -f "$FAKE/.local/share/fonts/marvin/Inter-Regular.ttf" ]] || { echo "BAD fonts not installed"; fail=1; }
 # a second install must keep the original snapshot
 first=$(sed -n 's/^taken=//p' "$FAKE/.local/state/marvin/snapshot/state"); sleep 1; run
 [[ $(sed -n 's/^taken=//p' "$FAKE/.local/state/marvin/snapshot/state") == "$first" ]] || { echo "BAD re-install replaced the snapshot"; fail=1; }
@@ -39,6 +40,7 @@ after=$(fingerprint)
 if [[ "$before" == "$after" ]]; then echo "ok  revert restores every touched file byte for byte"; else echo "BAD revert left differences:"; diff <(echo "$before") <(echo "$after") || true; fail=1; fi
 [[ -e "$FAKE/.config/omarchy/plugins/user.thing/keep" ]] || { echo "BAD revert touched a plugin that is not ours"; fail=1; }
 [[ ! -e "$FAKE/.local/state/marvin/snapshot" ]] || { echo "BAD snapshot not consumed"; fail=1; }
+[[ ! -e "$FAKE/.local/share/fonts/marvin" ]] || { echo "BAD fonts not removed"; fail=1; }
 
 # fallback: no snapshot, mutated shell.json, marker line present
 run

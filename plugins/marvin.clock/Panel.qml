@@ -74,11 +74,11 @@ Panel {
   readonly property color contentForeground: bar ? bar.foreground : Color.foreground
   readonly property string contentFontFamily: bar ? bar.fontFamily : Style.font.family
 
-  readonly property int cellWidth: Style.spacing.xxxl + Style.spacing.sm   // 40
+  readonly property int cellWidth: Style.spacing.xxxl + Style.spacing.xs   // 36
   readonly property int cellHeight: Style.spacing.controlHeight             // 32
   readonly property int cellSpacing: 0
   readonly property int weekColumnWidth: Style.spacing.xxxl                  // 32
-  readonly property int gutterWidth: Style.spacing.lg                       // 16
+  readonly property int gutterWidth: Style.spacing.xl                       // 20
 
   function open() {
     refresh()
@@ -244,7 +244,6 @@ Panel {
     open: root.opened
     centerOnBar: true
     focusTarget: keyCatcher
-    contentWidth: panel.fittedContentWidth(Style.space(560))
     contentWidth: panel.fittedContentWidth(root.weekColumnWidth + root.gutterWidth + root.cellWidth * 7)
     contentHeight: panel.fittedContentHeight(calendarColumn.implicitHeight)
 
@@ -291,7 +290,7 @@ Panel {
             Row {
               id: heroRow
               anchors.left: parent.left
-              spacing: Style.spacing.xs
+              spacing: Style.spacing.md   // the day numeral and the month need air between them
 
               Text {
                 id: heroDay
@@ -301,7 +300,7 @@ Panel {
                 font.family: root.contentFontFamily
                 font.pixelSize: Style.font.displayLarge
                 font.letterSpacing: -Style.font.displayLarge * 0.03
-                font.weight: Font.Medium
+                font.weight: Font.Normal
               }
 
               Column {

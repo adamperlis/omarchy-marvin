@@ -47,16 +47,16 @@ These are renders from the tokens, not screenshots of the shell — see
 
 | | Rule | Value |
 |---|---|---|
-| **Grid** | base 4, module 8, unit 32 | bar, controls and popup rows are all 32px |
-| **Radius** | half the unit, one radius for everything | 16px — cards, pills, windows |
-| **Padding** | equals the radius | 16px, so content sits at the centre of the corner arc |
-| **Type** | Inter, pinned scale, every step perceptible | 11 / 13 / 15 / 18 / 24 / 48; hero numerals tracked −0.03em |
-| **Colour** | true-neutral ramp, one accent, one attention role | accent `#7aa6ff` / `#2a63d8`; attention amber, not terminal red; semantic colour is a soft-fill chip |
+| **Grid** | base 4, module 8, unit 32 | bar 32; rows and controls 40 |
+| **Radius** | one radius for everything | 24px — cards, windows; controls are pills |
+| **Padding** | equals the radius | 24px, so content sits at the centre of the corner arc |
+| **Type** | Inter, pinned scale, every step perceptible | 12 / 14 / 16 / 18 / 24 / 56; hero numerals regular weight, tracked −0.03em |
+| **Colour** | true-neutral ramp, one accent, one attention role | one sky blue, `#2f93d3` light / `#6db8ee` dark, pulled from the reference and used for accent and attention alike; status is muted text, or the reference's pale-yellow draft chip |
 | **Text** | two tones, no third | foreground and muted |
-| **Depth** | surfaces, not outlines | no borders, no dividers; shadow in the config layer |
-| **Tone** | a property of each surface | bar is base, popups are raised, weather is a gradient, battery is inverted |
-| **State** | emphasis rises in one direction; focus ≠ hover | fills 0.06 → 0.10 → 0.14 → 0.18; focus is a 2px accent ring |
-| **Progress** | a hairline | 2px, track at 0.06, fill foreground or accent |
+| **Depth** | surfaces, not outlines | a hairline at 10% and a wide faint shadow; no dividers, no structural borders |
+| **Tone** | a property of each surface | bar is base, popups are raised, weather is a sky that follows the hour (day, sunset, night), battery is inverted |
+| **State** | emphasis rises in one direction; focus ≠ hover | fills 0.04 → 0.05 → 0.07 → 0.09 in light (0.06 → 0.10 → 0.14 → 0.18 in dark); focus is the selected fill plus a 1px text-colour ring, never an accent outline |
+| **Progress** | a hairline | 2px, track at 0.08, fill muted (the reference's played portion is mid-grey) or accent |
 | **Motion** | a scale, exits faster than entrances | 120 / 200 / 320 ms, exits at 0.6; workspaces slide, borders don't linger |
 | **Icons** | Material Design Icons on their own grid | 16 / 20 / 24 |
 
@@ -75,7 +75,7 @@ omarchy theme install https://github.com/adamperlis/omarchy-marvin
 omarchy theme set marvin
 ```
 
-This alone gives you the palette, the grid, the type scale, borderless
+This alone gives you the palette, the grid, the type scale, hairline
 surfaces, the state model, quiet neutral window borders, wallpapers, and the
 boot logo. It is everything a theme file can carry, and it has to look
 intentional by itself — a plain install is the honest baseline.
@@ -96,8 +96,8 @@ Adds, in order:
   `omarchy theme set marvin-light` to switch.
 - **Inter for the shell** — through a fontconfig rule scoped to the shell's
   process, so your terminal font is untouched and `omarchy font set` keeps
-  working. Installs `inter-font` with `sudo pacman` if it is missing (one
-  prompt).
+  working. Inter and Libre Baskerville are installed to your user font directory
+  from `fonts/`; no package, no `sudo`.
 - **Hyprland** — rounding 16, gaps 8 inside and 16 at the edge, a 1px
   theme-coloured focus border, a shadow in place of surface outlines, and
   the motion scale. Written to `~/.config/hypr/marvin.lua` and required from
@@ -122,7 +122,37 @@ Enabling a clone replaces the built-in in its bar slot; disabling it brings
 the built-in back. Plugins are unsandboxed QML and land disabled so you can
 read them first. See [`plugins/README.md`](plugins/README.md).
 
-## Apps
+## Apps and surfaces
+
+Everything in the grid above is a surface the system actually reaches:
+
+| Surface | How | Where |
+|---------|-----|-------|
+| Bar, launcher, the Omarchy menu, clipboard manager, emoji picker, theme picker, notifications, OSD, tooltips, popups | `shell.toml` tokens — `[bar] [launcher] [menu] [image-picker] [notifications] [popups] [tooltip]` | theme |
+| Every widget card — weather, clock, battery, media, audio, network, … | fourteen `clonedFrom` plugins | config layer |
+| Lock screen, authentication dialog | `[lock]` and `[polkit]` tokens | theme |
+| Notes (Obsidian) | `obsidian.css`, synced into every vault by Omarchy | theme |
+| Screen-share picker | `hyprland-preview-share-picker.css` | theme |
+| Files and every GTK app | Inter and the accent via `gsettings` | config layer |
+| Windows: rounding, gaps, shadow, motion, group bar | `hypr/marvin.lua` | config layer |
+| Terminals, btop, Chromium, VS Code, Claude Code, Helix, Neovim | colours from `colors.toml` through Omarchy's templates | theme |
+| Boot splash | `unlock.png` | theme |
+
+Notes get a serif for the text itself — Libre Baskerville, falling back to Noto
+Serif — and Inter for everything around it. The reference does exactly this
+and it is the one place a second voice belongs: the chrome is the system's,
+the words are yours.
+
+What could still be customised, and why it is not yet:
+
+- **The login screen (SDDM)** — a fixed theme installed by root; reaching it
+  needs `sudo` and a rebuild, which the config layer deliberately avoids.
+- **GTK window chrome** — libadwaita accepts a `gtk.css` for header bars and
+  sidebars, but rules there leak into every GTK app unevenly; font and
+  accent through `gsettings` was the safe part.
+- **Chromium, VS Code, Neovim, btop beyond colour** — each takes only a
+  palette from a theme. Their own settings would carry the rest.
+- **Firefox, Signal, Spotify, LibreOffice** — not themed by Omarchy at all.
 
 The system reaches past the shell into the apps Omarchy installs, in two
 ways:
@@ -135,7 +165,9 @@ ways:
 - **Set by the config layer**, because they are settings rather than theme
   files: Files and every GTK app get Inter and the blue accent through
   `gsettings` (snapshotted, restored on revert), and Hyprland's group bar
-  gets Inter at body size on a 32px row.
+  gets Inter at body size on a 32px row. The fonts themselves — Inter and
+  Libre Baskerville, both OFL — are vendored under `fonts/` and installed per user,
+  so nothing needs a package manager or `sudo`.
 
 Everything else Omarchy templates — btop, Chromium, VS Code, Claude Code,
 Helix, Neovim, the terminals — takes its colours from `colors.toml`
@@ -182,6 +214,8 @@ the shell journal open) and what to send back.
 | `plugins/marvin.*` | Fourteen restyled clones of the built-in widgets. |
 | `tools/restyle.py` | The rules as a script; builds a widget from upstream's. |
 | `tools/background.py` | Grades a painting (or a palette) into wallpapers. |
+| `tools/appcss.py` | Generates `obsidian.css` and the share-picker stylesheet from `colors.toml`. |
+| `fonts/` | Inter and Libre Baskerville, vendored under the OFL. |
 | `tools/previews/build.py` | Renders `preview.png`, the boot screen and the widget sheets from the tokens (needs node + Playwright). |
 | `test/run` | Every check. |
 | `docs/system.md` | How the whole thing fits together, and how to change it. |
@@ -199,17 +233,41 @@ travels with them in `plugins/LICENSE-omarchy`.
 ## Backgrounds
 
 The wallpaper is the ground the whole system sits on, so it is graded, not
-chosen: a painting blurred until nothing is recognisable, saturation pulled
-down, mixed toward the theme ground, luminance clamped into a band the bar
-stays readable over, grain added against banding.
+chosen: a painting left sharp, so the brushwork stays, saturation
+pushed up a little so the field stays rich, mixed lightly toward the theme
+ground, luminance clamped into a band the bar stays readable over, grain
+added against banding.
 
-The shipped set is synthesised from named palettes — the dominant hues of
-Monet's *Water Lilies* and *Impression, Sunrise* — because no image host was
-reachable from the environment that built it. To grade a real public-domain
-painting:
+Seven backgrounds ship. The first is no image at all: the reference's own
+ground, white falling to the base grey, so the desktop reads exactly like
+the widget sheet. The other six are lit rooms, drawn by
+`tools/background.py` at 4K, nothing borrowed: a box in perspective whose walls, floor and ceiling are gradient
+planes converging on a small door or window at the far end, light blooming
+from it, a whisper of grain. Each room is one run of the system's colours
+plus the hot magenta and orange the idiom wants. The same six, ungraded,
+are the imagery inside the widgets (`docs/images/art/`): album art,
+thumbnails, screen-share previews, the mood board.
+
+| | Background | Colours |
+|---|---|---|
+| 1 | Plain | the ground itself, `#ffffff` → `#ebebeb` light, `#1e1e1e` → `#0f0f0f` dark |
+| 2 | Ember | orange walls, peach ceiling, a glowing amber door |
+| 3 | Lilac | lilac and pink, a dark doorway |
+| 4 | Sky | the accent blue, a navy floor, a pale window |
+| 5 | Citrus | yellow and lime over an orange floor |
+| 6 | Dusk | violet meets orange, a pink door |
+| 7 | Magenta | violet, cyan and magenta, an orange-edged door |
+
+They are original, so they carry this repository's licence. To draw more,
+or to grade a painting or photo of your own:
 
 ```
-tools/background.py --source path/to/monet.jpg --name lilies --index 1
+tools/background.py --style corridors --palette sky --index 7 --seed 21 --crop-out docs/images/art
+tools/background.py --source path/to/yours.jpg --name mine --index 8 --blur 0.045 --crop-out docs/images/art
 ```
+
+Seven palettes are built in (`ember lilac sky citrus dusk tide magenta`);
+every seed is a different room. Rooms ship unblurred, since their softness
+is drawn in; a painting gets a 4.5 % blur so the desktop stays a field.
 
 It writes both tones. Needs Pillow and numpy.

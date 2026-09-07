@@ -4,29 +4,31 @@
 -- hyprland.lua. Colours stay in the theme; this file is geometry and motion.
 
 -- ---------------------------------------------------------------- geometry
--- Base 4, module 8, unit 32. Radius 16 is half the unit, and it is the one
--- radius: the shell reads decoration:rounding for every card and control.
--- gaps_out = 16 puts the padding-equals-radius rule at the screen edge.
+-- Base 4, module 8, unit 32. Radius 24, and it is the one radius: the shell
+-- reads decoration:rounding for every card and control. A 32px control is a
+-- pill at any radius from 16 up. gaps_out = 24 puts padding-equals-radius at
+-- the screen edge.
 hl.config({
   general = {
     gaps_in = 8,
-    gaps_out = 16,
+    gaps_out = 24,
     -- Focus must stay visible. One hairline, coloured by the theme
     -- (hyprland_active_border at 55% foreground, inactive at 12%).
     border_size = 1,
   },
 
   decoration = {
-    rounding = 16,
+    rounding = 24,
 
     -- Depth comes from surfaces, not outlines. The shadow is what replaces
     -- the border on every card.
+    -- Wide and faint: the card floats, nothing outlines it.
     shadow = {
       enabled = true,
-      range = 24,
-      render_power = 3,
-      color = "rgba(0000003d)",
-      color_inactive = "rgba(0000001f)",
+      range = 40,
+      render_power = 2,
+      color = "rgba(0000001f)",
+      color_inactive = "rgba(0000000f)",
     },
 
     blur = {
@@ -45,7 +47,7 @@ hl.config({
       height = 32,
       indicator_height = 2,
       indicator_gap = 4,
-      gradient_rounding = 16,
+      gradient_rounding = 24,
       gradient_round_only_edges = false,
       gaps_in = 8,
       gaps_out = 0,

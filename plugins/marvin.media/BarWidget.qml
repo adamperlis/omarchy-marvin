@@ -137,7 +137,7 @@ BarWidget {
     bar: root.bar
     owner: root
     open: root.popupOpen
-    contentWidth: popup.fittedContentWidth(Style.space(328))
+    contentWidth: popup.fittedContentWidth(Style.space(304))
     contentHeight: popup.fittedContentHeight(column.implicitHeight)
 
     Column {
@@ -145,16 +145,16 @@ BarWidget {
       anchors.fill: parent
       spacing: Style.spacing.lg
 
-      // ---- Art and titles. Nested radius: outer 16 minus padding 16 would be
-      //      zero, so the art takes the small step instead.
+      // ---- Art, then title, artist and the transport beside it: the reference's
+      //      structure. Play is the card's one inverted element.
       Row {
         width: parent.width
-        spacing: Style.spacing.md
+        spacing: Style.spacing.lg
 
         Rectangle {
-          width: Style.spacing.huge + Style.spacing.lg   // 64
+          width: Style.spacing.huge * 2       // 96
           height: width
-          radius: Style.spacing.sm
+          radius: Style.spacing.md
           color: Style.normalFillFor(root.bar.foreground, Color.accent)
           clip: true
 
@@ -177,7 +177,7 @@ BarWidget {
         }
 
         Column {
-          width: parent.width - Style.spacing.huge - Style.spacing.lg - Style.spacing.md
+          width: parent.width - Style.spacing.huge * 2 - Style.spacing.lg
           anchors.verticalCenter: parent.verticalCenter
           spacing: Style.spacing.xs
 
@@ -203,24 +203,71 @@ BarWidget {
             visible: text !== ""
           }
 
-          Text {
-            textFormat: Text.PlainText
-            text: root.activePlayer && root.activePlayer.trackAlbum ? root.activePlayer.trackAlbum : ""
-            color: Color.muted
-            font.family: root.bar.fontFamily
-            font.pixelSize: Style.font.caption
-            elide: Text.ElideRight
-            width: parent.width
-            visible: text !== ""
+          Item { width: 1; height: Style.spacing.xs }
+
+          Row {
+            spacing: Style.spacing.sm
+
+            Button {
+              iconText: "󰒮"
+              iconSize: Style.font.icon
+              foreground: root.bar.foreground
+              bordered: false
+              horizontalPadding: Style.spacing.controlPaddingY
+              verticalPadding: Style.spacing.controlPaddingY
+              enabled: root.activePlayer && root.activePlayer.canGoPrevious
+              opacity: enabled ? 1.0 : 0.4
+              onClicked: if (root.mediaService) root.mediaService.runAction("previous", false, root.mediaService.playerKey(root.activePlayer))
+            }
+
+            Rectangle {
+              id: playButton
+              width: Style.spacing.controlHeight
+              height: Style.spacing.controlHeight
+              radius: Style.cornerRadius
+              color: root.bar.foreground
+              readonly property bool usable: !!(root.activePlayer && (root.activePlayer.canTogglePlaying || root.activePlayer.canPlay || root.activePlayer.canPause))
+              opacity: !usable ? 0.4 : (playMouse.containsMouse ? 0.85 : 1.0)
+              Behavior on opacity { NumberAnimation { duration: 120 } }
+
+              Text {
+                anchors.centerIn: parent
+                text: root.activePlayer && root.activePlayer.isPlaying ? "󰏤" : "󰐊"
+                color: Color.popups.background
+                font.family: root.bar.fontFamily
+                font.pixelSize: Style.font.icon
+              }
+
+              MouseArea {
+                id: playMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                enabled: playButton.usable
+                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                onClicked: if (root.mediaService) root.mediaService.runAction("playPause", false, root.mediaService.playerKey(root.activePlayer))
+              }
+            }
+
+            Button {
+              iconText: "󰒭"
+              iconSize: Style.font.icon
+              foreground: root.bar.foreground
+              bordered: false
+              horizontalPadding: Style.spacing.controlPaddingY
+              verticalPadding: Style.spacing.controlPaddingY
+              enabled: root.activePlayer && root.activePlayer.canGoNext
+              opacity: enabled ? 1.0 : 0.4
+              onClicked: if (root.mediaService) root.mediaService.runAction("next", false, root.mediaService.playerKey(root.activePlayer))
+            }
           }
         }
       }
 
-      // ---- Progress. A hairline; times as captions beneath it.
+      // ---- Progress. A hairline; elapsed on the left, remaining on the right.
       Column {
         visible: root.scrubVisible
         width: parent.width
-        spacing: Style.spacing.xs
+        spacing: Style.spacing.sm
 
         Rectangle {
           width: parent.width
@@ -232,7 +279,7 @@ BarWidget {
             width: Math.round(parent.width * root.scrub)
             height: parent.height
             radius: parent.radius
-            color: root.bar.foreground
+            color: Color.muted
             Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
           }
         }
@@ -249,68 +296,11 @@ BarWidget {
           }
           Text {
             anchors.right: parent.right
-            text: root.scrubVisible ? root.clockText(root.activePlayer.length) : ""
+            text: root.scrubVisible ? "-" + root.clockText(root.activePlayer.length - root.activePlayer.position) : ""
             color: Color.muted
             font.family: root.bar.fontFamily
             font.pixelSize: Style.font.caption
           }
-        }
-      }
-
-      // ---- Transport. Play is the one inverted element on the card.
-      Row {
-        spacing: Style.spacing.sm
-
-        Button {
-          iconText: "󰒮"
-          iconSize: Style.font.icon
-          foreground: root.bar.foreground
-          bordered: false
-          horizontalPadding: Style.spacing.controlPaddingY
-          verticalPadding: Style.spacing.controlPaddingY
-          enabled: root.activePlayer && root.activePlayer.canGoPrevious
-          opacity: enabled ? 1.0 : 0.4
-          onClicked: if (root.mediaService) root.mediaService.runAction("previous", false, root.mediaService.playerKey(root.activePlayer))
-        }
-
-        Rectangle {
-          id: playButton
-          width: Style.spacing.controlHeight
-          height: Style.spacing.controlHeight
-          radius: Style.cornerRadius
-          color: root.bar.foreground
-          readonly property bool usable: !!(root.activePlayer && (root.activePlayer.canTogglePlaying || root.activePlayer.canPlay || root.activePlayer.canPause))
-          opacity: !usable ? 0.4 : (playMouse.containsMouse ? 0.85 : 1.0)
-          Behavior on opacity { NumberAnimation { duration: 120 } }
-
-          Text {
-            anchors.centerIn: parent
-            text: root.activePlayer && root.activePlayer.isPlaying ? "󰏤" : "󰐊"
-            color: Color.popups.background
-            font.family: root.bar.fontFamily
-            font.pixelSize: Style.font.icon
-          }
-
-          MouseArea {
-            id: playMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            enabled: playButton.usable
-            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-            onClicked: if (root.mediaService) root.mediaService.runAction("playPause", false, root.mediaService.playerKey(root.activePlayer))
-          }
-        }
-
-        Button {
-          iconText: "󰒭"
-          iconSize: Style.font.icon
-          foreground: root.bar.foreground
-          bordered: false
-          horizontalPadding: Style.spacing.controlPaddingY
-          verticalPadding: Style.spacing.controlPaddingY
-          enabled: root.activePlayer && root.activePlayer.canGoNext
-          opacity: enabled ? 1.0 : 0.4
-          onClicked: if (root.mediaService) root.mediaService.runAction("next", false, root.mediaService.playerKey(root.activePlayer))
         }
       }
 

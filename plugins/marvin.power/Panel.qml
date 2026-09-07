@@ -17,14 +17,13 @@ Panel {
   ipcTarget: "omarchy.power"
 
   // Tone. [marvin-power] in shell.toml inverts the card; absent, the card
-  // takes the popup surface. attention-fill / attention-text make the chip.
+  // takes the popup surface.
   readonly property var toneValues: Color.shellValues
   readonly property bool tinted: !!(toneValues["marvin-power.background"])
   readonly property color tintBackground: tinted ? Color.flatColor(toneValues["marvin-power.background"], Color.popups.background) : Color.popups.background
+  readonly property color tintEnd: (tinted && toneValues["marvin-power.background-end"]) ? Color.flatColor(toneValues["marvin-power.background-end"], tintBackground) : tintBackground
   readonly property color ink: (tinted && toneValues["marvin-power.text"]) ? Color.flatColor(toneValues["marvin-power.text"], Color.popups.text) : Color.popups.text
   readonly property color inkMuted: (tinted && toneValues["marvin-power.muted"]) ? Color.flatColor(toneValues["marvin-power.muted"], Color.muted) : Color.muted
-  readonly property color chipFill: toneValues["marvin-power.attention-fill"] ? Color.flatColor(toneValues["marvin-power.attention-fill"], Util.alpha(ink, 0.08)) : Util.alpha(ink, 0.08)
-  readonly property color chipText: toneValues["marvin-power.attention-text"] ? Color.flatColor(toneValues["marvin-power.attention-text"], ink) : ink
   // manageIpc: false so this panel can own the single IpcHandler the target
   // permits — needed for the togglePercentage method below.
   manageIpc: false
@@ -310,7 +309,7 @@ Panel {
     bar: root.bar
     open: root.opened && root.batteryPresent
     focusTarget: keyCatcher
-    contentWidth: panel.fittedContentWidth(Style.space(328))
+    contentWidth: panel.fittedContentWidth(Style.space(304))
     contentHeight: panel.fittedContentHeight(column.implicitHeight)
 
     // Surface tone, drawn to the card's own shape beneath the content.
@@ -318,9 +317,13 @@ Panel {
       anchors.fill: parent
       anchors.margins: -panel.padding
       radius: Style.cornerRadius
-      color: root.tintBackground
       visible: root.tinted
       z: -1
+      gradient: Gradient {
+        orientation: Gradient.Vertical
+        GradientStop { position: 0.0; color: root.tintBackground }
+        GradientStop { position: 1.0; color: root.tintEnd }
+      }
     }
 
     PanelKeyCatcher {
@@ -342,7 +345,8 @@ Panel {
         anchors.top: parent.top
         spacing: Style.spacing.xxl
 
-        // ---- Header: the name, and the state as a soft-fill chip.
+        // ---- Header: the name, and the state as muted text (the reference's
+        //      focus card says "In progress" the same way; no chip, no colour).
         Item {
           width: parent.width
           height: Style.spacing.controlHeight
@@ -364,15 +368,14 @@ Panel {
             height: Style.spacing.xxl
             width: heroStatus.implicitWidth + Style.spacing.md * 2
             radius: Style.cornerRadius
-            color: root.charging || root.chargeThresholdActive ? root.chipFill : Util.alpha(root.ink, Style.normalFillAlpha)
-            Behavior on color { ColorAnimation { duration: 200 } }
+            color: "transparent"
 
             Text {
               id: heroStatus
               textFormat: Text.PlainText
               anchors.centerIn: parent
               text: root.heroStatusText
-              color: root.charging || root.chargeThresholdActive ? root.chipText : root.inkMuted
+              color: root.inkMuted
               font.family: root.bar.fontFamily
               font.pixelSize: Style.font.caption
             }
@@ -424,7 +427,7 @@ Panel {
               font.family: root.bar.fontFamily
               font.pixelSize: Style.font.displayLarge
               font.letterSpacing: -Style.font.displayLarge * 0.03
-              font.weight: Font.Medium
+              font.weight: Font.Normal
             }
           }
         }

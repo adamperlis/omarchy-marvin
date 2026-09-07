@@ -411,7 +411,7 @@ Panel {
     bar: root.bar
     open: root.opened
     focusTarget: keyCatcher
-    contentWidth: panel.fittedContentWidth(Style.space(328))
+    contentWidth: panel.fittedContentWidth(Style.space(304))
     contentHeight: panel.fittedContentHeight(column.implicitHeight, Style.space(560))
 
     PanelKeyCatcher {
@@ -762,7 +762,7 @@ Panel {
         text: "󰒃"
         color: root.dim
         font.family: root.fontFamily
-        font.pixelSize: Style.font.heading
+        font.pixelSize: Style.font.title
         Layout.alignment: Qt.AlignVCenter
       }
 

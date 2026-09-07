@@ -670,7 +670,7 @@ Panel {
     bar: root.bar
     open: root.opened
     focusTarget: keyCatcher
-    contentWidth: panel.fittedContentWidth(Style.space(328))
+    contentWidth: panel.fittedContentWidth(Style.space(304))
     contentHeight: panel.fittedContentHeight(column.implicitHeight)
 
     PanelKeyCatcher {
@@ -972,7 +972,7 @@ Panel {
         text: row.isConnected ? "󰂱" : "󰂯"
         color: row.statusColor
         font.family: root.bar.fontFamily
-        font.pixelSize: Style.font.heading
+        font.pixelSize: Style.font.title
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
       }

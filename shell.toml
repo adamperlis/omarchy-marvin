@@ -1,13 +1,13 @@
 # Marvin shell surfaces. Hand-written; replaces the generated shell.toml.
-# Depth comes from surfaces, not outlines: border-width is 0 everywhere a
-# surface would otherwise be outlined. Tone is a surface property — base
+# Depth comes from surfaces: a hairline at 8% of the text colour and, in the
+# config layer, a wide faint shadow. Never a structural border. Tone is a surface property — base
 # for the bar, raised for anything that opens over it.
 
 [bar]
 background       = "#161616"
 background-alpha = 1.0
 text             = "#d6d6d6"
-active           = "#e0a54a"
+active           = "#6db8ee"
 scale-with-font  = false
 size-horizontal  = 32
 size-vertical    = 32
@@ -22,8 +22,9 @@ active-border-foreground = "rgba(d6d6d68c)"
 
 [controls]
 # Fill is the text color at alpha, so controls survive any surface tone.
-# Emphasis rises monotonically: 0.06 -> 0.10 -> 0.14 -> 0.18. No borders,
-# except focus: the one border that must exist, and it is not hover.
+# Emphasis rises monotonically: 0.06 -> 0.10 -> 0.14 -> 0.18. Focus is the
+# selected fill plus a hairline of the text colour: visible, distinct from
+# hover, and never an accent outline — inputs in the reference have none.
 normal-color        = "#d6d6d6"
 normal-fill-alpha   = 0.06
 normal-border       = "#d6d6d6"
@@ -37,10 +38,10 @@ hover-cursor-border-width = 0
 hover-cursor-border-alpha = 0
 
 focus-color        = "#d6d6d6"
-focus-fill-alpha   = 0.10
-focus-border       = "#7aa6ff"
-focus-border-width = 2
-focus-border-alpha = 1.0
+focus-fill-alpha   = 0.14
+focus-border       = "#d6d6d6"
+focus-border-width = 1
+focus-border-alpha = 0.24
 
 selected-color        = "#d6d6d6"
 selected-fill-alpha   = 0.14
@@ -52,8 +53,8 @@ pressed-fill-alpha   = 0.18
 selection-fill-alpha = 0.35
 
 # ---------------------------------------------------------------- geometry
-# Base 4. Unit 32. Radius 16 = unit / 2 (from Hyprland decoration:rounding,
-# config layer). Padding = radius. Every value here is on the 4px grid except
+# Base 4. Unit 32. Radius 24 (from Hyprland decoration:rounding, config layer);
+# padding = radius = 24. Every value here is on the 4px grid except
 # xxs, a deliberate half-unit for hairline insets. The reference grid is 8px;
 # 8 is the module here, 4 its subdivision. md (12) and xl (20) are the two
 # sub-module steps, kept only because upstream names nine ramp slots.
@@ -75,37 +76,37 @@ xxl  = 24
 xxxl = 32
 huge = 48
 control-gap                 = 8
-control-padding-x           = 16
+control-padding-x           = 20
 control-padding-y           = 8
 input-padding-y             = 8
-control-height              = 32
-popup-row-height            = 32
-row-gap                     = 8
+control-height              = 40
+popup-row-height            = 40
+row-gap                     = 12
 row-padding-x               = 16
 label-gap                   = 4
 panel-gap                   = 16
-panel-padding               = 16
-popup-padding               = 16
+panel-padding               = 24
+popup-padding               = 24
 dropdown-width              = 240
 searchable-dropdown-width   = 260
 number-field-width          = 120
 searchable-popup-min-height = 224
 
 [font]
-# Pinned. 11 / 13 / 15 / 18 / 24 / 48. Minimum step 2px. display-large is the
+# Pinned. 12 / 14 / 16 / 18 / 24 / 56. Minimum step 2px. display-large is the
 # hero numeral (battery percentage, temperature); display stays 24 so panel
 # hero glyphs match icon-large. caption and
 # body-small collapse to 11; body and subtitle collapse to 13. Two tokens
 # that cannot be told apart are one value.
-base-size     = 13
-caption       = 11
-body-small    = 11
-body          = 13
-subtitle      = 13
-title         = 15
+base-size     = 14
+caption       = 12
+body-small    = 12
+body          = 14
+subtitle      = 14
+title         = 16
 heading       = 18
 display       = 24
-display-large = 48
+display-large = 56
 # Icons are Material Design Icons on their own grid, not the type scale.
 icon-small = 16
 icon       = 20
@@ -117,9 +118,9 @@ icon-large = 24
 background       = "#1e1e1e"
 background-alpha = 1.0
 text             = "#d6d6d6"
-border           = "#1e1e1e"
-border-alpha     = 0
-border-width     = 0
+border           = "#d6d6d6"
+border-alpha     = 0.10
+border-width     = 1
 
 [tooltip]
 background       = "#262626"
@@ -133,9 +134,9 @@ border-width     = 0
 background       = "#1e1e1e"
 background-alpha = 1.0
 text             = "#d6d6d6"
-border           = "#1e1e1e"
-border-alpha     = 0
-border-width     = 0
+border           = "#d6d6d6"
+border-alpha     = 0.10
+border-width     = 1
 # Progress is a hairline; its fill is accent because time left means something.
 countdown        = "#7aa6ff"
 
@@ -143,9 +144,9 @@ countdown        = "#7aa6ff"
 background                = "#1e1e1e"
 background-alpha          = 1.0
 text                      = "#d6d6d6"
-border                    = "#1e1e1e"
-border-alpha              = 0
-border-width              = 0
+border           = "#d6d6d6"
+border-alpha     = 0.10
+border-width     = 1
 scrim                     = "#0a0a0a"
 scrim-alpha               = 0.5
 # Selection is a fill, not a color change. Accent stays rationed.
@@ -160,9 +161,9 @@ selected-border-width     = 0
 background                = "#1e1e1e"
 background-alpha          = 1.0
 text                      = "#d6d6d6"
-border                    = "#1e1e1e"
-border-alpha              = 0
-border-width              = 0
+border           = "#d6d6d6"
+border-alpha     = 0.10
+border-width     = 1
 scrim                     = "#0a0a0a"
 scrim-alpha               = 0.5
 selected-background       = "#d6d6d6"
@@ -193,14 +194,14 @@ background-alpha    = 0.85
 text                = "#d6d6d6"
 placeholder         = "#8c8c8c"
 text-error          = "#e38484"
-# Idle: no border. Typing: focus ring. Wrong password: error ring.
+# Idle: no border. Typing: a hairline of the text colour. Wrong password: red.
 border              = "#1e1e1e"
 border-width        = 0
-border-active       = "#7aa6ff"
-border-active-width = 2
+border-active       = "#d6d6d6"
+border-active-width = 1
 border-error        = "#e38484"
 border-error-width  = 2
-border-alpha        = 1.0
+border-alpha        = 0.24
 selection           = "#7aa6ff"
 selection-alpha     = 0.35
 
@@ -216,19 +217,34 @@ unselected-border-alpha = 0.2
 # ---------------------------------------------------------------- widgets
 # Per-widget tone. Structure never changes; only the surface does.
 
-# A gradient: background is the top stop, background-end the bottom. Text and
-# muted clear the floors against both stops, tested.
+# The reference's gradients, verbatim: sky for weather, navy for the battery.
+# White type on a gradient is measured against the deeper stop at AA large
+# (3:1), because everything set on these surfaces is large. Tested.
+# The weather card is a sky. Day is the reference's blue; the plugin switches
+# to sunset in the first and last hours of daylight and to night after dark
+# (Open-Meteo's is_day), each its own gradient. Text stays white.
 [marvin-weather]
-background     = "#1c3556"
-background-end = "#122642"
-text           = "#eaf1fa"
-muted          = "#a9bfd9"
+background     = "#a8cbe9"
+background-end = "#6ea5d8"
+text           = "#ffffff"
+muted          = "#eaf2fb"
+sunset         = "#f2b27a"
+sunset-end     = "#8a6bb3"
+sunset-muted   = "#fbe9d8"
+night          = "#2c3a5c"
+night-end      = "#0f1626"
+night-muted    = "#b8c1d3"
 
-# Inverted: the one light card on the dark theme. The status chip is a soft
-# fill of the attention hue with darker text of the same hue.
+# The reference's dark card, on both tones. The chip is a soft fill of the
+# attention hue with lighter text of the same hue.
 [marvin-power]
-background     = "#f5f5f5"
-text           = "#1a1a1a"
-muted          = "#6b6b6b"
-attention-fill = "#fbe7c2"
-attention-text = "#6b4300"
+background     = "#33405b"
+background-end = "#1b2436"
+text           = "#ffffff"
+muted          = "#b8c1d3"
+
+# The one status chip in the reference: the note's "Draft", pale yellow with
+# olive text. Every other state (the focus card's "In progress") is muted text.
+[marvin-chip]
+attention-fill = "#f9ecad"
+attention-text = "#574611"
