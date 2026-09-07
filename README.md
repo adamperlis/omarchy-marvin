@@ -4,6 +4,12 @@ A theme for [Omarchy 4](https://omarchy.org), built as a design system first.
 Neutral ramp, one accent, no outlines, a fixed 4px grid, and a type scale you
 can actually see.
 
+Named for [Marvin Schwaibold](https://x.com/MSchwaibold). The method here —
+grid first, then a clean type scale, then art-direct a few key widgets and let
+the rest follow — is his, and the widget studies that set the visual reference
+are his work. He isn't involved in this project; the name is a credit, not an
+endorsement.
+
 ```
 omarchy theme install https://github.com/adamperlis/omarchy-marvin
 ```

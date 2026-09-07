@@ -13,13 +13,19 @@ records what we chose within it.
   motion. A plain `omarchy theme install` must still look intentional.
 - **One theme, done exceptionally** — confirmed. Principles live here,
   values live in the files. No generator.
-- **Reference** — the widget work of Marvin Schwaibold: fixed-width cards
-  on a fine grid, generous radius, no borders, two text tones, rationed
-  accent, large numerals with small labels, per-surface tone.
+- **Reference** — the widget studies of
+  [Marvin Schwaibold](https://x.com/MSchwaibold), for whom the theme is
+  named: fixed-width cards on a fine grid, generous radius, no borders, two
+  text tones, rationed accent, large numerals with small labels, per-surface
+  tone. He is not involved in this project.
 
 ## Method
 
-Confirmed. Sequence matters more than any single value.
+Confirmed. Schwaibold's, stated for prompting models on design: *"You have
+to get the model to understand the underlying grid system and set a clean
+type scale etc — art direct a few key widgets first also to get a general
+style and design standard set. After that it gets rather easy."* Sequence
+matters more than any single value.
 
 1. Establish the grid.
 2. Set the type scale.
