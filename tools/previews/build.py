@@ -299,7 +299,7 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 .fgrid{{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 12px}}.fd{{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11px}}
 .tile{{position:absolute;border-radius:24px;overflow:hidden;box-shadow:0 10px 36px rgba(0,0,0,var(--sh)),inset 0 0 0 1px rgba(var(--fg-rgb),var(--a2))}}
 .tile>.win{{position:static;width:100%;height:100%;box-shadow:none;border-radius:0}}
-.tile>.card{{width:100%!important;height:100%!important;justify-content:center;box-shadow:none;border:none;border-radius:0}}
+.tile>.card{{width:100%!important;height:100%!important;justify-content:flex-start;box-shadow:none;border:none;border-radius:0}}
 </style></head><body>
 {bar(t)}
 <div class="tile" style="left:24px;top:56px;width:864px;height:612px"><div class="win focus">
