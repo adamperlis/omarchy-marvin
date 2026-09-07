@@ -27,6 +27,17 @@ token values, in both tones:
 
 ![Widgets, light](docs/images/widgets-light.png)
 
+The wallpaper is the ground the whole system sits on — an empty workspace
+with one notification, then the shipped backgrounds themselves:
+
+![Workspace, dark](docs/images/workspace-dark.png)
+
+![Workspace, light](docs/images/workspace-light.png)
+
+![Backgrounds, dark](docs/images/backgrounds-dark.png)
+
+![Backgrounds, light](docs/images/backgrounds-light.png)
+
 These are renders from the tokens, not screenshots of the shell — see
 [Testing it](#testing-it).
 

@@ -70,6 +70,7 @@ def tone(root, light):
                 accent=c["accent"], attn=c["attention"], red=c["red"], green=c["green"], yellow=c["yellow"], blue=c["blue"], magenta=c["magenta"], cyan=c["cyan"],
                 bright_fg=c["bright_foreground"], selection=c["selection"], ansi=[c[k] for k in ("background","red","green","yellow","blue","magenta","cyan","foreground","muted","bright_red","bright_green","bright_yellow","bright_blue","bright_magenta","bright_cyan","bright_foreground")],
                 wall=root / ("light/backgrounds/1-lilies.jpg" if light else "backgrounds/1-lilies.jpg"),
+                walls=[(n, root / (("light/" if light else "") + f"backgrounds/{n}")) for n in ("1-lilies.jpg", "2-sunrise.jpg")],
                 wx=(("#d4e3f5","#14304f","#3f5d84") if light else ("#1c3556","#eaf1fa","#a9bfd9")))
 
 def hexrgb(h): return ",".join(str(int(h[i:i+2],16)) for i in (1,3,5))
@@ -235,6 +236,24 @@ html,body{{width:1920px;height:1080px;overflow:hidden}}body{{background:{t["grou
 .input i{{width:8px;height:8px;border-radius:4px;background:var(--fg)}}
 </style></head><body><div class="mark">marvin</div><div class="input"><i></i><i></i><i></i><i></i></div></body></html>"""
 
+def workspace(t, fonts):
+    """Bar over the wallpaper with one notification: the wallpaper as the ground."""
+    w = widgets(t)
+    return f"""<!doctype html><html><head><meta charset="utf-8"><style>{font_face(fonts)}{vars_css(t)}{BASE_CSS}
+html,body{{width:1800px;height:1012px;overflow:hidden}}body{{background:url('file://{t["wall"]}') center/cover;position:relative}}
+.n{{position:absolute;right:16px;top:48px}}
+</style></head><body>{bar(t)}<div class="n">{w["note"]}</div></body></html>"""
+
+def backgrounds(t, fonts):
+    """Both wallpapers of one tone, labelled, with the bar tone as a swatch beside each."""
+    tiles = "".join(f"""<div class="tile"><div class="img" style="background:url('file://{p}') center/cover"></div>
+<div class="cap"><b>{n.split('.')[0][2:].capitalize()}</b><span>{'light' if t['light'] else 'dark'} · 3840 × 2160 · graded to {t['ground']}</span></div></div>""" for n, p in t["walls"])
+    return f"""<!doctype html><html><head><meta charset="utf-8"><style>{font_face(fonts)}{vars_css(t)}{BASE_CSS}
+html,body{{width:1600px;height:560px;overflow:hidden}}body{{background:{t["ground"]};padding:48px;display:flex;gap:48px;justify-content:center}}
+.tile{{display:flex;flex-direction:column;gap:12px}}.img{{width:704px;height:396px;border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,var(--sh))}}
+.cap{{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px}}.cap b{{font-size:15px;font-weight:500}}.cap span{{font-size:11px;color:var(--muted)}}
+</style></head><body>{tiles}</body></html>"""
+
 def sheet(t, fonts):
     w = widgets(t)
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>{font_face(fonts)}{vars_css(t)}{BASE_CSS}
@@ -257,6 +276,8 @@ if __name__ == "__main__":
             ("desktop", desktop(t, a.fonts), (1800, 1012), [out / f"{pre}preview.png"]),
             ("boot", boot(t, a.fonts), (1920, 1080), [out / f"{pre}preview-unlock.png"]),
             ("widgets", sheet(t, a.fonts), (1600, 900), [out / f"docs/images/widgets-{tag}.png"]),
+            ("workspace", workspace(t, a.fonts), (1800, 1012), [out / f"docs/images/workspace-{tag}.png"]),
+            ("backgrounds", backgrounds(t, a.fonts), (1600, 560), [out / f"docs/images/backgrounds-{tag}.png"]),
         ):
             h = tmp / f"{name}-{tag}.html"; h.write_text(html)
             png = tmp / f"{name}-{tag}.png"
