@@ -240,6 +240,14 @@ def widgets(t):
      "icons": f'''<div class="card" style="width:352px;gap:16px"><div class="hd">Icons<span>Material · 16 / 20 / 24</span></div><div class="icons">{"".join(ic(n,20) for n in ("apps","search","wifi","bluetooth","volume","battery_full","update","home","clock","star","trash","download","network","lock","sun","cloud","partly","moon","eco","balance","bolt","prev","pause","next"))}</div></div>''',
      "toast": f'''<div class="toast" style="width:352px">{ic("check",20)}<div class="m">Theme set to Marvin<span>Light · 22 wallpapers</span></div><span class="bt sec" style="height:32px;padding:0 16px;border-radius:16px;font-size:13px">Undo</span></div>''',
      "osd": f'''<div class="osd">{ic("volume",20)}<div class="hair"><i style="width:64%"></i></div><div class="n">64</div></div>''',
+     "todos": f'''<div class="card" style="width:352px;gap:16px"><div class="hd">To-dos<span>3 of 6</span></div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px;font-size:14px"><span class="cb on">{ic("check",12)}</span><s style="color:var(--muted)">Blur the gradient rooms</s></div>
+<div style="display:flex;align-items:center;gap:12px;font-size:14px"><span class="cb on">{ic("check",12)}</span><s style="color:var(--muted)">Compress the wallpapers</s></div>
+<div style="display:flex;align-items:center;gap:12px;font-size:14px"><span class="cb on">{ic("check",12)}</span><s style="color:var(--muted)">Compose the bento desktop</s></div>
+<div style="display:flex;align-items:center;gap:12px;font-size:14px"><span class="cb"></span>Credit Marvin up top</div>
+<div style="display:flex;align-items:center;gap:12px;font-size:14px"><span class="cb"></span>Try it on Omarchy</div>
+</div></div>''',
     }
 
 def esc(s): return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
@@ -302,7 +310,7 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 .tile>.card{{width:100%!important;height:100%!important;justify-content:flex-start;box-shadow:none;border:none;border-radius:0}}
 </style></head><body>
 {bar(t)}
-<div class="tile" style="left:24px;top:56px;width:864px;height:612px"><div class="win focus">
+<div class="tile" style="left:24px;top:56px;width:720px;height:600px"><div class="win focus">
   <div class="obs"><div class="sb"><div class="vault">Notes</div>{obs_side}</div>
   <div class="ed"><div class="tabs"><div class="tab on">Principles</div><div class="tab">Grid</div><div class="tab">Motion</div></div>
   <div class="doc"><h1>Principles</h1>
@@ -316,10 +324,10 @@ body{{background:url('file://{t["wall"]}') center/cover}}
   <blockquote>Leave a little room for the unexpected.</blockquote>
   <p><span class="tag">#design-system</span><span class="tag">#omarchy</span></p></div>
   <div class="status"><span>212 words</span><span>1,280 characters</span></div></div></div></div></div>
-<div class="tile" style="left:24px;top:692px;width:864px;height:294px"><div class="win">
+<div class="tile" style="left:24px;top:680px;width:720px;height:308px"><div class="win">
   <div class="files"><div class="sb">{side}</div><div class="main"><div class="top">{ic("chevron_left",20)}{ic("chevron_right",20)}<div class="pathf">{ic("home",16)}Home</div>{ic("search",20)}</div><div class="fgrid">{fgrid}</div></div></div>
 </div></div>
-<div class="tile" style="left:912px;top:56px;width:420px;height:294px"><div class="win">
+<div class="tile" style="left:768px;top:56px;width:480px;height:280px"><div class="win">
   <div class="term mono"><span class="p">❯</span> omarchy theme set marvin
 <span class="c">Theme set · radius 24 · type 12–56</span>
 <span class="p">❯</span> omarchy theme list
@@ -331,9 +339,10 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 <span style="color:{t["green"]}">ok</span>  install → revert  <span class="c">byte for byte</span>
 <span class="p">❯</span> <span style="display:inline-block;width:8px;height:16px;background:var(--fg);vertical-align:-3px"></span></div>
 </div></div>
-<div class="tile" style="left:1356px;top:56px;width:420px;height:294px">{w["weather"]}</div>
-<div class="tile" style="left:912px;top:374px;width:420px;height:612px">{w["clock"]}</div>
-<div class="tile" style="left:1356px;top:374px;width:420px;height:612px">{w["power"]}</div>
+<div class="tile" style="left:1272px;top:56px;width:480px;height:250px">{w["weather"]}</div>
+<div class="tile" style="left:1272px;top:330px;width:480px;height:214px">{w["todos"]}</div>
+<div class="tile" style="left:768px;top:360px;width:480px;height:628px">{w["clock"]}</div>
+<div class="tile" style="left:1272px;top:568px;width:480px;height:420px">{w["power"]}</div>
 </body></html>"""
 
 def boot(t, fonts):
