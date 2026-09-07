@@ -144,6 +144,15 @@ Proposed. Compositor motion only — shell motion is not themeable.
 - **Exits are never linear.** Linear reads as mechanical.
 - Direct-manipulation responses stay under ~300ms.
 
+## Backgrounds
+
+Confirmed. A famous painting, public domain, blurred past recognition into a
+colour field, graded so it complements the palette: saturation down, mixed
+toward the ground, luminance in a band the bar reads over (dark 0.01–0.17,
+light 0.60–0.86), fine grain against banding. `tools/background.py` is the
+rule made executable. Shipped set is palette-synthesised until a source
+painting is supplied.
+
 ## Widgets
 
 Confirmed: panels first, dashboard later. System widgets are restyled as
