@@ -19,9 +19,11 @@ records what we chose within it.
   values live in the files. No generator.
 - **Reference** — the widget studies of
   [Marvin Schwaibold](https://x.com/MSchwaibold), for whom the theme is
-  named: fixed-width cards on a fine grid, generous radius, no borders, two
-  text tones, rationed accent, large numerals with small labels, per-surface
-  tone. He is not involved in this project.
+  named, and [the post](https://x.com/MSchwaibold/status/2096059496812716307)
+  that set this whole project in motion: fixed-width cards on a fine grid,
+  generous radius, no borders, two text tones, rationed accent, large
+  numerals with small labels, per-surface tone. The debt is his; he is not
+  involved in this project.
 
 ## Method
 

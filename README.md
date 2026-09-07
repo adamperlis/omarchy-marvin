@@ -1,7 +1,41 @@
 # Marvin
 
-A design system for [Omarchy 4](https://omarchy.org), delivered as a theme,
-a reversible config layer, and fourteen restyled widgets.
+A design system for [Omarchy 4](https://omarchy.org), delivered as a theme, a
+reversible config layer, and fourteen restyled widgets — with 63 wallpapers
+included.
+
+![Marvin backgrounds](docs/images/backgrounds-all.jpg)
+
+## Install
+
+Two commands:
+
+```
+omarchy theme install https://github.com/adamperlis/omarchy-marvin
+omarchy theme set marvin
+```
+
+That is the whole theme: the palette, the type scale, the state model, the
+window borders, the restyled widget styling, the boot logo, and all 63
+wallpapers. Cycle wallpapers with **SUPER + CTRL + SPACE**, or pick one from
+the Omarchy menu (**SUPER + ALT + SPACE → Style → Background**).
+
+For the full experience — the light sibling, Inter in the shell, Hyprland
+rounding, gaps, shadow and motion, and the fourteen widget plugins — run the
+[config layer](#2-the-config-layer) once the theme is set. It snapshots
+everything first and reverts byte-for-byte; full steps are
+[below](#install-in-detail).
+
+A composed desktop under Marvin — the Notes app, Files and a terminal
+alongside the weather, media and battery widgets, over one of the wallpapers:
+
+![Marvin — a composed desktop, dark](preview.png)
+
+![Marvin — a composed desktop, light](light/preview.png)
+
+Tone is a property of each surface: weather is a gradient, the battery card is
+inverted with a ring of ticks, state is a soft-fill chip, and the rest stay
+quiet.
 
 Omarchy's stock look is assembled rather than designed: an irregular spacing
 ramp, six type sizes crammed between 10 and 16px, every surface the same
@@ -11,28 +45,19 @@ and applies them everywhere — the bar, every popup, the launcher,
 notifications, the lock screen, the window manager's motion — so the desktop
 reads as one object.
 
-Named for [Marvin Schwaibold](https://x.com/MSchwaibold). The method —
-understand the grid, set a clean type scale, art-direct a few key widgets,
-then propagate — is his, and his widget studies are the visual reference. He
-is not involved in this project; the name is a credit, not an endorsement.
+Named for [Marvin Schwaibold](https://x.com/MSchwaibold), and owed to him
+from the first pixel. This whole project began with [the post that started
+it](https://x.com/MSchwaibold/status/2096059496812716307) — we saw it,
+couldn't stop thinking about it, and set out to build a desktop that lived up
+to it. The method is entirely his: understand the grid, set a clean type
+scale, art-direct a few key widgets, then propagate. So is the visual
+reference — his widget studies, with their fixed-width cards on a fine grid,
+generous radius, no borders, two text tones, a rationed accent, and large
+numerals over small labels. We only carried it, admiringly, into Omarchy. He
+is not involved in this project; the name is a credit and a thank-you, not an
+endorsement.
 
-![Marvin backgrounds](docs/images/backgrounds-dark.png)
-
-Sixty-three wallpapers ship, and the wallpaper is the ground the whole
-system sits on. Seven are gradient rooms drawn from the palette — lit boxes
-in perspective, now fully blurred into soft colour fields and graded so the
-bar and every card read as surfaces over them. The other fifty-six are soft
-colour abstractions. The plain ground comes first, so an empty desktop reads
-exactly like the widget sheet.
-
-![Marvin, light](light/preview.png)
-
-![Marvin, dark](preview.png)
-
-The launcher, notification, OSD and the restyled widgets at the token
-values. Tone is a property of each surface: weather is a gradient, the
-battery card is inverted with a ring of ticks, state is a soft-fill chip,
-and the rest stay quiet.
+Every restyled widget, at the token values:
 
 ![Widgets, light](docs/images/widgets-light.png)
 
@@ -73,7 +98,7 @@ run under `./test/run`. The reasoning behind each rule, and what is still
 open, is in [`docs/principles.md`](docs/principles.md). How the pieces fit
 together is in [`docs/system.md`](docs/system.md).
 
-## Install
+## Install in detail
 
 ### 1. The theme
 
@@ -206,6 +231,24 @@ real look is yours. [`docs/testing.md`](docs/testing.md) gives the order to
 judge it in (theme alone, then config layer, then widgets one at a time with
 the shell journal open) and what to send back.
 
+## Publishing it
+
+Marvin is a normal Omarchy theme: a public git repository you install by URL.
+To share your own fork:
+
+- Make the repository public. Anyone can then install it with
+  `omarchy theme install https://github.com/<you>/<repo>`, or by pasting the
+  URL into the Omarchy menu (**SUPER + ALT + SPACE → Install**).
+- Omarchy lists a theme in its selection menu by repository name, stripping
+  the `omarchy-` prefix and `-theme` suffix — so `omarchy-marvin` shows as
+  *marvin*. The fuller convention is `omarchy-<name>-theme`; either resolves
+  to the same display name.
+- To be featured on Omarchy's official extra-themes page, open a pull request
+  against [`omarchy-site`](https://github.com/basecamp/omarchy-site).
+
+Wallpapers a user drops into `~/.config/omarchy/backgrounds/<theme>/` appear
+alongside the shipped ones, so anyone can extend the set without forking.
+
 ## Repository map
 
 | Path | What |
@@ -213,7 +256,7 @@ the shell journal open) and what to send back.
 | `colors.toml`, `shell.toml`, `icons.theme` | The theme. Dark. |
 | `obsidian.css`, `hyprland-preview-share-picker.css` | The Notes app and the share picker, restyled by the theme. |
 | `light/` | The light sibling: same geometry, different tone table. |
-| `backgrounds/`, `light/backgrounds/` | Wallpapers, graded to the ground. |
+| `backgrounds/`, `light/backgrounds/` | 63 wallpapers: blurred gradient rooms graded to the ground (both tones) and 56 soft abstractions (dark). |
 | `preview.png`, `preview-unlock.png`, `unlock.png` | Theme-switcher preview and the Plymouth boot logo. |
 | `config/hypr/marvin.lua` | Rounding, gaps, border, shadow, motion. |
 | `config/fontconfig/60-marvin-shell.conf` | Inter for `quickshell` only. |

@@ -84,8 +84,8 @@ def tone(root, light):
     return dict(light=light, bg=c["background"], raised=c["lighter_background"], ground=c["dark_background"], fg=c["foreground"], muted=c["muted"],
                 accent=c["accent"], attn=c["attention"], red=c["red"], green=c["green"], yellow=c["yellow"], blue=c["blue"], magenta=c["magenta"], cyan=c["cyan"],
                 bright_fg=c["bright_foreground"], selection=c["selection"], ansi=[c[k] for k in ("background","red","green","yellow","blue","magenta","cyan","foreground","muted","bright_red","bright_green","bright_yellow","bright_blue","bright_magenta","bright_cyan","bright_foreground")],
-                wall=root / (("light/" if light else "") + "backgrounds/" + WALLS[0]),
-                room=root / (("light/" if light else "") + "backgrounds/" + WALLS[1]),
+                wall=root / "backgrounds" / ("abstract-04.jpg" if light else "abstract-45.jpg"),
+                room=root / "backgrounds" / ("abstract-04.jpg" if light else "abstract-45.jpg"),
                 walls=[(n, root / (("light/" if light else "") + f"backgrounds/{n}")) for n in WALLS],
                 arts=[(n, root / "docs/images/art" / n) for n in ARTS],
                 wx=(wx["background"], wx["text"], wx["muted"], wx.get("background-end", wx["background"])),
@@ -299,7 +299,7 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 .fgrid{{display:grid;grid-template-columns:repeat(6,1fr);gap:24px 16px}}.fd{{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11px}}
 </style></head><body>
 {bar(t)}
-<div class="win focus" style="left:24px;top:56px;width:996px;height:592px">
+<div class="win focus" style="left:24px;top:56px;width:760px;height:560px">
   <div class="obs"><div class="sb"><div class="vault">Notes</div>{obs_side}</div>
   <div class="ed"><div class="tabs"><div class="tab on">Principles</div><div class="tab">Grid</div><div class="tab">Motion</div></div>
   <div class="doc"><h1>Principles</h1>
@@ -314,22 +314,23 @@ body{{background:url('file://{t["wall"]}') center/cover}}
   <p><span class="tag">#design-system</span><span class="tag">#omarchy</span></p></div>
   <div class="status"><span>212 words</span><span>1,280 characters</span></div></div></div>
 </div>
-<div class="win" style="left:24px;top:656px;width:996px;height:332px">
+<div class="win" style="left:24px;top:640px;width:760px;height:348px">
   <div class="files"><div class="sb">{side}</div><div class="main"><div class="top">{ic("chevron_left",20)}{ic("chevron_right",20)}<div class="pathf">{ic("home",16)}Home</div>{ic("search",20)}</div><div class="fgrid">{fgrid}</div></div></div>
 </div>
-<div class="win" style="left:1028px;top:56px;width:748px;height:932px">
+<div class="win" style="left:808px;top:56px;width:480px;height:360px">
   <div class="term mono"><span class="p">❯</span> omarchy theme set marvin
-<span class="c">Theme set. Bar 32 · radius 24 · inset 24 · type 12/14/16/18/24/56</span>
+<span class="c">Theme set · radius 24 · type 12–56</span>
 <span class="p">❯</span> omarchy theme list
-<span class="c">marvin · marvin-light · tokyo-night · nord · …</span>
+<span class="c">marvin · marvin-light · nord · …</span>
 <span class="p">❯</span> ./test/run
-<span style="color:{t["green"]}">ok</span>  contrast floors      <span class="c">40 pairs</span>
-<span style="color:{t["green"]}">ok</span>  shell parser         <span class="c">154 keys, 0 dropped</span>
-<span style="color:{t["green"]}">ok</span>  geometry identity    <span class="c">94 tokens</span>
-<span style="color:{t["green"]}">ok</span>  install → revert     <span class="c">byte for byte</span>
+<span style="color:{t["green"]}">ok</span>  contrast floors   <span class="c">40 pairs</span>
+<span style="color:{t["green"]}">ok</span>  shell parser      <span class="c">154 keys</span>
+<span style="color:{t["green"]}">ok</span>  geometry identity <span class="c">94 tokens</span>
+<span style="color:{t["green"]}">ok</span>  install → revert  <span class="c">byte for byte</span>
 <span class="p">❯</span> <span style="display:inline-block;width:8px;height:16px;background:var(--fg);vertical-align:-3px"></span></div>
 </div>
-<div style="position:absolute;right:16px;top:48px">{w["power"]}</div>
+<div style="position:absolute;left:808px;top:440px">{w["media"]}</div>
+<div style="position:absolute;right:24px;top:56px;display:flex;flex-direction:column;gap:24px;align-items:flex-end">{w["weather"]}{w["power"]}</div>
 </body></html>"""
 
 def boot(t, fonts):
