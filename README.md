@@ -16,6 +16,20 @@ understand the grid, set a clean type scale, art-direct a few key widgets,
 then propagate — is his, and his widget studies are the visual reference. He
 is not involved in this project; the name is a credit, not an endorsement.
 
+![Marvin, dark](preview.png)
+
+![Marvin, light](light/preview.png)
+
+The bar, launcher, notification, OSD and the restyled widgets, at the
+token values, in both tones:
+
+![Widgets, dark](docs/images/widgets-dark.png)
+
+![Widgets, light](docs/images/widgets-light.png)
+
+These are renders from the tokens, not screenshots of the shell — see
+[Testing it](#testing-it).
+
 ## The system in one screen
 
 | | Rule | Value |
@@ -133,6 +147,7 @@ the shell journal open) and what to send back.
 | `plugins/marvin.*` | Fourteen restyled clones of the built-in widgets. |
 | `tools/restyle.py` | The rules as a script; builds a widget from upstream's. |
 | `tools/background.py` | Grades a painting (or a palette) into wallpapers. |
+| `tools/previews/build.py` | Renders `preview.png`, the boot screen and the widget sheets from the tokens (needs node + Playwright). |
 | `test/run` | Every check. |
 | `docs/system.md` | How the whole thing fits together, and how to change it. |
 | `docs/principles.md` | Every design rule, confirmed or proposed, and why. |

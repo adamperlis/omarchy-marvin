@@ -1,0 +1,265 @@
+#!/usr/bin/env python3
+"""Render the theme previews and the README images from the tokens.
+
+    tools/previews/build.py --fonts <dir with Inter-*.ttf and JetBrainsMono-*.ttf> [--out <repo>]
+
+Draws the same desktop Omarchy's own previews show — bar, editor over
+terminal, monitor over files, wallpaper through the gaps — at 1:1 token
+values, plus the boot screen and a sheet of the widget cards, for both
+tones. Needs node + playwright (Chromium) on PATH.
+"""
+import argparse, base64, os, subprocess, sys, tempfile, pathlib, re
+
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parent.parent
+
+def toml(path):
+    d = {}
+    for line in open(path):
+        m = re.match(r'^\s*([A-Za-z0-9_-]+)\s*=\s*(?:"([^"]*)"|([^#\n]+))', line)
+        if m: d[m.group(1)] = (m.group(2) if m.group(2) is not None else m.group(3)).strip()
+    return d
+
+def font_face(dirp):
+    css = ""
+    for fam, files in (("Inter", [("Inter-Regular.ttf", 400), ("Inter-Medium.ttf", 500), ("Inter-SemiBold.ttf", 600)]),
+                       ("JetBrains Mono", [("JetBrainsMono-Regular.ttf", 400), ("JetBrainsMono-Medium.ttf", 500)])):
+        for f, w in files:
+            p = pathlib.Path(dirp) / f
+            if p.exists():
+                css += f"@font-face{{font-family:'{fam}';font-weight:{w};src:url('file://{p}') format('truetype')}}\n"
+    return css
+
+# ---- icons: tiny inline SVGs, stroke = currentColor, 24 viewBox
+ICONS = {
+ "search": '<circle cx="10" cy="10" r="6"/><path d="M15 15l5 5"/>',
+ "apps": '<circle cx="6" cy="6" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="6" r="1.6" fill="currentColor" stroke="none"/><circle cx="18" cy="6" r="1.6" fill="currentColor" stroke="none"/><circle cx="6" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="18" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="6" cy="18" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="18" r="1.6" fill="currentColor" stroke="none"/><circle cx="18" cy="18" r="1.6" fill="currentColor" stroke="none"/>',
+ "wifi": '<path d="M2 9a15 15 0 0 1 20 0"/><path d="M5.5 12.5a10 10 0 0 1 13 0"/><path d="M9 16a5 5 0 0 1 6 0"/><circle cx="12" cy="19.5" r="1.2" fill="currentColor" stroke="none"/>',
+ "bluetooth": '<path d="M7 7l10 10-5 5V2l5 5L7 17"/>',
+ "volume": '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 8a5 5 0 0 1 0 8"/>',
+ "battery": '<rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 10v4"/><rect x="4" y="9" width="11" height="6" fill="currentColor" stroke="none"/>',
+ "battery_full": '<rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 10v4"/><rect x="4" y="9" width="13" height="6" fill="currentColor" stroke="none"/>',
+ "update": '<circle cx="12" cy="12" r="9"/><path d="M12 7v9M8.5 12.5L12 16l3.5-3.5"/>',
+ "folder": '<path d="M3 6h6l2 2h10v11H3z"/>',
+ "globe": '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+ "terminal": '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M12 15h5"/>',
+ "text": '<path d="M5 6h14M12 6v13M9 19h6"/>',
+ "mail": '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+ "sun": '<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+ "cloud": '<path d="M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9a4 4 0 0 1 0 9z"/>',
+ "partly": '<circle cx="8" cy="8" r="3"/><path d="M8 2v2M2 8h2M3.8 3.8l1.4 1.4"/><path d="M9 19a3.5 3.5 0 0 1-.4-7A5 5 0 0 1 18.5 13a3 3 0 0 1 0 6z"/>',
+ "chevron_left": '<path d="M14 6l-6 6 6 6"/>', "chevron_right": '<path d="M10 6l6 6-6 6"/>',
+ "prev": '<path d="M6 5v14M18 5l-10 7 10 7z"/>', "next": '<path d="M18 5v14M6 5l10 7-10 7z"/>',
+ "pause": '<rect x="6" y="5" width="4" height="14" fill="currentColor" stroke="none"/><rect x="14" y="5" width="4" height="14" fill="currentColor" stroke="none"/>',
+ "play": '<path d="M7 4l13 8-13 8z" fill="currentColor" stroke="none"/>',
+ "music": '<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',
+ "eco": '<path d="M5 19c0-8 4-13 14-14 0 10-5 14-14 14z"/><path d="M5 19c3-5 6-8 10-10"/>',
+ "balance": '<circle cx="12" cy="12" r="8"/><path d="M12 4v16"/>',
+ "bolt": '<path d="M13 2L5 14h6l-1 8 8-12h-6z" fill="currentColor" stroke="none"/>',
+ "home": '<path d="M4 11l8-7 8 7v9H4z"/>', "clock": '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ "star": '<path d="M12 3l2.8 6 6.2.6-4.7 4.3 1.4 6.1L12 16.8 6.3 20l1.4-6.1L3 9.6 9.2 9z"/>',
+ "network": '<circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12l-6 5M12 12l6 5"/>',
+ "trash": '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>', "download": '<path d="M12 4v12M7 11l5 5 5-5M4 20h16"/>',
+}
+def ic(name, size=16, sw=1.75):
+    return f'<svg class="i" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</svg>'
+
+def tone(root, light):
+    c = toml(root / ("light/colors.toml" if light else "colors.toml"))
+    return dict(light=light, bg=c["background"], raised=c["lighter_background"], ground=c["dark_background"], fg=c["foreground"], muted=c["muted"],
+                accent=c["accent"], attn=c["attention"], red=c["red"], green=c["green"], yellow=c["yellow"], blue=c["blue"], magenta=c["magenta"], cyan=c["cyan"],
+                bright_fg=c["bright_foreground"], selection=c["selection"], ansi=[c[k] for k in ("background","red","green","yellow","blue","magenta","cyan","foreground","muted","bright_red","bright_green","bright_yellow","bright_blue","bright_magenta","bright_cyan","bright_foreground")],
+                wall=root / ("light/backgrounds/1-lilies.jpg" if light else "backgrounds/1-lilies.jpg"),
+                wx=(("#d4e3f5","#14304f","#3f5d84") if light else ("#1c3556","#eaf1fa","#a9bfd9")))
+
+def hexrgb(h): return ",".join(str(int(h[i:i+2],16)) for i in (1,3,5))
+
+BASE_CSS = """
+*{box-sizing:border-box}body{margin:0;font-family:Inter,sans-serif;font-size:13px;line-height:1;color:var(--fg);-webkit-font-smoothing:antialiased}
+.mono{font-family:'JetBrains Mono',monospace}
+.i{display:inline-block;vertical-align:middle;flex:none}
+.bar{position:absolute;left:0;top:0;right:0;height:32px;background:var(--bg);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;color:var(--fg)}
+.bar .l,.bar .r{display:flex;align-items:center}.bar .r{justify-content:flex-end}
+.slot{width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.ws{display:flex}.ws span{width:24px;height:24px;margin:4px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--muted)}
+.ws span.on{background:rgba(var(--fg-rgb),.14);color:var(--fg)}
+.clock{font-weight:500;padding:0 16px}.clock i{font-style:normal;color:var(--muted);font-weight:400;margin-right:8px}
+.attn{color:var(--attn)}
+.hair{height:2px;border-radius:1px;background:rgba(var(--fg-rgb),.06);position:relative;overflow:hidden}.hair i{position:absolute;left:0;top:0;bottom:0;background:var(--fg);border-radius:1px}
+.hair.acc i{background:var(--accent)}
+.card{background:var(--raised);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:24px;box-shadow:0 12px 32px rgba(0,0,0,var(--sh))}
+.card .hd{height:32px;display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:500}.card .hd span{font-size:11px;color:var(--muted);font-weight:400}
+.card .hero{display:flex;align-items:flex-start;gap:4px}.card .hero b{font-size:48px;font-weight:500;letter-spacing:-.03em;font-variant-numeric:normal}
+.card .hero .cap{display:flex;flex-direction:column;gap:3px;margin-top:8px}.card .hero .cap span{font-size:11px;color:var(--muted)}
+.card .hero .end{margin-left:auto;align-self:center}
+.card .stats{display:grid;grid-template-columns:1fr 1fr;gap:16px 24px}.card .stats div{display:flex;flex-direction:column;gap:4px}.card .stats b{font-size:15px;font-weight:400}.card .stats span{font-size:11px;color:var(--muted)}
+.card .stats.three{grid-template-columns:auto auto auto;justify-content:start}
+.card .pills span.l{font-size:11px;color:var(--muted)}.card .pills{display:flex;flex-direction:column;gap:8px}.card .pills div{display:flex;flex-wrap:wrap;gap:8px}
+.card .pills em{font-style:normal;height:32px;padding:0 16px;border-radius:16px;display:flex;align-items:center;gap:8px;background:rgba(var(--fg-rgb),.06);white-space:nowrap}.card .pills em.on{background:rgba(var(--fg-rgb),.14)}
+.card .rail{display:flex;flex-direction:column;gap:8px}.card .rail .lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}.card .rail .lbl b{font-weight:400;color:var(--fg)}
+.card .mo{display:flex;align-items:center;justify-content:space-between;height:32px;font-size:15px;font-weight:500}.card .mo div{display:flex;gap:4px}
+.card .grid{display:grid;grid-template-columns:32px 16px repeat(7,40px)}.card .grid span{height:32px;display:flex;align-items:center;justify-content:center}
+.card .grid .h{height:24px;font-size:11px;color:var(--muted)}.card .grid .w{font-size:11px;color:var(--muted)}.card .grid .o{color:var(--muted)}.card .grid .t{background:rgba(var(--fg-rgb),.14);border-radius:16px;font-weight:500}
+.card .now{display:flex;gap:12px;align-items:center}.card .now .art{width:64px;height:64px;border-radius:8px;background:rgba(var(--fg-rgb),.06);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.card .now .tt{display:flex;flex-direction:column;gap:4px}.card .now .tt b{font-size:15px;font-weight:500}.card .now .tt i{font-style:normal;color:var(--muted)}.card .now .tt small{font-size:11px;color:var(--muted)}
+.card .tr{display:flex;gap:8px;align-items:center}.card .tr .b{width:32px;height:32px;display:flex;align-items:center;justify-content:center}.card .tr .play{width:32px;height:32px;border-radius:16px;background:var(--fg);color:var(--raised);display:flex;align-items:center;justify-content:center}
+.wx{background:var(--wx-bg);color:var(--wx-ink)}.wx .hero .cap span,.wx .stats span,.wx .days span{color:var(--wx-muted)}.wx .stats b{color:var(--wx-ink)}
+.wx .days{display:flex;gap:32px}.wx .days div{display:flex;flex-direction:column;gap:4px}.wx .days span{font-size:11px}.wx .days em{font-style:normal}.wx .days em i{font-style:normal;color:var(--wx-muted);margin-left:4px}
+.launcher{background:var(--raised);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:16px;box-shadow:0 12px 32px rgba(0,0,0,var(--sh))}
+.field{height:32px;border-radius:16px;background:rgba(var(--fg-rgb),.06);display:flex;align-items:center;gap:8px;padding:0 14px;border:2px solid var(--accent)}.field i{font-style:normal;color:var(--muted)}
+.rows{display:flex;flex-direction:column;gap:8px}.row{height:32px;border-radius:16px;display:flex;align-items:center;gap:12px;padding:0 16px}.row .n{flex:1}.row .k{font-size:11px;color:var(--muted)}.row.sel{background:rgba(var(--fg-rgb),.14)}.row.hov{background:rgba(var(--fg-rgb),.10)}
+.note{background:var(--raised);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;line-height:1.4;box-shadow:0 12px 32px rgba(0,0,0,var(--sh))}
+.note .app{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);line-height:1}.note .app .t{margin-left:auto}.note .title{font-size:15px;font-weight:500;margin-top:4px}.note .body{color:var(--muted)}
+.osd{width:280px;height:48px;background:var(--raised);border-radius:16px;display:flex;align-items:center;gap:16px;padding:0 16px;box-shadow:0 12px 32px rgba(0,0,0,var(--sh))}.osd .hair{flex:1}.osd .n{font-size:15px;font-weight:500;width:2ch;text-align:right}
+"""
+
+def vars_css(t):
+    return f":root{{--bg:{t['bg']};--raised:{t['raised']};--fg:{t['fg']};--fg-rgb:{hexrgb(t['fg'])};--muted:{t['muted']};--accent:{t['accent']};--attn:{t['attn']};--wx-bg:{t['wx'][0]};--wx-ink:{t['wx'][1]};--wx-muted:{t['wx'][2]};--sh:{'.08' if t['light'] else '.32'}}}"
+
+def bar(t, wide=True):
+    return f'''<div class="bar"><div class="l"><div class="slot">{ic("apps")}</div><div class="ws"><span>1</span><span class="on">2</span><span>3</span><span>4</span><span>5</span></div></div>
+<div class="clock"><i>Monday</i>14:32</div>
+<div class="r"><div class="slot attn">{ic("update")}</div><div class="slot">{ic("wifi")}</div><div class="slot">{ic("bluetooth")}</div><div class="slot">{ic("volume")}</div><div class="slot">{ic("battery_full")}</div></div></div>'''
+
+def widgets(t):
+    days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+    g = '<span class="h w">W</span><span></span>' + "".join(f'<span class="h">{d}</span>' for d in days)
+    rows = [(36,["31","1","2","3","4","5","6"]),(37,["7","8","9","10","11","12","13"]),(38,["14","15","16","17","18","19","20"]),(39,["21","22","23","24","25","26","27"]),(40,["28","29","30","1","2","3","4"])]
+    for i,(w,ds) in enumerate(rows):
+        g += f'<span class="w">{w}</span><span></span>'
+        for j,d in enumerate(ds):
+            o = (i==0 and j==0) or (i==4 and j>=3)
+            g += f'<span class="{"t" if (i==0 and d=="7") else ("o" if o else "")}">{d}</span>'
+    return {
+     "launcher": f'''<div class="launcher" style="width:480px"><div class="field">{ic("search",20)}<div>fi<i>refox</i></div></div><div class="rows">
+<div class="row sel">{ic("globe",20)}<span class="n">Firefox</span><span class="k">Application</span></div><div class="row hov">{ic("folder",20)}<span class="n">Files</span><span class="k">Application</span></div>
+<div class="row">{ic("text",20)}<span class="n">Figma</span><span class="k">Web app</span></div><div class="row">{ic("terminal",20)}<span class="n">Fastfetch</span><span class="k">Command</span></div><div class="row">{ic("text",20)}<span class="n">Font manager</span><span class="k">Application</span></div></div></div>''',
+     "note": f'''<div class="note" style="width:360px"><div class="app">{ic("mail",20)}Thunderbird<span class="t">now</span></div><div class="title">Marvin Schwaibold</div><div class="body">Grid first, then a clean type scale. Art direct a few key widgets and the rest is propagation.</div><div class="hair acc" style="margin-top:8px"><i style="width:62%"></i></div></div>''',
+     "weather": f'''<div class="card wx" style="width:360px"><div class="hd" style="justify-content:flex-start">Bodega Bay</div><div class="hero"><b>58</b><div class="cap" style="font-size:13px;color:var(--wx-muted)">°F</div><span class="end">{ic("partly",48,1.25)}</span></div>
+<div class="stats three"><div><b>61°F</b><span>Feels like</span></div><div><b>8 mph</b><span>Wind</span></div><div><b>70%</b><span>Humidity</span></div></div>
+<div class="days"><div><span>Sat</span>{ic("sun",20)}<em>63°<i>51°</i></em></div><div><span>Sun</span>{ic("sun",20)}<em>65°<i>52°</i></em></div><div><span>Mon</span>{ic("cloud",20)}<em>72°<i>55°</i></em></div></div></div>''',
+     "clock": f'''<div class="card" style="width:360px"><div class="hero"><b>7</b><div class="cap"><div>September</div><span>Monday</span></div></div>
+<div class="rail"><div class="lbl">2026<b>68%</b></div><div class="hair"><i style="width:68%"></i></div></div>
+<div class="mo">September 2026<div>{ic("chevron_left",20)}{ic("chevron_right",20)}</div></div><div class="grid">{g}</div></div>''',
+     "power": f'''<div class="card" style="width:360px"><div class="hd">Battery<span>Sipping juice</span></div><div class="hero"><b>87%</b><span class="end">{ic("battery",24)}</span></div><div class="hair"><i style="width:87%"></i></div>
+<div class="stats"><div><b>62 Wh</b><span>Battery size</span></div><div><b>4:12</b><span>Time left</span></div><div><b>214</b><span>Charge cycles</span></div><div><b>8.4 W</b><span>Discharging</span></div></div>
+<div class="pills"><span class="l">Power profile</span><div><em>{ic("eco")}Saver</em><em class="on">{ic("balance")}Balanced</em><em>{ic("bolt")}Performance</em></div></div></div>''',
+     "media": f'''<div class="card" style="width:360px;gap:16px"><div class="now"><div class="art">{ic("music",24)}</div><div class="tt"><b>The Visit</b><i>Agar Agar</i><small>The Dog and the Future</small></div></div>
+<div class="rail" style="gap:4px"><div class="hair"><i style="width:56%"></i></div><div class="lbl">2:22<span>4:10</span></div></div>
+<div class="tr"><span class="b">{ic("prev",20)}</span><span class="play">{ic("pause",20)}</span><span class="b">{ic("next",20)}</span></div></div>''',
+     "osd": f'''<div class="osd">{ic("volume",20)}<div class="hair"><i style="width:64%"></i></div><div class="n">64</div></div>''',
+    }
+
+def esc(s): return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
+
+def editor_lines(t, src):
+    kw = re.compile(r'^(\[[a-z-]+\])')
+    out = []
+    for n, line in enumerate(src, 1):
+        l = esc(line.rstrip("\n"))
+        if l.startswith("#"): body = f'<span style="color:{t["muted"]}">{l}</span>'
+        elif kw.match(l): body = f'<span style="color:{t["magenta"]}">{l}</span>'
+        elif "=" in l:
+            k, v = l.split("=", 1)
+            v2 = re.sub(r'(&quot;|")([^"]*)(&quot;|")', lambda m: f'<span style="color:{t["green"]}">{m.group(0)}</span>', v)
+            v2 = re.sub(r'(?<![\w#])(-?\d+(\.\d+)?)(?![\w])', lambda m: f'<span style="color:{t["yellow"]}">{m.group(0)}</span>', v2) if '"' not in v else v2
+            body = f'<span style="color:{t["blue"]}">{k}</span>={v2}'
+        else: body = l
+        out.append(f'<div class="ln"><span class="no">{n}</span>{body}</div>')
+    return "".join(out)
+
+def desktop(t, fonts):
+    src = open(ROOT / "shell.toml").read().split("\n")[52:92]
+    swatch = "".join(f'<span style="display:inline-block;width:20px;height:12px;background:{c};margin-right:4px;border-radius:2px"></span>' for c in t["ansi"][:8])
+    swatch2 = "".join(f'<span style="display:inline-block;width:20px;height:12px;background:{c};margin-right:4px;border-radius:2px"></span>' for c in t["ansi"][8:])
+    procs = [("omarchy-shell","1.8","412M"),("firefox","3.1","1.2G"),("Hyprland","0.9","188M"),("pipewire","0.4","31M"),("nvim","0.2","64M"),("ghostty","0.1","52M"),("tailscaled","0.0","28M"),("btop","0.3","19M")]
+    plist = "".join(f'<div class="pr"><span>{n}</span><span class="m">{c}%</span><span class="m">{m}</span></div>' for n,c,m in procs)
+    pts = [12,14,11,18,22,17,26,31,24,28,35,30,22,19,24,29,38,33,27,25,21,26,30,36,40,34,29,24,20,23]
+    poly = " ".join(f"{i*10},{60-p}" for i,p in enumerate(pts))
+    folders = ["Desktop","Documents","Downloads","Dropbox","Music","Pictures","Public","Videos"]
+    fgrid = "".join(f'<div class="fd"><svg width="56" height="44" viewBox="0 0 56 44"><path d="M2 8a4 4 0 0 1 4-4h14l4 4h24a4 4 0 0 1 4 4v26a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z" fill="{t["accent"]}" opacity=".9"/><path d="M2 14h52v24a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z" fill="{t["accent"]}"/></svg><span>{f}</span></div>' for f in folders)
+    side = "".join(f'<div class="si{" on" if n=="Home" else ""}">{ic(i,16)}{n}</div>' for i,n in (("home","Home"),("clock","Recent"),("star","Starred"),("network","Network"),("trash","Trash"),("download","Downloads")))
+    return f"""<!doctype html><html><head><meta charset="utf-8"><style>{font_face(fonts)}{vars_css(t)}{BASE_CSS}
+html,body{{width:1800px;height:1012px;overflow:hidden}}
+body{{background:url('file://{t["wall"]}') center/cover}}
+.win{{position:absolute;background:var(--bg);border-radius:16px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,var(--sh))}}
+.win.focus{{outline:1px solid rgba(var(--fg-rgb),.55);outline-offset:-1px}}
+.ed{{padding:16px 20px 64px;font-size:13px;line-height:20px;height:100%;overflow:hidden}}.ln{{display:flex;white-space:pre}}.no{{width:40px;color:var(--muted);text-align:right;margin-right:20px;font-variant-numeric:tabular-nums}}
+.status{{position:absolute;left:16px;right:16px;bottom:12px;height:32px;border-radius:16px;background:rgba(var(--fg-rgb),.06);display:flex;align-items:center;gap:16px;padding:0 16px;font-size:11px}}
+.status b{{font-weight:500;color:var(--fg)}}.status span{{color:var(--muted)}}
+.term{{padding:16px 20px;font-size:13px;line-height:20px;white-space:pre}}
+.term .p{{color:var(--accent)}}.term .c{{color:var(--muted)}}
+.mon{{padding:16px 20px;font-size:12px;line-height:20px}}.mon h4{{margin:0 0 8px;font:500 13px Inter}}.mon .sec{{margin-bottom:16px}}.mon .lab{{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px}}
+.pr{{display:grid;grid-template-columns:1fr 60px 70px;font-family:'JetBrains Mono';font-size:12px}}.pr .m{{color:var(--muted);text-align:right}}
+.files{{display:grid;grid-template-columns:184px 1fr;height:100%}}.files .sb{{padding:16px 8px;display:flex;flex-direction:column;gap:2px;background:var(--raised)}}
+.si{{height:32px;border-radius:16px;padding:0 12px;display:flex;align-items:center;gap:10px;color:var(--fg)}}.si.on{{background:rgba(var(--fg-rgb),.14)}}
+.files .main{{padding:16px 20px}}.files .top{{display:flex;align-items:center;gap:12px;margin-bottom:24px}}.files .top .pathf{{height:32px;flex:1;border-radius:16px;background:rgba(var(--fg-rgb),.06);display:flex;align-items:center;padding:0 16px;gap:8px}}
+.fgrid{{display:grid;grid-template-columns:repeat(4,1fr);gap:24px 16px}}.fd{{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11px}}
+</style></head><body>
+{bar(t)}
+<div class="win focus" style="left:16px;top:48px;width:1004px;height:600px">
+  <div class="ed mono">{editor_lines(t, src)}</div>
+  <div class="status"><b>NORMAL</b><span>shell.toml</span><span>[spacing]</span><span style="margin-left:auto">TOML · UTF-8</span><b>62:1</b></div>
+</div>
+<div class="win" style="left:16px;top:656px;width:1004px;height:340px">
+  <div class="term mono"><span class="p">❯</span> omarchy theme set marvin
+<span class="c">Theme set. Bar 32 · radius 16 · padding 16 · type 11/13/15/18/24/48</span>
+<span class="p">❯</span> omarchy dev theme-preview marvin
+{swatch}
+{swatch2}
+<span class="c">accent {t["accent"]} · attention {t["attn"]} · foreground {t["fg"]} · background {t["bg"]}</span>
+<span class="p">❯</span> ./test/run
+<span style="color:{t["green"]}">ok</span>  contrast floors      <span class="c">40 pairs</span>
+<span style="color:{t["green"]}">ok</span>  shell parser         <span class="c">154 keys, 0 dropped</span>
+<span style="color:{t["green"]}">ok</span>  geometry identity    <span class="c">94 tokens</span>
+<span style="color:{t["green"]}">ok</span>  install → revert     <span class="c">byte for byte</span>
+<span class="p">❯</span> <span style="display:inline-block;width:8px;height:16px;background:var(--fg);vertical-align:-3px"></span></div>
+</div>
+<div class="win" style="left:1028px;top:48px;width:756px;height:420px">
+  <div class="mon"><div class="sec"><div class="lab"><span>CPU</span><span>24% · 2.9 GHz · 51°C</span></div>
+  <svg width="716" height="60" viewBox="0 0 300 60" preserveAspectRatio="none"><polyline points="{poly}" fill="none" stroke="{t["accent"]}" stroke-width="1.5" vector-effect="non-scaling-stroke"/><polyline points="0,60 {poly} 290,60" fill="{t["accent"]}" opacity=".08" stroke="none"/></svg></div>
+  <div class="sec"><div class="lab"><span>Memory</span><span>6.1 / 32 GB</span></div><div class="hair"><i style="width:19%"></i></div></div>
+  <div class="sec"><div class="lab"><span>Disk</span><span>412 / 931 GB</span></div><div class="hair"><i style="width:44%"></i></div></div>
+  <div class="lab" style="margin-top:8px"><span>Processes</span><span>cpu · mem</span></div>{plist}</div>
+</div>
+<div class="win" style="left:1028px;top:476px;width:756px;height:520px">
+  <div class="files"><div class="sb">{side}</div><div class="main"><div class="top">{ic("chevron_left",20)}{ic("chevron_right",20)}<div class="pathf">{ic("home",16)}Home</div>{ic("search",20)}</div><div class="fgrid">{fgrid}</div></div></div>
+</div>
+</body></html>"""
+
+def boot(t, fonts):
+    return f"""<!doctype html><html><head><meta charset="utf-8"><style>{font_face(fonts)}{vars_css(t)}{BASE_CSS}
+html,body{{width:1920px;height:1080px;overflow:hidden}}body{{background:{t["ground"] if t["light"] else "#0a0a0a"};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:48px}}
+.mark{{font-size:96px;font-weight:500;letter-spacing:-.03em}}
+.input{{width:280px;height:32px;border-radius:16px;background:rgba({hexrgb(t["raised"])},.85);display:flex;align-items:center;justify-content:center;gap:8px}}
+.input i{{width:8px;height:8px;border-radius:4px;background:var(--fg)}}
+</style></head><body><div class="mark">marvin</div><div class="input"><i></i><i></i><i></i><i></i></div></body></html>"""
+
+def sheet(t, fonts):
+    w = widgets(t)
+    return f"""<!doctype html><html><head><meta charset="utf-8"><style>{font_face(fonts)}{vars_css(t)}{BASE_CSS}
+html,body{{width:1600px;height:900px;overflow:hidden}}body{{background:{t["ground"]};padding:48px}}
+.g{{display:grid;grid-template-columns:480px 360px 360px;gap:48px;align-items:start;justify-content:center}}
+.col{{display:flex;flex-direction:column;gap:48px}}
+</style></head><body><div class="g">
+<div class="col">{w["launcher"]}{w["note"]}{w["osd"]}</div>
+<div class="col">{w["weather"]}{w["power"]}</div>
+<div class="col">{w["clock"]}{w["media"]}</div>
+</div></body></html>"""
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser(); ap.add_argument("--fonts", required=True); ap.add_argument("--out", default=str(ROOT)); a = ap.parse_args()
+    out = pathlib.Path(a.out); tmp = pathlib.Path(tempfile.mkdtemp())
+    jobs = []
+    for light in (False, True):
+        t = tone(ROOT, light); pre = "light/" if light else ""; tag = "light" if light else "dark"
+        for name, html, size, dests in (
+            ("desktop", desktop(t, a.fonts), (1800, 1012), [out / f"{pre}preview.png"]),
+            ("boot", boot(t, a.fonts), (1920, 1080), [out / f"{pre}preview-unlock.png"]),
+            ("widgets", sheet(t, a.fonts), (1600, 900), [out / f"docs/images/widgets-{tag}.png"]),
+        ):
+            h = tmp / f"{name}-{tag}.html"; h.write_text(html)
+            png = tmp / f"{name}-{tag}.png"
+            subprocess.run(["node", str(HERE / "render.js"), str(h), str(png), str(size[0]), str(size[1])], check=True, env={**os.environ, "NODE_PATH": os.environ.get("NODE_PATH", "")})
+            for d in dests:
+                d.parent.mkdir(parents=True, exist_ok=True); d.write_bytes(png.read_bytes()); print("wrote", d.relative_to(out), size)
