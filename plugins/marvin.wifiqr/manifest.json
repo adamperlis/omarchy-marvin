@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.wifiqr",
+  "name": "Marvin Wifiqr",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "Wi-Fi QR as a card",
+  "kinds": [
+    "panel"
+  ],
+  "entryPoints": {
+    "panel": "Panel.qml"
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.wifiqr"
+  }
+}

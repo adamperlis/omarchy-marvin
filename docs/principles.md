@@ -66,6 +66,10 @@ Proposed.
   `display-large` is 48 because every consumer of it in the shell is a
   hero numeral or glyph — the battery percentage, the media art placeholder,
   the clipboard preview — and a hero numeral has to be large to be one.
+- **Large type is tracked in.** Inter is fit for text sizes; at 48 the
+  numerals sit loose. Tracking derives from the size so it scales with the
+  token: `−0.02em` at `display-large`, `−0.01em` at `display`, none below.
+  In QML: `font.letterSpacing: -Style.font.displayLarge * 0.02`. Confirmed.
 - **Large numerals, small labels** — confirmed as a rule from the
   reference. The number is the biggest thing on the surface; its unit or
   label drops to caption beside it. Applies to the lock clock, bar clock,

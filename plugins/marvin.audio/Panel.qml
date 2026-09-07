@@ -720,6 +720,7 @@ Panel {
               color: root.bar.foreground
               font.family: root.bar.fontFamily
               font.pixelSize: Style.font.display
+              font.letterSpacing: -Style.font.display * 0.01
               opacity: root.outputMuted ? 0.5 : 1.0
               anchors.left: parent.left
               anchors.verticalCenter: parent.verticalCenter

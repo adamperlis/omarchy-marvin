@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.dropbox",
+  "name": "Marvin Dropbox",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "license": "MIT",
+  "description": "Dropbox as a card",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Marvin Dropbox",
+    "description": "Dropbox as a card",
+    "category": "Files",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "refreshIntervalSec": 60
+    },
+    "schema": [
+      {
+        "key": "refreshIntervalSec",
+        "type": "integer",
+        "label": "Refresh interval (seconds)",
+        "min": 10,
+        "max": 3600,
+        "step": 5,
+        "defaultValue": 60
+      }
+    ]
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.dropbox"
+  }
+}

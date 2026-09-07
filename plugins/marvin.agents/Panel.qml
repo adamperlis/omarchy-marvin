@@ -445,6 +445,7 @@ Panel {
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.display
+                  font.letterSpacing: -Style.font.display * 0.01
                 }
               }
             }

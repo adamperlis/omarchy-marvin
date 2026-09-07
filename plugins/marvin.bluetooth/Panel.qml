@@ -709,6 +709,7 @@ Panel {
             color: root.bar.foreground
             font.family: root.bar.fontFamily
             font.pixelSize: Style.font.display
+            font.letterSpacing: -Style.font.display * 0.01
             opacity: root.adapter && root.adapter.enabled ? 1.0 : 0.5
           }
 

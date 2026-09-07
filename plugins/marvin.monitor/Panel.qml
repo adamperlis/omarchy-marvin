@@ -540,6 +540,7 @@ Panel {
               color: root.bar.foreground
               font.family: root.bar.fontFamily
               font.pixelSize: Style.font.display
+              font.letterSpacing: -Style.font.display * 0.01
               anchors.left: parent.left
               anchors.verticalCenter: parent.verticalCenter
             }

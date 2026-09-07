@@ -720,6 +720,7 @@ Panel {
                 color: root.ink
                 font.family: root.bar.fontFamily
                 font.pixelSize: Style.font.displayLarge
+                font.letterSpacing: -Style.font.displayLarge * 0.02
                 font.weight: Font.Medium
               }
               Text {
