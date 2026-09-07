@@ -51,12 +51,12 @@ These are renders from the tokens, not screenshots of the shell — see
 | **Radius** | one radius for everything | 24px — cards, windows; controls are pills |
 | **Padding** | equals the radius | 24px, so content sits at the centre of the corner arc |
 | **Type** | Inter, pinned scale, every step perceptible | 12 / 14 / 16 / 18 / 24 / 56; hero numerals regular weight, tracked −0.03em |
-| **Colour** | true-neutral ramp, one accent, one attention role | accent `#7aa6ff` / `#2a63d8`; attention amber, not terminal red; status is a banana-yellow chip with dark text |
+| **Colour** | true-neutral ramp, one accent, one attention role | one sky blue, `#2f93d3` light / `#6db8ee` dark, pulled from the reference and used for accent and attention alike; status is muted text, or the reference's pale-yellow draft chip |
 | **Text** | two tones, no third | foreground and muted |
 | **Depth** | surfaces, not outlines | a hairline at 10% and a wide faint shadow; no dividers, no structural borders |
 | **Tone** | a property of each surface | bar is base, popups are raised, weather is a gradient, battery is inverted |
-| **State** | emphasis rises in one direction; focus ≠ hover | fills 0.03 → 0.05 → 0.07 → 0.10 in light (0.06 → 0.10 → 0.14 → 0.18 in dark); focus is the selected fill plus a 1px text-colour ring, never an accent outline |
-| **Progress** | a hairline | 2px, track at 0.06, fill foreground or accent |
+| **State** | emphasis rises in one direction; focus ≠ hover | fills 0.05 → 0.07 → 0.09 → 0.12 in light (0.06 → 0.10 → 0.14 → 0.18 in dark); focus is the selected fill plus a 1px text-colour ring, never an accent outline |
+| **Progress** | a hairline | 2px, track at 0.08, fill muted (the reference's played portion is mid-grey) or accent |
 | **Motion** | a scale, exits faster than entrances | 120 / 200 / 320 ms, exits at 0.6; workspaces slide, borders don't linger |
 | **Icons** | Material Design Icons on their own grid | 16 / 20 / 24 |
 

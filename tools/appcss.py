@@ -20,6 +20,7 @@ def rgb(h): return ",".join(str(int(h[i:i+2], 16)) for i in (1, 3, 5))
 
 def obsidian(c, light):
     base, raised, fg, muted, accent, sel = c["background"], c["lighter_background"], c["foreground"], c["muted"], c["accent"], c["selection"]
+    atext = c.get("accent_text", accent)   # the accent is a graphic colour (3:1); text set in it uses the deeper accent_text
     shadow = "0 8px 32px rgba(0,0,0,.06)" if light else "0 8px 32px rgba(0,0,0,.28)"
     # control alphas follow shell.toml [controls]: light 0.03/0.05/0.07 + ring 0.16, dark 0.06/0.10/0.14 + ring 0.24
     hov, sel, ring = (".05", ".07", ".16") if light else (".10", ".14", ".24")
@@ -94,17 +95,17 @@ body {{
   --text-on-accent: {"#ffffff" if light else base};
   --text-selection: {sel};
   --text-highlight-bg: rgba({rgb(c["yellow"])}, .25);
-  --text-accent: {accent};
-  --text-accent-hover: {accent};
+  --text-accent: {atext};
+  --text-accent-hover: {atext};
   --interactive-normal: rgba({rgb(fg)}, .06);
   --interactive-hover: rgba({rgb(fg)}, {hov});
   --interactive-accent: {accent};
   --interactive-accent-hover: {accent};
   --text-title-h1: {fg}; --text-title-h2: {fg}; --text-title-h3: {fg};
   --text-title-h4: {fg}; --text-title-h5: {fg}; --text-title-h6: {muted};
-  --text-link: {accent};
-  --link-color: {accent};
-  --link-external-color: {accent};
+  --text-link: {atext};
+  --link-color: {atext};
+  --link-external-color: {atext};
   --link-decoration: none;
   --code-normal: {fg};
   --code-background: rgba({rgb(fg)}, .06);
@@ -122,8 +123,8 @@ body {{
   --checkbox-color-hover: {accent};
   --checkbox-border-color: {muted};
   --checkbox-radius: 8px;
-  --tag-color: {accent};
-  --tag-color-hover: {accent};
+  --tag-color: {atext};
+  --tag-color-hover: {atext};
   --tag-background: rgba({rgb(accent)}, .12);
   --tag-background-hover: rgba({rgb(accent)}, .18);
   --tag-radius: 20px;

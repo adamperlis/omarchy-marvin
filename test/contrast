@@ -28,9 +28,10 @@ CHECKS = [
     ("body on raised",   "foreground",        "lighter_background", 10.0),
     ("muted text",       "muted",             "background",          4.5),
     ("muted on raised",  "muted",             "lighter_background",  4.5),
-    ("accent as text",   "accent",            "background",          4.5),
-    ("accent on raised", "accent",            "lighter_background",  4.5),
-    ("attention",        "attention",         "background",          4.5),
+    ("accent (graphic)", "accent",            "background",          3.0),
+    ("accent on raised", "accent",            "lighter_background",  3.0),
+    ("accent as text",   "accent_text",       "lighter_background",  4.5),
+    ("attention (icon)", "attention",         "background",          3.0),
     ("selected text",    "bright_foreground", "selection",           4.5),
 ] + [(f"ansi {c}", c, "background", 4.5) for c in ANSI] \
   + [(f"ansi bright_{c}", "bright_" + c, "background", 4.5) for c in ANSI]

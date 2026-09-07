@@ -7,7 +7,7 @@
 background       = "#f5f5f5"
 background-alpha = 1.0
 text             = "#1a1a1a"
-active           = "#9c5f00"
+active           = "#2f93d3"
 scale-with-font  = false
 size-horizontal  = 32
 size-vertical    = 32
@@ -22,35 +22,35 @@ active-border-foreground = "rgba(1a1a1a8c)"
 
 [controls]
 # Fill is the text color at alpha, so controls survive any surface tone.
-# Emphasis rises monotonically: 0.03 -> 0.05 -> 0.07 -> 0.10 (the reference's
-# Search pill measures #f8f8f8 on white; dark needs more, see shell.toml). Focus is the
+# Emphasis rises monotonically: 0.05 -> 0.07 -> 0.09 -> 0.12. The reference's
+# Search pill is #f4f4f4 on white and its button #f1f1f1; dark needs more. Focus is the
 # selected fill plus a hairline of the text colour: visible, distinct from
 # hover, and never an accent outline — inputs in the reference have none.
 normal-color        = "#1a1a1a"
-normal-fill-alpha   = 0.03
+normal-fill-alpha   = 0.05
 normal-border       = "#1a1a1a"
 normal-border-width = 0
 normal-border-alpha = 0
 
 hover-cursor-color        = "#1a1a1a"
-hover-cursor-fill-alpha   = 0.05
+hover-cursor-fill-alpha   = 0.07
 hover-cursor-border       = "#1a1a1a"
 hover-cursor-border-width = 0
 hover-cursor-border-alpha = 0
 
 focus-color        = "#1a1a1a"
-focus-fill-alpha   = 0.07
+focus-fill-alpha   = 0.09
 focus-border       = "#1a1a1a"
 focus-border-width = 1
 focus-border-alpha = 0.16
 
 selected-color        = "#1a1a1a"
-selected-fill-alpha   = 0.07
+selected-fill-alpha   = 0.09
 selected-border       = "#1a1a1a"
 selected-border-width = 0
 selected-border-alpha = 0
 
-pressed-fill-alpha   = 0.10
+pressed-fill-alpha   = 0.12
 selection-fill-alpha = 0.35
 
 # ---------------------------------------------------------------- geometry
@@ -152,7 +152,7 @@ scrim                     = "#1a1a1a"
 scrim-alpha               = 0.3
 # Selection is a fill, not a color change. Accent stays rationed.
 selected-background       = "#1a1a1a"
-selected-background-alpha = 0.07
+selected-background-alpha = 0.09
 selected-text             = "#1a1a1a"
 selected-border           = "#1a1a1a"
 selected-border-alpha     = 0
@@ -168,7 +168,7 @@ border-width     = 1
 scrim                     = "#1a1a1a"
 scrim-alpha               = 0.3
 selected-background       = "#1a1a1a"
-selected-background-alpha = 0.07
+selected-background-alpha = 0.09
 selected-text             = "#1a1a1a"
 selected-border           = "#1a1a1a"
 selected-border-alpha     = 0
@@ -222,23 +222,21 @@ unselected-border-alpha = 0.2
 # White type on a gradient is measured against the deeper stop at AA large
 # (3:1), because everything set on these surfaces is large. Tested.
 [marvin-weather]
-background     = "#a9cdf0"
-background-end = "#4f90d5"
+background     = "#a8cbe9"
+background-end = "#6ea5d8"
 text           = "#ffffff"
-muted          = "#eef5fc"
+muted          = "#eaf2fb"
 
 # The reference's dark card, on both tones. The chip is a soft fill of the
 # attention hue with lighter text of the same hue.
 [marvin-power]
-background     = "#2f3b58"
-background-end = "#1a2338"
+background     = "#33405b"
+background-end = "#1b2436"
 text           = "#ffffff"
-muted          = "#b6c0d6"
-attention-fill = "#ffe15c"
-attention-text = "#3a2b00"
+muted          = "#b8c1d3"
 
-# Status chips on raised cards (the note's "Draft"): banana yellow with dark
-# text, a saturated fill rather than a tint, as in the reference.
+# The one status chip in the reference: the note's "Draft", pale yellow with
+# olive text. Every other state (the focus card's "In progress") is muted text.
 [marvin-chip]
-attention-fill = "#ffe15c"
-attention-text = "#3a2b00"
+attention-fill = "#f9ecad"
+attention-text = "#574611"

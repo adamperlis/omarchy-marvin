@@ -84,7 +84,7 @@ def tone(root, light):
                 wall=root / ("light/backgrounds/1-lilies.jpg" if light else "backgrounds/1-lilies.jpg"),
                 walls=[(n, root / (("light/" if light else "") + f"backgrounds/{n}")) for n in ("1-lilies.jpg", "2-sunrise.jpg")],
                 wx=(wx["background"], wx["text"], wx["muted"], wx.get("background-end", wx["background"])),
-                pw=(pw["background"], pw["text"], pw["muted"], pw["attention-fill"], pw["attention-text"], pw.get("background-end", pw["background"])),
+                pw=(pw["background"], pw["text"], pw["muted"], pw.get("background-end", pw["background"])),
                 chip=(ch["attention-fill"], ch["attention-text"]),
                 alphas=(ct["normal-fill-alpha"], ct["hover-cursor-fill-alpha"], ct["selected-fill-alpha"], ct["focus-border-alpha"]))
 
@@ -101,7 +101,7 @@ BASE_CSS = """
 .ws span.on{background:rgba(var(--fg-rgb),var(--a3));color:var(--fg)}
 .clock{font-weight:500;padding:0 16px}.clock i{font-style:normal;color:var(--muted);font-weight:400;margin-right:8px}
 .attn{color:var(--attn)}
-.hair{height:2px;border-radius:1px;background:rgba(var(--fg-rgb),var(--a1));position:relative;overflow:hidden}.hair i{position:absolute;left:0;top:0;bottom:0;background:var(--fg);border-radius:1px}
+.hair{height:2px;border-radius:1px;background:rgba(var(--fg-rgb),.08);position:relative;overflow:hidden}.hair i{position:absolute;left:0;top:0;bottom:0;background:var(--muted);border-radius:1px}
 .hair.acc i{background:var(--accent)}
 .card{background:var(--raised);border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:24px;border:1px solid rgba(var(--fg-rgb),.10);box-shadow:0 8px 32px rgba(0,0,0,var(--sh))}
 .card .hd{height:32px;display:flex;align-items:center;justify-content:space-between;font-size:18px;font-weight:500}.card .hd span{font-size:12px;color:var(--muted);font-weight:400}
@@ -122,12 +122,12 @@ BASE_CSS = """
 .wx{background:linear-gradient(180deg,var(--wx-bg),var(--wx-end));color:var(--wx-ink)}
 .pw{background:linear-gradient(180deg,var(--pw-bg),var(--pw-end));color:var(--pw-ink)}.pw .hd span{color:var(--pw-muted)}.pw .stats b{color:var(--pw-ink)}.pw .stats span,.pw .pills span.l{color:var(--pw-muted)}
 .pw .pills em{background:rgba(var(--pw-rgb),.06)}.pw .pills em.on{background:rgba(var(--pw-rgb),.14)}
-.chip{height:24px;padding:0 12px;border-radius:16px;display:flex;align-items:center;font-size:11px;background:var(--chip-fill);color:var(--chip-text)}
+.chip{font-size:12px;color:var(--pw-muted);font-weight:400}
 .ring{position:relative;width:160px;height:160px;margin:0 auto}.ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:400;letter-spacing:-.03em;font-variant-numeric:normal}
 .tile{width:20px;height:20px;border-radius:6px;flex:none}.tile.lg{width:64px;height:64px;border-radius:8px}
 .mood{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mood span{height:112px;border-radius:12px;display:block}
-.notes .page{font-family:Newsreader,'Noto Serif',serif;font-size:20px;line-height:1.4;letter-spacing:-.005em;border:1px solid rgba(var(--fg-rgb),.10);border-radius:16px;padding:16px;min-height:96px}.notes .page mark{background:rgba(var(--accent-rgb),.18);color:inherit;border-radius:3px;padding:1px 0}
-.chip2{align-self:flex-start;height:28px;padding:0 12px;border-radius:14px;display:flex;align-items:center;font-size:12px;font-weight:500;background:var(--chip2-fill);color:var(--chip2-text)}
+.notes .page{font-family:Newsreader,'Noto Serif',serif;font-size:26px;line-height:1.3;letter-spacing:-.005em;padding-bottom:16px}
+.chip2{align-self:flex-start;height:28px;padding:0 12px;border-radius:6px;display:flex;align-items:center;font-size:13px;font-weight:400;background:var(--chip2-fill);color:var(--chip2-text)}
 .files{display:flex;gap:16px;min-height:200px}.files .sb{display:flex;flex-direction:column;gap:4px;width:120px}.files .sb div{height:32px;border-radius:16px;padding:0 12px;display:flex;align-items:center;gap:8px;font-size:13px}.files .sb div.on{background:rgba(var(--fg-rgb),var(--a3))}
 .files .fg{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 8px;align-content:start}.files .fd{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px}
 .picker .tabs{display:flex;gap:8px}.picker .tabs span{height:40px;padding:0 20px;border-radius:20px;display:flex;align-items:center;color:var(--muted)}.picker .tabs span.on{background:rgba(var(--fg-rgb),var(--a3));color:var(--fg)}
@@ -153,7 +153,7 @@ BASE_CSS = """
 """
 
 def vars_css(t):
-    return f":root{{--bg:{t['bg']};--raised:{t['raised']};--fg:{t['fg']};--fg-rgb:{hexrgb(t['fg'])};--muted:{t['muted']};--accent:{t['accent']};--attn:{t['attn']};--wx-bg:{t['wx'][0]};--wx-ink:{t['wx'][1]};--acc-rgb:{hexrgb(t['accent'])};--wx-muted:{t['wx'][2]};--wx-end:{t['wx'][3]};--pw-bg:{t['pw'][0]};--pw-ink:{t['pw'][1]};--pw-rgb:{hexrgb(t['pw'][1])};--pw-muted:{t['pw'][2]};--chip-fill:{t['pw'][3]};--chip-text:{t['pw'][4]};--pw-end:{t['pw'][5]};--chip2-fill:{t['chip'][0]};--chip2-text:{t['chip'][1]};--a1:{t['alphas'][0]};--a2:{t['alphas'][1]};--a3:{t['alphas'][2]};--ring:{t['alphas'][3]};--accent-rgb:{hexrgb(t['accent'])};--attn-rgb:{hexrgb(t['attn'])};--sh:{'.06' if t['light'] else '.28'}}}"
+    return f":root{{--bg:{t['bg']};--raised:{t['raised']};--fg:{t['fg']};--fg-rgb:{hexrgb(t['fg'])};--muted:{t['muted']};--accent:{t['accent']};--attn:{t['attn']};--wx-bg:{t['wx'][0]};--wx-ink:{t['wx'][1]};--acc-rgb:{hexrgb(t['accent'])};--wx-muted:{t['wx'][2]};--wx-end:{t['wx'][3]};--pw-bg:{t['pw'][0]};--pw-ink:{t['pw'][1]};--pw-rgb:{hexrgb(t['pw'][1])};--pw-muted:{t['pw'][2]};--pw-end:{t['pw'][3]};--chip2-fill:{t['chip'][0]};--chip2-text:{t['chip'][1]};--a1:{t['alphas'][0]};--a2:{t['alphas'][1]};--a3:{t['alphas'][2]};--ring:{t['alphas'][3]};--accent-rgb:{hexrgb(t['accent'])};--attn-rgb:{hexrgb(t['attn'])};--sh:{'.06' if t['light'] else '.28'}}}"
 
 def bar(t, wide=True):
     return f'''<div class="bar"><div class="l"><div class="slot">{ic("apps")}</div><div class="ws"><span>1</span><span class="on">2</span><span>3</span><span>4</span><span>5</span></div></div>
@@ -187,7 +187,7 @@ def widgets(t):
      "media": f'''<div class="card" style="width:352px;gap:16px"><div class="now"><div class="art" style="background:url('file://{t["walls"][1][1]}') 30% 40%/200% auto"></div><div class="tt"><b>The Visit</b><i>Agar Agar</i><div class="tr"><span class="b">{ic("prev",20)}</span><span class="play">{ic("pause",20)}</span><span class="b">{ic("next",20)}</span></div></div></div>
 <div class="rail" style="gap:8px"><div class="hair"><i style="width:56%"></i></div><div class="lbl">2:22<span>-1:48</span></div></div></div>''',
      "mood": f'''<div class="card" style="width:352px;gap:16px"><div class="mood"><span style="background:url('file://{t["walls"][0][1]}') 10% 20%/180% auto"></span><span style="background:url('file://{t["walls"][1][1]}') 70% 30%/180% auto"></span><span style="background:url('file://{t["walls"][1][1]}') 20% 80%/180% auto"></span><span style="background:url('file://{t["walls"][0][1]}') 80% 70%/180% auto"></span></div><div class="hd" style="height:auto"><div>Backgrounds<div style="font-size:14px;color:var(--muted);font-weight:400;margin-top:4px">Graded to the ground</div></div><span>2 per tone</span></div></div>''',
-     "notes": f'''<div class="card notes" style="width:352px;gap:16px"><div class="hd" style="justify-content:flex-start">Quick note</div><div class="page">Leave a little room for <mark>the unexpected</mark>. Most of the day is already spoken for.</div><span class="chip2">Draft · This session</span></div>''',
+     "notes": f'''<div class="card notes" style="width:352px;gap:16px"><div class="hd" style="justify-content:flex-start">Quick note</div><div class="page">Leave a little room for the unexpected.</div><span class="chip2">Draft · This session</span></div>''',
      "files": f'''<div class="card" style="width:352px;gap:16px"><div class="hd" style="height:auto"><div style="display:flex;gap:8px;align-items:center">{ic("chevron_left",20)}{ic("chevron_right",20)}<span style="height:32px;padding:0 16px;border-radius:16px;background:rgba(var(--fg-rgb),var(--a1));display:flex;align-items:center;gap:8px;font-size:14px;font-weight:400">{ic("home",16)}Home</span></div>{ic("search",20)}</div>
 <div class="files"><div class="sb"><div class="on">{ic("home",16)}Home</div><div>{ic("clock",16)}Recent</div><div>{ic("star",16)}Starred</div><div>{ic("trash",16)}Trash</div></div>
 <div class="fg">{"".join(f'<div class="fd"><svg width="40" height="32" viewBox="0 0 56 44"><path d="M2 8a4 4 0 0 1 4-4h14l4 4h24a4 4 0 0 1 4 4v26a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z" fill="#e9cf86"/><path d="M2 14h52v24a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z" fill="#f3dd9a"/></svg><span>{f}</span></div>' for f in ("Desktop","Documents","Downloads","Music","Pictures","Videos"))}</div></div></div>''',

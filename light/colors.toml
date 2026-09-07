@@ -2,8 +2,9 @@
 # Ramp reads lightest to darkest, as Omarchy expects for light themes.
 mode = "light"
 
-accent    = "#2a63d8"
-attention = "#9c5f00"
+accent      = "#2f93d3"
+accent_text = "#1a72ad"
+attention   = "#2f93d3"
 selection = "#d9d9d9"
 muted     = "#6b6b6b"
 
@@ -20,14 +21,14 @@ bright_foreground = "#0a0a0a"
 red     = "#c03a3a"
 green   = "#2e7d2e"
 yellow  = "#8f6a00"
-blue    = "#2a63d8"
+blue    = "#1a72ad"
 magenta = "#9448b8"
 cyan    = "#177a7a"
 
 bright_red     = "#a82f2f"
 bright_green   = "#256b25"
 bright_yellow  = "#7a5a00"
-bright_blue    = "#1f52bd"
+bright_blue    = "#155f91"
 bright_magenta = "#7f3aa0"
 bright_cyan    = "#126666"
 

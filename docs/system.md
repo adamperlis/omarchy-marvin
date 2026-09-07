@@ -43,8 +43,8 @@ gaps, typeface and motion might never arrive.
   `muted` and `red` (as the urgent role) directly.
 
 `attention` is Marvin's own key. No template reads it; `shell.toml`'s
-`[bar] active` carries the same hex, so the bar's alert colour is a designed
-amber rather than the terminal's error red.
+`[bar] active` carries the same value for the update indicator. It is the
+same sky blue as the accent, pulled from the reference, which has no amber.
 
 **`shell.toml`** is the design token file. The shell parses it into a flat
 `section.key` dictionary and two singletons read from it:

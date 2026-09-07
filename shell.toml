@@ -7,7 +7,7 @@
 background       = "#161616"
 background-alpha = 1.0
 text             = "#d6d6d6"
-active           = "#e0a54a"
+active           = "#6db8ee"
 scale-with-font  = false
 size-horizontal  = 32
 size-vertical    = 32
@@ -221,23 +221,21 @@ unselected-border-alpha = 0.2
 # White type on a gradient is measured against the deeper stop at AA large
 # (3:1), because everything set on these surfaces is large. Tested.
 [marvin-weather]
-background     = "#a9cdf0"
-background-end = "#4f90d5"
+background     = "#a8cbe9"
+background-end = "#6ea5d8"
 text           = "#ffffff"
-muted          = "#eef5fc"
+muted          = "#eaf2fb"
 
 # The reference's dark card, on both tones. The chip is a soft fill of the
 # attention hue with lighter text of the same hue.
 [marvin-power]
-background     = "#2f3b58"
-background-end = "#1a2338"
+background     = "#33405b"
+background-end = "#1b2436"
 text           = "#ffffff"
-muted          = "#b6c0d6"
-attention-fill = "#ffe15c"
-attention-text = "#3a2b00"
+muted          = "#b8c1d3"
 
-# Status chips on raised cards (the note's "Draft"): banana yellow with dark
-# text, a saturated fill rather than a tint, as in the reference.
+# The one status chip in the reference: the note's "Draft", pale yellow with
+# olive text. Every other state (the focus card's "In progress") is muted text.
 [marvin-chip]
-attention-fill = "#ffe15c"
-attention-text = "#3a2b00"
+attention-fill = "#f9ecad"
+attention-text = "#574611"

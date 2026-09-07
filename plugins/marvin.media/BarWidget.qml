@@ -279,7 +279,7 @@ BarWidget {
             width: Math.round(parent.width * root.scrub)
             height: parent.height
             radius: parent.radius
-            color: root.bar.foreground
+            color: Color.muted
             Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
           }
         }
