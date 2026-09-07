@@ -55,6 +55,10 @@ installed. Then check:
 - Motion: open and close a window, switch workspaces (they slide now),
   change focus (the border recolours quickly, not over half a second).
 - `omarchy theme set marvin-light` works and swaps only tone.
+- Open Files: Inter, blue accent on selection. Open Obsidian: Inter, no
+  pane borders, neutral headings, tag chips; code blocks are the only
+  monospace. Group two windows (`SUPER+G`): the group bar is Inter on a
+  32px row.
 - `install/marvin --status` lists everything and the snapshot.
 
 ## 3. Widgets, one at a time

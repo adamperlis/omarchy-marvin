@@ -75,6 +75,18 @@ geometry token identical; `test/shell-toml` fails if the 94 non-colour keys
 ever differ. It is installed as a user-written theme (`marvin-light`) by the
 config layer rather than as a second git repo.
 
+### Apps the theme styles directly
+
+Two generated files are replaced by hand-written ones the theme ships,
+because staging never overwrites a file the theme already carries:
+
+- `obsidian.css` — Omarchy copies it into every vault as the "Omarchy"
+  theme on each switch. Ours carries fonts (`--font-interface-theme`,
+  `--font-text-theme`, monospace only for code), radii, spacing, and every
+  surface and state role, generated from `colors.toml` by the tone.
+- `hyprland-preview-share-picker.css` — GTK CSS for the screen-share
+  picker; upstream's hardcodes `JetBrains Mono NF`.
+
 ## Layer 2: what the config layer does and how it is undone
 
 `install/marvin` runs six steps, in this order, each idempotent:
@@ -90,7 +102,11 @@ config layer rather than as a second git repo.
    rule that says: for the process named `quickshell`, `monospace` resolves
    to Inter first. Terminals never see it; Nerd Font icon glyphs fall
    through to the Nerd Font as before.
-4. **Hyprland.** Places `hypr/marvin.lua` and adds one marked
+3a. **GTK.** `gsettings` sets the interface font to Inter 10 and the accent
+   to blue; libadwaita derives per-scheme accent colours from the name, so
+   one setting serves both tones. Previous values go into the snapshot.
+4. **Hyprland.** Places `hypr/marvin.lua` (geometry, motion, and the group
+   bar in Inter) and adds one marked
    `require("hypr.marvin")` line after your `require("hypr.looknfeel")`, so
    Marvin's values are the last word on geometry and motion without editing
    anything else you wrote.

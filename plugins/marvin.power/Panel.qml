@@ -15,6 +15,16 @@ Panel {
   id: root
   moduleName: "omarchy.power"
   ipcTarget: "omarchy.power"
+
+  // Tone. [marvin-power] in shell.toml inverts the card; absent, the card
+  // takes the popup surface. attention-fill / attention-text make the chip.
+  readonly property var toneValues: Color.shellValues
+  readonly property bool tinted: !!(toneValues["marvin-power.background"])
+  readonly property color tintBackground: tinted ? Color.flatColor(toneValues["marvin-power.background"], Color.popups.background) : Color.popups.background
+  readonly property color ink: (tinted && toneValues["marvin-power.text"]) ? Color.flatColor(toneValues["marvin-power.text"], Color.popups.text) : Color.popups.text
+  readonly property color inkMuted: (tinted && toneValues["marvin-power.muted"]) ? Color.flatColor(toneValues["marvin-power.muted"], Color.muted) : Color.muted
+  readonly property color chipFill: toneValues["marvin-power.attention-fill"] ? Color.flatColor(toneValues["marvin-power.attention-fill"], Util.alpha(ink, 0.08)) : Util.alpha(ink, 0.08)
+  readonly property color chipText: toneValues["marvin-power.attention-text"] ? Color.flatColor(toneValues["marvin-power.attention-text"], ink) : ink
   // manageIpc: false so this panel can own the single IpcHandler the target
   // permits — needed for the togglePercentage method below.
   manageIpc: false
@@ -303,6 +313,16 @@ Panel {
     contentWidth: panel.fittedContentWidth(Style.space(328))
     contentHeight: panel.fittedContentHeight(column.implicitHeight)
 
+    // Surface tone, drawn to the card's own shape beneath the content.
+    Rectangle {
+      anchors.fill: parent
+      anchors.margins: -panel.padding
+      radius: Style.cornerRadius
+      color: root.tintBackground
+      visible: root.tinted
+      z: -1
+    }
+
     PanelKeyCatcher {
       id: keyCatcher
       anchors.fill: parent
@@ -322,7 +342,7 @@ Panel {
         anchors.top: parent.top
         spacing: Style.spacing.xxl
 
-        // ---- Header: what this is, and what it is doing right now.
+        // ---- Header: the name, and the state as a soft-fill chip.
         Item {
           width: parent.width
           height: Style.spacing.controlHeight
@@ -331,85 +351,80 @@ Panel {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             text: "Battery"
-            color: root.bar.foreground
+            color: root.ink
             font.family: root.bar.fontFamily
             font.pixelSize: Style.font.title
             font.weight: Font.Medium
           }
 
-          Text {
-            id: heroStatus
-            textFormat: Text.PlainText
+          Rectangle {
+            id: chip
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            text: root.heroStatusText
-            color: Color.muted
-            font.family: root.bar.fontFamily
-            font.pixelSize: Style.font.caption
+            height: Style.spacing.xxl
+            width: heroStatus.implicitWidth + Style.spacing.md * 2
+            radius: Style.cornerRadius
+            color: root.charging || root.chargeThresholdActive ? root.chipFill : Util.alpha(root.ink, Style.normalFillAlpha)
+            Behavior on color { ColorAnimation { duration: 200 } }
+
+            Text {
+              id: heroStatus
+              textFormat: Text.PlainText
+              anchors.centerIn: parent
+              text: root.heroStatusText
+              color: root.charging || root.chargeThresholdActive ? root.chipText : root.inkMuted
+              font.family: root.bar.fontFamily
+              font.pixelSize: Style.font.caption
+            }
           }
         }
 
-        // ---- Hero: the percentage, with the glyph at the far edge.
+        // ---- Hero: the percentage inside a ring of sixty ticks, the charge
+        //      lit in ink and the rest at the normal fill.
         Item {
           width: parent.width
-          height: heroPercent.implicitHeight
+          height: ring.height
 
-          Text {
-            id: heroPercent
-            textFormat: Text.PlainText
-            anchors.left: parent.left
-            text: root.batteryInfo.percentage || "—"
-            color: root.bar.foreground
-            font.family: root.bar.fontFamily
-            font.pixelSize: Style.font.displayLarge
-            font.letterSpacing: -Style.font.displayLarge * 0.03
-            font.weight: Font.Medium
-            Behavior on color { ColorAnimation { duration: 200 } }
-          }
+          Item {
+            id: ring
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: Style.spacing.huge * 3          // 144
+            height: width
+            readonly property int lit: Math.round(root.batteryFraction * 60)
 
-          Text {
-            id: heroIcon
-            textFormat: Text.PlainText
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.batteryIcon()
-            color: root.bar.foreground
-            font.family: root.bar.fontFamily
-            font.pixelSize: Style.font.display
-            Behavior on color { ColorAnimation { duration: 200 } }
-          }
-        }
-
-        // ---- Charge. A hairline: track is the normal fill, the fill is foreground.
-        Item {
-          width: parent.width
-          implicitHeight: Style.spacing.xxs
-
-          Rectangle {
-            id: barTrack
-            anchors.fill: parent
-            radius: 1
-            color: Qt.rgba(root.bar.foreground.r, root.bar.foreground.g, root.bar.foreground.b, Style.normalFillAlpha)
-          }
-
-          Rectangle {
-            id: barFill
-            anchors.left: barTrack.left
-            anchors.verticalCenter: barTrack.verticalCenter
-            height: barTrack.height
-            radius: barTrack.radius
-            color: root.batteryFillColor
-            width: Math.max(barTrack.height, barTrack.width * root.batteryFraction)
-
-            Behavior on width { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
-            Behavior on color { ColorAnimation { duration: 220 } }
+            Repeater {
+              model: 60
+              Rectangle {
+                required property int index
+                width: Style.spacing.xxs
+                height: Style.spacing.sm
+                radius: 1
+                x: ring.width / 2 - width / 2
+                y: 0
+                color: index < ring.lit ? root.ink : Util.alpha(root.ink, Style.normalFillAlpha)
+                transform: Rotation { origin.x: Style.spacing.xxs / 2; origin.y: ring.height / 2; angle: index * 6 }
+                Behavior on color { ColorAnimation { duration: 220 } }
+              }
+            }
 
             SequentialAnimation on opacity {
               running: root.charging && !root.fullyCharged && root.opened
               loops: Animation.Infinite
               alwaysRunToEnd: true
-              NumberAnimation { from: 1.0; to: 0.55; duration: 950; easing.type: Easing.InOutSine }
-              NumberAnimation { from: 0.55; to: 1.0; duration: 950; easing.type: Easing.InOutSine }
+              NumberAnimation { from: 1.0; to: 0.6; duration: 950; easing.type: Easing.InOutSine }
+              NumberAnimation { from: 0.6; to: 1.0; duration: 950; easing.type: Easing.InOutSine }
+            }
+
+            Text {
+              id: heroPercent
+              textFormat: Text.PlainText
+              anchors.centerIn: parent
+              text: root.batteryInfo.percentage || "—"
+              color: root.ink
+              font.family: root.bar.fontFamily
+              font.pixelSize: Style.font.displayLarge
+              font.letterSpacing: -Style.font.displayLarge * 0.03
+              font.weight: Font.Medium
             }
           }
         }
@@ -441,20 +456,18 @@ Panel {
           }
         }
 
-        // ---- Power profile. A caption and a row of pills; the active one is filled.
+        // ---- Power profile. A caption and content-sized pills that wrap.
         Column {
           width: parent.width
           spacing: Style.spacing.sm
 
           Text {
             text: "Power profile"
-            color: Color.muted
+            color: root.inkMuted
             font.family: root.bar.fontFamily
             font.pixelSize: Style.font.caption
           }
 
-          // Pills size to their label and wrap; a third of the row does not
-          // fit "Performance" and a clipped label is a bug.
           Flow {
             id: profileRow
             width: parent.width
@@ -469,7 +482,7 @@ Panel {
                 iconSize: Style.font.iconSmall
                 text: String(modelData).charAt(0).toUpperCase() + String(modelData).slice(1)
                 fontSize: Style.font.body
-                foreground: root.bar.foreground
+                foreground: root.ink
                 fontFamily: root.bar.fontFamily
                 horizontalPadding: Style.spacing.controlPaddingX
                 verticalPadding: Style.spacing.controlPaddingY
@@ -499,14 +512,14 @@ Panel {
     Text {
       textFormat: Text.PlainText
       text: value
-      color: root.bar.foreground
+      color: root.ink
       font.family: root.bar.fontFamily
       font.pixelSize: Style.font.title
     }
     Text {
       textFormat: Text.PlainText
       text: label
-      color: Color.muted
+      color: root.inkMuted
       font.family: root.bar.fontFamily
       font.pixelSize: Style.font.caption
     }

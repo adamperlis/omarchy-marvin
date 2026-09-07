@@ -16,6 +16,33 @@ understand the grid, set a clean type scale, art-direct a few key widgets,
 then propagate — is his, and his widget studies are the visual reference. He
 is not involved in this project; the name is a credit, not an endorsement.
 
+![Marvin, light](light/preview.png)
+
+![Marvin, dark](preview.png)
+
+The launcher, notification, OSD and the restyled widgets at the token
+values. Tone is a property of each surface: weather is a gradient, the
+battery card is inverted with a ring of ticks, state is a soft-fill chip,
+and the rest stay quiet.
+
+![Widgets, light](docs/images/widgets-light.png)
+
+![Widgets, dark](docs/images/widgets-dark.png)
+
+The wallpaper is the ground the whole system sits on — an empty workspace
+with one notification, then the shipped backgrounds themselves:
+
+![Workspace, light](docs/images/workspace-light.png)
+
+![Workspace, dark](docs/images/workspace-dark.png)
+
+![Backgrounds, light](docs/images/backgrounds-light.png)
+
+![Backgrounds, dark](docs/images/backgrounds-dark.png)
+
+These are renders from the tokens, not screenshots of the shell — see
+[Testing it](#testing-it).
+
 ## The system in one screen
 
 | | Rule | Value |
@@ -24,10 +51,10 @@ is not involved in this project; the name is a credit, not an endorsement.
 | **Radius** | half the unit, one radius for everything | 16px — cards, pills, windows |
 | **Padding** | equals the radius | 16px, so content sits at the centre of the corner arc |
 | **Type** | Inter, pinned scale, every step perceptible | 11 / 13 / 15 / 18 / 24 / 48; hero numerals tracked −0.03em |
-| **Colour** | true-neutral ramp, one accent, one attention role | accent `#7aa6ff` / `#2a63d8`; attention amber, not terminal red |
+| **Colour** | true-neutral ramp, one accent, one attention role | accent `#7aa6ff` / `#2a63d8`; attention amber, not terminal red; semantic colour is a soft-fill chip |
 | **Text** | two tones, no third | foreground and muted |
 | **Depth** | surfaces, not outlines | no borders, no dividers; shadow in the config layer |
-| **Tone** | a property of each surface | bar is base, popups are raised, weather is tinted |
+| **Tone** | a property of each surface | bar is base, popups are raised, weather is a gradient, battery is inverted |
 | **State** | emphasis rises in one direction; focus ≠ hover | fills 0.06 → 0.10 → 0.14 → 0.18; focus is a 2px accent ring |
 | **Progress** | a hairline | 2px, track at 0.06, fill foreground or accent |
 | **Motion** | a scale, exits faster than entrances | 120 / 200 / 320 ms, exits at 0.6; workspaces slide, borders don't linger |
@@ -95,6 +122,27 @@ Enabling a clone replaces the built-in in its bar slot; disabling it brings
 the built-in back. Plugins are unsandboxed QML and land disabled so you can
 read them first. See [`plugins/README.md`](plugins/README.md).
 
+## Apps
+
+The system reaches past the shell into the apps Omarchy installs, in two
+ways:
+
+- **Shipped by the theme**, so a plain install gets them: `obsidian.css`
+  restyles the Notes app entirely — Inter, radius 16, borderless panes,
+  neutral headings, chips for tags, monospace only inside code — and
+  `hyprland-preview-share-picker.css` does the same for the screen-share
+  picker. Omarchy syncs both into place on every theme switch.
+- **Set by the config layer**, because they are settings rather than theme
+  files: Files and every GTK app get Inter and the blue accent through
+  `gsettings` (snapshotted, restored on revert), and Hyprland's group bar
+  gets Inter at body size on a 32px row.
+
+Everything else Omarchy templates — btop, Chromium, VS Code, Claude Code,
+Helix, Neovim, the terminals — takes its colours from `colors.toml`
+automatically, and colour is all those surfaces accept.
+
+Monospace survives in exactly two places: terminals and code. Nowhere else.
+
 ## Put it back
 
 ```
@@ -124,6 +172,7 @@ the shell journal open) and what to send back.
 | Path | What |
 |------|------|
 | `colors.toml`, `shell.toml`, `icons.theme` | The theme. Dark. |
+| `obsidian.css`, `hyprland-preview-share-picker.css` | The Notes app and the share picker, restyled by the theme. |
 | `light/` | The light sibling: same geometry, different tone table. |
 | `backgrounds/`, `light/backgrounds/` | Wallpapers, graded to the ground. |
 | `preview.png`, `preview-unlock.png`, `unlock.png` | Theme-switcher preview and the Plymouth boot logo. |
@@ -133,6 +182,7 @@ the shell journal open) and what to send back.
 | `plugins/marvin.*` | Fourteen restyled clones of the built-in widgets. |
 | `tools/restyle.py` | The rules as a script; builds a widget from upstream's. |
 | `tools/background.py` | Grades a painting (or a palette) into wallpapers. |
+| `tools/previews/build.py` | Renders `preview.png`, the boot screen and the widget sheets from the tokens (needs node + Playwright). |
 | `test/run` | Every check. |
 | `docs/system.md` | How the whole thing fits together, and how to change it. |
 | `docs/principles.md` | Every design rule, confirmed or proposed, and why. |

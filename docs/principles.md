@@ -76,6 +76,11 @@ Proposed.
   In QML: `font.letterSpacing: -Style.font.displayLarge * 0.03`. Hero
   numerals use proportional figures, never tabular — tabular spacing is
   for columns, and a hero number is not in a column. Confirmed.
+- **No monospace outside terminals and code.** The reference has none.
+  The shell is Inter through the config layer; GTK apps through
+  `gsettings`; the group bar through `marvin.lua`; Obsidian and the share
+  picker through their stylesheets. A terminal is monospace by nature and
+  is not asked to be otherwise. Confirmed.
 - **Large numerals, small labels** — confirmed as a rule from the
   reference. The number is the biggest thing on the surface; its unit or
   label drops to caption beside it. Applies to the lock clock, bar clock,
@@ -106,7 +111,16 @@ Extracted from the reference; proposed as rules.
   in a `[marvin-<widget>]` section of `shell.toml` (the shell's parser takes
   any section name) and the widget reads it from `Color.shellValues`; the
   theme owns the tint, the plugin owns only geometry. Tint text and muted
-  clear the same 10:1 and 4.5:1 floors as the palette, tested.
+  clear the same 10:1 and 4.5:1 floors as the palette, against every
+  gradient stop, tested.
+- **Tone varies across the set, not within a card.** The reference's life
+  comes from one gradient card, one dark card and white for the rest. So:
+  weather is a vertical gradient (`background` → `background-end`), power
+  is the inverted card in both tones with a ring of sixty ticks around the
+  numeral, and every other surface stays raised. Applied.
+- **Semantic colour is a soft-fill chip**: the hue at a light fill with
+  darker text of the same hue (`attention-fill` / `attention-text`), never
+  a saturated block. The battery's charging state is the first one.
 - **Controls are the text color at alpha**, so they survive any tone.
   Upstream's model is right and its values are too faint (0.04 normal).
   Target roughly 0.06–0.08 on light surfaces, 0.12–0.16 on dark.
@@ -171,6 +185,16 @@ toward the ground, luminance in a band the bar reads over (dark 0.01–0.17,
 light 0.60–0.86), fine grain against banding. `tools/background.py` is the
 rule made executable. Shipped set is palette-synthesised until a source
 painting is supplied.
+
+## Apps
+
+Confirmed. Where an app takes more than colour, the theme or the config
+layer gives it the whole system: Obsidian (`obsidian.css`, shipped by the
+theme, synced into every vault by Omarchy), the share picker, GTK apps
+(font and accent by `gsettings`), the Hyprland group bar. Where an app
+takes only colour — btop, Chromium, VS Code, Claude Code, Helix, Neovim,
+terminals — the generated templates carry the palette and nothing is
+hand-written.
 
 ## Widgets
 
