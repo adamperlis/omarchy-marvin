@@ -1,30 +1,85 @@
 #!/bin/bash
-# Marvin config layer. Installs what `omarchy theme install` cannot carry:
-# the light sibling, Inter for the shell, rounding/gaps/shadow/motion for
-# Hyprland, and the restyled widget plugins. Every step is idempotent and
-# `install/marvin --remove` reverses all of it.
+# Marvin config layer.
 #
-# Run from the theme directory:  ~/.config/omarchy/themes/marvin/install/marvin
+#   install/marvin            install (snapshots first, then applies)
+#   install/marvin --revert   put the system back exactly as it was
+#   install/marvin --status   what is installed, what the snapshot holds
+#
+# Installs what `omarchy theme install` cannot carry: the light sibling,
+# Inter for the shell, rounding/gaps/shadow/motion for Hyprland, and the
+# restyled widget plugins. Before the first install it snapshots every file
+# it will touch plus the active theme, so --revert is a restore, not a
+# cleanup: files come back byte for byte, absent files are removed, the
+# previous theme is set again, and the built-in widgets are re-enabled.
 set -euo pipefail
 
 THEME_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-THEMES="$HOME/.config/omarchy/themes"
-PLUGINS="$HOME/.config/omarchy/plugins"
-HYPR="$HOME/.config/hypr"
-FONTCONF="$HOME/.config/fontconfig/conf.d"
+CFG="$HOME/.config"
+THEMES="$CFG/omarchy/themes"
+PLUGINS="$CFG/omarchy/plugins"
+HYPR="$CFG/hypr"
+FONTCONF="$CFG/fontconfig/conf.d"
+SHELL_JSON="$CFG/omarchy/shell.json"
+STATE_DIR="$HOME/.local/state/marvin"
+SNAP="$STATE_DIR/snapshot"
 MARKER="-- marvin:config-layer"
 REQUIRE_LINE='require("hypr.marvin") '"$MARKER"
 
+# Everything install writes or changes, relative to ~/.config. A path listed
+# here is restored from the snapshot on revert, or removed if the snapshot
+# recorded it as absent.
+TOUCHED=(
+  "hypr/hyprland.lua"
+  "hypr/marvin.lua"
+  "fontconfig/conf.d/60-marvin-shell.conf"
+  "omarchy/shell.json"
+  "omarchy/themes/marvin-light"
+)
+
 say()  { printf '\e[1m%s\e[0m\n' "$*"; }
 note() { printf '  %s\n' "$*"; }
-
 shell_running() { pgrep -x quickshell >/dev/null 2>&1; }
+plugin_ids() { local p; for p in "$THEME_DIR"/plugins/marvin.*/; do basename "$p"; done; }
+current_theme() { cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null || true; }
 
+# ------------------------------------------------------------------ snapshot
+# Taken once, before anything is changed. A re-run keeps the original
+# snapshot, because a snapshot taken after install would only capture Marvin.
+snapshot() {
+  if [[ -f "$SNAP/state" ]]; then
+    note "snapshot from $(sed -n 's/^taken=//p' "$SNAP/state") kept"
+    return
+  fi
+  say "Snapshot"
+  mkdir -p "$SNAP/config"
+  local rel
+  for rel in "${TOUCHED[@]}"; do
+    if [[ -e "$CFG/$rel" ]]; then
+      mkdir -p "$SNAP/config/$(dirname "$rel")"
+      cp -a "$CFG/$rel" "$SNAP/config/$rel"
+      note "saved   $rel"
+    else
+      note "absent  $rel"
+    fi
+  done
+  local id
+  for id in $(plugin_ids); do
+    [[ -e "$PLUGINS/$id" ]] && { mkdir -p "$SNAP/plugins"; cp -a "$PLUGINS/$id" "$SNAP/plugins/$id"; note "saved   plugins/$id"; }
+  done
+  {
+    echo "taken=$(date -Is)"
+    echo "theme=$(current_theme)"
+  } >"$SNAP/state"
+  note "previous theme: $(current_theme)"
+  note "→ $SNAP"
+}
+
+# ------------------------------------------------------------------- install
 install_light() {
   say "marvin-light"
   rm -rf "$THEMES/marvin-light"
   # A plain directory (no .git) is a theme the user wrote, so Omarchy stages
-  # it unfiltered. Nothing in light/ runs code; this only matters for symmetry.
+  # it unfiltered. Nothing in light/ runs code.
   cp -r "$THEME_DIR/light" "$THEMES/marvin-light"
   note "→ $THEMES/marvin-light"
 }
@@ -70,8 +125,7 @@ install_plugins() {
   done
   if shell_running; then
     omarchy-shell shell rescanPlugins >/dev/null 2>&1 || true
-    for p in "$THEME_DIR"/plugins/marvin.*/; do
-      id=$(basename "$p")
+    for id in $(plugin_ids); do
       omarchy-plugin-enable "$id" >/dev/null 2>&1 && note "enabled $id" || note "enable $id yourself: omarchy plugin enable $id"
     done
   else
@@ -81,33 +135,110 @@ install_plugins() {
 
 apply() {
   say "Applying"
-  if command -v omarchy-theme-set >/dev/null; then
-    omarchy-theme-set marvin >/dev/null 2>&1 || true
-  fi
+  command -v omarchy-theme-set >/dev/null && omarchy-theme-set marvin >/dev/null 2>&1 || true
   command -v hyprctl >/dev/null && hyprctl reload >/dev/null 2>&1 || true
   shell_running && omarchy-restart-shell >/dev/null 2>&1 || true
-  note "done. Light: omarchy theme set marvin-light"
+  note "done. Light: omarchy theme set marvin-light. Undo everything: install/marvin --revert"
 }
 
-remove() {
-  say "Removing the Marvin config layer"
-  rm -rf "$THEMES/marvin-light"
-  rm -f "$FONTCONF/60-marvin-shell.conf" "$HYPR/marvin.lua"
-  [[ -f "$HYPR/hyprland.lua" ]] && sed -i "/$MARKER/d" "$HYPR/hyprland.lua"
-  local p id
-  for p in "$THEME_DIR"/plugins/marvin.*/; do
-    id=$(basename "$p")
-    shell_running && omarchy-plugin-disable "$id" >/dev/null 2>&1 || true
-    rm -rf "$PLUGINS/$id"
+# -------------------------------------------------------------------- revert
+# Restore from the snapshot. Order matters: disable the clones while the
+# shell can still see them (so it re-enables the built-ins itself), then put
+# files back, then clean shell.json as a fallback for the case where the
+# shell was not running, then set the previous theme.
+revert() {
+  say "Reverting to the snapshot"
+  if [[ ! -f "$SNAP/state" ]]; then
+    note "no snapshot at $SNAP — falling back to removal of everything Marvin added"
+  fi
+
+  local id
+  if shell_running; then
+    for id in $(plugin_ids); do omarchy-plugin-disable "$id" >/dev/null 2>&1 || true; done
+  fi
+
+  local rel
+  for rel in "${TOUCHED[@]}"; do
+    if [[ -e "$SNAP/config/$rel" ]]; then
+      rm -rf "$CFG/$rel"
+      mkdir -p "$(dirname "$CFG/$rel")"
+      cp -a "$SNAP/config/$rel" "$CFG/$rel"
+      note "restored $rel"
+    elif [[ -f "$SNAP/state" ]]; then
+      rm -rf "$CFG/$rel"
+      note "removed  $rel (was absent)"
+    else
+      # No snapshot: undo only what is recognisably ours.
+      case "$rel" in
+        hypr/hyprland.lua) [[ -f "$CFG/$rel" ]] && sed -i "/$MARKER/d" "$CFG/$rel" && note "cleaned  $rel" ;;
+        omarchy/shell.json) ;;  # handled below
+        *) rm -rf "$CFG/$rel"; note "removed  $rel" ;;
+      esac
+    fi
   done
+
+  for id in $(plugin_ids); do
+    rm -rf "$PLUGINS/$id"
+    [[ -e "$SNAP/plugins/$id" ]] && cp -a "$SNAP/plugins/$id" "$PLUGINS/$id" && note "restored plugins/$id"
+  done
+
+  clean_shell_json
+
+  local previous
+  previous=$(sed -n 's/^theme=//p' "$SNAP/state" 2>/dev/null || true)
+  if [[ -n $previous && $previous != marvin && $previous != marvin-light ]] && command -v omarchy-theme-set >/dev/null; then
+    omarchy-theme-set "$previous" >/dev/null 2>&1 && note "theme set back to $previous" || note "could not set theme $previous; omarchy theme set <name> yourself"
+  fi
+
   command -v hyprctl >/dev/null && hyprctl reload >/dev/null 2>&1 || true
   shell_running && omarchy-restart-shell >/dev/null 2>&1 || true
-  note "theme files under $THEMES/marvin are untouched; omarchy theme remove marvin drops them"
+
+  rm -rf "$SNAP"
+  note "snapshot consumed. The theme itself is still installed: omarchy theme remove marvin"
+  note "inter-font stays installed if this script added it: sudo pacman -Rns inter-font"
+}
+
+# shell.json fallback: drop every marvin.* entry and re-enable each built-in
+# a clone had disabled. A no-op when the file was restored from the snapshot
+# or never existed.
+clean_shell_json() {
+  [[ -f "$SHELL_JSON" ]] || return 0
+  grep -q '"marvin\.' "$SHELL_JSON" || return 0
+  command -v jq >/dev/null || { note "shell.json still references marvin.* and jq is missing; edit it by hand"; return 0; }
+  local sources
+  sources=$(for p in "$THEME_DIR"/plugins/marvin.*/manifest.json; do jq -r '.omarchy.clonedFrom // empty' "$p"; done | jq -R . | jq -s .)
+  local tmp; tmp=$(mktemp)
+  jq --argjson sources "$sources" '
+    def notMarvin: select((.id // .) | tostring | startswith("marvin.") | not);
+    (.bar.layout // {}) |= with_entries(.value |= map(notMarvin))
+    | (.plugins // []) |= map(notMarvin)
+    | (.disabledPlugins // []) |= map(select(. as $d | $sources | index($d) | not))
+    | if (.bar.id // "") | startswith("marvin.") then .bar.id = "omarchy.bar" else . end
+  ' "$SHELL_JSON" >"$tmp" && mv "$tmp" "$SHELL_JSON"
+  note "cleaned  omarchy/shell.json (marvin.* entries out, built-ins re-enabled)"
+}
+
+status() {
+  say "Marvin config layer"
+  local rel
+  for rel in "${TOUCHED[@]}"; do
+    [[ -e "$CFG/$rel" ]] && note "present  $rel" || note "absent   $rel"
+  done
+  local id; for id in $(plugin_ids); do [[ -e "$PLUGINS/$id" ]] && note "present  plugins/$id"; done
+  if [[ -f "$HYPR/hyprland.lua" ]] && grep -qF -- "$MARKER" "$HYPR/hyprland.lua"; then note "hyprland.lua requires hypr.marvin"; fi
+  note "active theme: $(current_theme)"
+  if [[ -f "$SNAP/state" ]]; then
+    say "Snapshot"; sed 's/^/  /' "$SNAP/state"
+    find "$SNAP" -mindepth 2 \( -type f -o -type d -name "marvin*" \) -not -path "*/marvin*/*" | sed "s|$SNAP/|  |" | sort
+  else
+    note "no snapshot (nothing installed yet, or already reverted)"
+  fi
 }
 
 case "${1:-}" in
-  --remove) remove ;;
-  -h|--help) sed -n '2,8p' "$0" ;;
-  "") install_light; install_font; install_hypr; install_plugins; apply ;;
-  *) echo "usage: install/marvin [--remove]" >&2; exit 1 ;;
+  --revert|--remove) revert ;;
+  --status) status ;;
+  -h|--help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//' ;;
+  "") snapshot; install_light; install_font; install_hypr; install_plugins; apply ;;
+  *) echo "usage: install/marvin [--revert | --status]" >&2; exit 1 ;;
 esac

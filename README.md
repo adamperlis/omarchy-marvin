@@ -26,7 +26,26 @@ cannot carry it:
 That adds `marvin-light`, Inter for the shell (scoped to the shell process,
 so your terminal font is untouched), 16px rounding with gaps on the grid,
 shadows in place of borders, the motion scale, and the restyled widgets.
-`install/marvin --remove` takes every bit of it back out.
+
+## Putting it back
+
+Before it changes anything, the installer snapshots every file it will touch
+and the theme that was active. Then:
+
+```
+install/marvin --revert
+```
+
+restores each file byte for byte, removes the ones that did not exist,
+re-enables the built-in widgets, and sets your previous theme again.
+`install/marvin --status` shows what is installed and what the snapshot
+holds. This is tested: `test/install-revert` installs against a copy of
+Omarchy's stock config, simulates the shell enabling the clones, reverts,
+and fails unless everything under `~/.config` is identical to before.
+
+Two things it deliberately leaves: the theme directory itself
+(`omarchy theme remove marvin`) and the Inter package if the installer
+added it (`sudo pacman -Rns inter-font`).
 
 ## What's here
 
@@ -41,7 +60,8 @@ shadows in place of borders, the motion scale, and the restyled widgets.
 | `plugins/` | Restyled clones of built-in widgets. Config layer, not theme; see `plugins/README.md`. |
 | `config/hypr/marvin.lua` | Rounding 16, gaps 8/16, border 1, shadow, and the motion scale. |
 | `config/fontconfig/60-marvin-shell.conf` | Inter for `quickshell` only. |
-| `install/marvin` | Installs and removes the config layer. Idempotent. |
+| `install/marvin` | Installs the config layer; `--revert` restores the snapshot; `--status` reports. |
+| `test/install-revert` | Proves revert is an exact restore. |
 | `test/run` | Contrast floors, parser compatibility, dark/light geometry identity, widget tint floors. |
 
 ## Rules that are tested, not eyeballed

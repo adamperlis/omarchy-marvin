@@ -1,0 +1,56 @@
+#!/bin/bash
+# install/marvin must put the system back exactly. Against a fake HOME with
+# upstream's hyprland.lua and shell.json: install, simulate what a running
+# shell does to shell.json when clones are enabled, revert, and require every
+# touched file to be byte-identical to before. Then the no-snapshot fallback.
+# Run from the repo root: ./test/install-revert
+set -euo pipefail
+ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+FAKE=$(mktemp -d); trap 'rm -rf "$FAKE"' EXIT
+mkdir -p "$FAKE/.config/hypr" "$FAKE/.config/omarchy/themes/marvin" "$FAKE/.config/omarchy/plugins/user.thing" "$FAKE/.local/state/omarchy/current"
+cp -r "$ROOT"/. "$FAKE/.config/omarchy/themes/marvin/"
+cp "$ROOT/test/fixtures/hyprland.lua" "$FAKE/.config/hypr/"
+cp "$ROOT/test/fixtures/shell.json" "$FAKE/.config/omarchy/"
+echo "tokyo-night" >"$FAKE/.local/state/omarchy/current/theme.name"
+echo "keep" >"$FAKE/.config/omarchy/plugins/user.thing/keep"
+fingerprint() { ( cd "$FAKE/.config" && find . -path ./omarchy/themes -prune -o -type f -print | sort | xargs md5sum ); }
+run() { HOME="$FAKE" PATH=/usr/bin:/bin bash "$FAKE/.config/omarchy/themes/marvin/install/marvin" "$@" >/dev/null 2>&1; }
+fail=0
+before=$(fingerprint)
+
+run
+[[ -f "$FAKE/.config/hypr/marvin.lua" ]] || { echo "BAD install did not place marvin.lua"; fail=1; }
+grep -qF 'require("hypr.marvin")' "$FAKE/.config/hypr/hyprland.lua" || { echo "BAD require line missing"; fail=1; }
+[[ -d "$FAKE/.config/omarchy/plugins/marvin.weather" ]] || { echo "BAD plugins not placed"; fail=1; }
+[[ -f "$FAKE/.local/state/marvin/snapshot/state" ]] || { echo "BAD no snapshot"; fail=1; }
+# a second install must keep the original snapshot
+first=$(sed -n 's/^taken=//p' "$FAKE/.local/state/marvin/snapshot/state"); sleep 1; run
+[[ $(sed -n 's/^taken=//p' "$FAKE/.local/state/marvin/snapshot/state") == "$first" ]] || { echo "BAD re-install replaced the snapshot"; fail=1; }
+# what a running shell does when clones are enabled
+python3 - "$FAKE/.config/omarchy/shell.json" <<'PY'
+import json,sys
+p=sys.argv[1]; c=json.load(open(p))
+c["bar"]["layout"]["right"].append({"id":"marvin.media"}); c["plugins"].append({"id":"marvin.agents"}); c["disabledPlugins"]=["omarchy.media","omarchy.agents"]
+json.dump(c,open(p,"w"),indent=2)
+PY
+
+run --revert
+after=$(fingerprint)
+if [[ "$before" == "$after" ]]; then echo "ok  revert restores every touched file byte for byte"; else echo "BAD revert left differences:"; diff <(echo "$before") <(echo "$after") || true; fail=1; fi
+[[ -e "$FAKE/.config/omarchy/plugins/user.thing/keep" ]] || { echo "BAD revert touched a plugin that is not ours"; fail=1; }
+[[ ! -e "$FAKE/.local/state/marvin/snapshot" ]] || { echo "BAD snapshot not consumed"; fail=1; }
+
+# fallback: no snapshot, mutated shell.json, marker line present
+run
+rm -rf "$FAKE/.local/state/marvin"
+python3 - "$FAKE/.config/omarchy/shell.json" <<'PY'
+import json,sys
+p=sys.argv[1]; c=json.load(open(p)); c["bar"]["layout"]["right"].append({"id":"marvin.media"}); c["disabledPlugins"]=["omarchy.media"]; json.dump(c,open(p,"w"))
+PY
+run --revert
+grep -q "marvin" "$FAKE/.config/omarchy/shell.json" && { echo "BAD fallback left marvin.* in shell.json"; fail=1; } || echo "ok  fallback cleans shell.json"
+python3 -c "import json,sys; sys.exit(0 if json.load(open('$FAKE/.config/omarchy/shell.json')).get('disabledPlugins',[])==[] else 1)" && echo "ok  fallback re-enables built-ins" || { echo "BAD built-ins still disabled"; fail=1; }
+grep -qF 'hypr.marvin' "$FAKE/.config/hypr/hyprland.lua" && { echo "BAD fallback left the require line"; fail=1; } || echo "ok  fallback removes the require line"
+[[ ! -e "$FAKE/.config/hypr/marvin.lua" && ! -e "$FAKE/.config/omarchy/themes/marvin-light" && ! -e "$FAKE/.config/omarchy/plugins/marvin.weather" ]] && echo "ok  fallback removes files" || { echo "BAD fallback left files"; fail=1; }
+
+echo; echo "$fail failures"; exit $fail

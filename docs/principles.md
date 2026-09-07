@@ -173,6 +173,15 @@ layer, never the theme. Hand-built: `marvin.weather`, `marvin.clock`, `marvin.po
 network, tailscale, agents. Any module that can be styled but has no supplied design is
 built from the system: the same rules, no new ones.
 
+## Reversibility
+
+Confirmed. The config layer snapshots every file it will touch, and the
+active theme, before its first change. `install/marvin --revert` restores
+the snapshot: files back byte for byte, absent files removed, built-ins
+re-enabled in `shell.json`, previous theme set. With no snapshot it falls
+back to removing only what is recognisably Marvin's. `test/install-revert`
+fails unless the restore is exact.
+
 ## Open
 
 - Default surface tone: light (as the reference), dark (as the audience
