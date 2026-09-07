@@ -1,0 +1,210 @@
+# Marvin shell surfaces. Hand-written; replaces the generated shell.toml.
+# Depth comes from surfaces, not outlines: border-width is 0 everywhere a
+# surface would otherwise be outlined. Tone is a surface property — base
+# for the bar, raised for anything that opens over it.
+
+[bar]
+background       = "#161616"
+background-alpha = 1.0
+text             = "#d6d6d6"
+active           = "#e0a54a"
+scale-with-font  = false
+size-horizontal  = 32
+size-vertical    = 32
+icon-slot        = 32
+icon-canvas      = 16
+icon-font        = 16
+status-slot      = 24
+
+[hyprland]
+active-border            = "rgba(d6d6d68c)"
+active-border-foreground = "rgba(d6d6d68c)"
+
+[controls]
+# Fill is the text color at alpha, so controls survive any surface tone.
+# Emphasis rises monotonically: 0.06 -> 0.10 -> 0.14 -> 0.18. No borders,
+# except focus: the one border that must exist, and it is not hover.
+normal-color        = "#d6d6d6"
+normal-fill-alpha   = 0.06
+normal-border       = "#d6d6d6"
+normal-border-width = 0
+normal-border-alpha = 0
+
+hover-cursor-color        = "#d6d6d6"
+hover-cursor-fill-alpha   = 0.10
+hover-cursor-border       = "#d6d6d6"
+hover-cursor-border-width = 0
+hover-cursor-border-alpha = 0
+
+focus-color        = "#d6d6d6"
+focus-fill-alpha   = 0.10
+focus-border       = "#7aa6ff"
+focus-border-width = 2
+focus-border-alpha = 1.0
+
+selected-color        = "#d6d6d6"
+selected-fill-alpha   = 0.14
+selected-border       = "#d6d6d6"
+selected-border-width = 0
+selected-border-alpha = 0
+
+pressed-fill-alpha   = 0.18
+selection-fill-alpha = 0.35
+
+# ---------------------------------------------------------------- geometry
+# Base 4. Unit 32. Radius 16 = unit / 2 (from Hyprland decoration:rounding,
+# config layer). Padding = radius. Every value here is on the 4px grid except
+# xxs, a deliberate half-unit for hairline insets.
+#
+# The grid is fixed. [font] and [spacing] per-token overrides do not scale
+# with base-size (only [bar] does), so scale-with-font is off everywhere and
+# density is a preset, not a slider.
+
+[spacing]
+scale           = 1.0
+scale-with-font = false
+xxs  = 2
+xs   = 4
+sm   = 8
+md   = 12
+lg   = 16
+xl   = 20
+xxl  = 24
+xxxl = 32
+huge = 48
+control-gap                 = 8
+control-padding-x           = 12
+control-padding-y           = 8
+input-padding-y             = 8
+control-height              = 32
+popup-row-height            = 32
+row-gap                     = 8
+row-padding-x               = 16
+label-gap                   = 4
+panel-gap                   = 16
+panel-padding               = 16
+popup-padding               = 16
+dropdown-width              = 240
+searchable-dropdown-width   = 260
+number-field-width          = 120
+searchable-popup-min-height = 224
+
+[font]
+# Pinned. 11 / 13 / 15 / 18 / 24 / 32. Minimum step 2px. caption and
+# body-small collapse to 11; body and subtitle collapse to 13. Two tokens
+# that cannot be told apart are one value.
+base-size     = 13
+caption       = 11
+body-small    = 11
+body          = 13
+subtitle      = 13
+title         = 15
+heading       = 18
+display       = 24
+display-large = 32
+# Icons are Material Design Icons on their own grid, not the type scale.
+icon-small = 16
+icon       = 20
+icon-large = 24
+
+# ---------------------------------------------------------------- surfaces
+
+[popups]
+background       = "#1e1e1e"
+background-alpha = 1.0
+text             = "#d6d6d6"
+border           = "#1e1e1e"
+border-alpha     = 0
+border-width     = 0
+
+[tooltip]
+background       = "#262626"
+background-alpha = 1.0
+text             = "#d6d6d6"
+border           = "#262626"
+border-alpha     = 0
+border-width     = 0
+
+[notifications]
+background       = "#1e1e1e"
+background-alpha = 1.0
+text             = "#d6d6d6"
+border           = "#1e1e1e"
+border-alpha     = 0
+border-width     = 0
+# Progress is a hairline; its fill is accent because time left means something.
+countdown        = "#7aa6ff"
+
+[launcher]
+background                = "#1e1e1e"
+background-alpha          = 1.0
+text                      = "#d6d6d6"
+border                    = "#1e1e1e"
+border-alpha              = 0
+border-width              = 0
+scrim                     = "#0a0a0a"
+scrim-alpha               = 0.5
+# Selection is a fill, not a color change. Accent stays rationed.
+selected-background       = "#d6d6d6"
+selected-background-alpha = 0.14
+selected-text             = "#d6d6d6"
+selected-border           = "#d6d6d6"
+selected-border-alpha     = 0
+selected-border-width     = 0
+
+[menu]
+background                = "#1e1e1e"
+background-alpha          = 1.0
+text                      = "#d6d6d6"
+border                    = "#1e1e1e"
+border-alpha              = 0
+border-width              = 0
+scrim                     = "#0a0a0a"
+scrim-alpha               = 0.5
+selected-background       = "#d6d6d6"
+selected-background-alpha = 0.14
+selected-text             = "#d6d6d6"
+selected-border           = "#d6d6d6"
+selected-border-alpha     = 0
+selected-border-width     = 0
+
+[polkit]
+background         = "#1e1e1e"
+background-alpha   = 1.0
+text               = "#d6d6d6"
+text-error         = "#e38484"
+# Idle has no border. Error is a state signal, so it may draw one.
+border             = "#1e1e1e"
+border-width       = 0
+border-error       = "#e38484"
+border-error-width = 2
+border-alpha       = 1.0
+scrim              = "#0a0a0a"
+scrim-alpha        = 0.5
+accent             = "#7aa6ff"
+
+[lock]
+background          = "#1e1e1e"
+background-alpha    = 0.85
+text                = "#d6d6d6"
+placeholder         = "#8c8c8c"
+text-error          = "#e38484"
+# Idle: no border. Typing: focus ring. Wrong password: error ring.
+border              = "#1e1e1e"
+border-width        = 0
+border-active       = "#7aa6ff"
+border-active-width = 2
+border-error        = "#e38484"
+border-error-width  = 2
+border-alpha        = 1.0
+selection           = "#7aa6ff"
+selection-alpha     = 0.35
+
+[image-picker]
+scrim                   = "#0a0a0a"
+scrim-alpha             = 0.6
+text                    = "#d6d6d6"
+selected-border         = "#7aa6ff"
+selected-border-alpha   = 1.0
+unselected-border       = "#d6d6d6"
+unselected-border-alpha = 0.2
