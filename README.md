@@ -7,7 +7,7 @@ reversible config layer, and fourteen restyled widgets — with 63 wallpapers
 included.
 
 A composed desktop under Marvin — the Notes app, Files and a terminal
-alongside the weather, media and battery widgets:
+alongside weather, calendar, to-dos and battery modules:
 
 ![Marvin — a composed desktop, light](light/preview.png)
 
@@ -24,23 +24,59 @@ palette, plus soft abstractions:
 
 ## Install
 
-Two commands:
+**1. The theme** — two commands:
 
 ```
 omarchy theme install https://github.com/adamperlis/omarchy-marvin
 omarchy theme set marvin
 ```
 
-That is the whole theme: the palette, the type scale, the state model, the
-window borders, the restyled widget styling, the boot logo, and all 63
-wallpapers. Cycle wallpapers with **SUPER + CTRL + SPACE**, or pick one from
-the Omarchy menu (**SUPER + ALT + SPACE → Style → Background**).
+That is everything a theme file can carry: the palette, type scale, state
+model, quiet neutral window borders, the restyled widget styling, the boot
+logo, and all 63 wallpapers. It has to look intentional on its own — a plain
+install is the honest baseline. Cycle wallpapers with **SUPER + CTRL + SPACE**,
+or pick one from the Omarchy menu (**SUPER + ALT + SPACE → Style → Background**).
 
-For the full experience — the light sibling, Inter in the shell, Hyprland
-rounding, gaps, shadow and motion, and the fourteen widget plugins — run the
-[config layer](#2-the-config-layer) once the theme is set. It snapshots
-everything first and reverts byte-for-byte; full steps are
-[below](#install-in-detail).
+**2. The config layer** — for what a theme file *cannot* carry in Omarchy 4
+(window rounding and gaps, the shell's typeface, shadows, compositor motion,
+widget layouts):
+
+```
+~/.config/omarchy/themes/marvin/install/marvin
+```
+
+Adds, in order:
+
+- **`marvin-light`** — the same geometry over a light tone table.
+  `omarchy theme set marvin-light` to switch.
+- **Inter for the shell** — a fontconfig rule scoped to the shell's process, so
+  your terminal font is untouched and `omarchy font set` keeps working. Inter
+  and Libre Baskerville install to your user font directory from `fonts/`; no
+  package, no `sudo`.
+- **Hyprland** — rounding 16, gaps 8 inside and 16 at the edge, a 1px
+  theme-coloured focus border, a shadow in place of surface outlines, and the
+  motion scale. Written to `~/.config/hypr/marvin.lua`, required from your
+  `hyprland.lua` by one marked line; nothing else of yours is edited.
+- **Widgets** — all fourteen plugins, enabled if the shell is running.
+
+It snapshots every file it touches (and the active theme) first, so
+`install/marvin --revert` restores everything byte-for-byte, and
+`install/marvin --status` shows what is installed.
+
+**3. Widgets by hand** (optional) — to enable them one at a time instead
+(recommended for a first look), skip the installer's enable step and:
+
+```
+omarchy-shell shell rescanPlugins
+omarchy plugin enable marvin.weather      # then marvin.clock, marvin.power, marvin.media …
+```
+
+Enabling a clone replaces the built-in in its bar slot; disabling it brings the
+built-in back. Plugins are unsandboxed QML and land disabled so you can read
+them first — see [`plugins/README.md`](plugins/README.md).
+
+**Already installed it?** Update with `cd ~/.config/omarchy/themes/marvin && git pull`,
+then `omarchy theme set marvin` to re-register the new wallpapers.
 
 Omarchy's stock look is assembled rather than designed: an irregular spacing
 ramp, six type sizes crammed between 10 and 16px, every surface the same
@@ -102,62 +138,6 @@ compatibility, dark/light geometry identity and the install/revert round-trip
 run under `./test/run`. The reasoning behind each rule, and what is still
 open, is in [`docs/principles.md`](docs/principles.md). How the pieces fit
 together is in [`docs/system.md`](docs/system.md).
-
-## Install in detail
-
-### 1. The theme
-
-```
-omarchy theme install https://github.com/adamperlis/omarchy-marvin
-omarchy theme set marvin
-```
-
-This alone gives you the palette, the grid, the type scale, hairline
-surfaces, the state model, quiet neutral window borders, wallpapers, and the
-boot logo. It is everything a theme file can carry, and it has to look
-intentional by itself — a plain install is the honest baseline.
-
-What a theme file *cannot* carry in Omarchy 4: window rounding and gaps, the
-shell's typeface, shadows, compositor motion, and widget layouts. Those are
-the config layer.
-
-### 2. The config layer
-
-```
-~/.config/omarchy/themes/marvin/install/marvin
-```
-
-Adds, in order:
-
-- **`marvin-light`** — the same geometry over a light tone table.
-  `omarchy theme set marvin-light` to switch.
-- **Inter for the shell** — through a fontconfig rule scoped to the shell's
-  process, so your terminal font is untouched and `omarchy font set` keeps
-  working. Inter and Libre Baskerville are installed to your user font directory
-  from `fonts/`; no package, no `sudo`.
-- **Hyprland** — rounding 16, gaps 8 inside and 16 at the edge, a 1px
-  theme-coloured focus border, a shadow in place of surface outlines, and
-  the motion scale. Written to `~/.config/hypr/marvin.lua` and required from
-  your `hyprland.lua` by one marked line; nothing else of yours is edited.
-- **Widgets** — all fourteen plugins, enabled if the shell is running.
-
-Before it changes anything, it snapshots every file it will touch and the
-theme that was active. `install/marvin --status` shows what is installed and
-what the snapshot holds.
-
-### 3. Widgets by hand
-
-If you would rather enable them one at a time (recommended for a first
-test), skip the installer's enable step and:
-
-```
-omarchy-shell shell rescanPlugins
-omarchy plugin enable marvin.weather      # then marvin.clock, marvin.power, marvin.media …
-```
-
-Enabling a clone replaces the built-in in its bar slot; disabling it brings
-the built-in back. Plugins are unsandboxed QML and land disabled so you can
-read them first. See [`plugins/README.md`](plugins/README.md).
 
 ## Apps and surfaces
 
