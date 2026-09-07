@@ -60,7 +60,7 @@ ICONS = {
  "home": '<path d="M4 11l8-7 8 7v9H4z"/>', "clock": '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
  "star": '<path d="M12 3l2.8 6 6.2.6-4.7 4.3 1.4 6.1L12 16.8 6.3 20l1.4-6.1L3 9.6 9.2 9z"/>',
  "network": '<circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12l-6 5M12 12l6 5"/>',
- "trash": '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>', "moon": '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>', "lock": '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1.2" fill="currentColor" stroke="none"/>', "download": '<path d="M12 4v12M7 11l5 5 5-5M4 20h16"/>',
+ "trash": '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>', "moon": '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>', "check": '<path d="M5 12l5 5L20 7"/>', "lock": '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1.2" fill="currentColor" stroke="none"/>', "download": '<path d="M12 4v12M7 11l5 5 5-5M4 20h16"/>',
 }
 def ic(name, size=16, sw=1.75):
     return f'<svg class="i" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</svg>'
@@ -111,7 +111,7 @@ BASE_CSS = """
 .hair.acc i{background:var(--accent)}
 .card{background:var(--raised);border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:24px;border:1px solid rgba(var(--fg-rgb),.10);box-shadow:0 8px 32px rgba(0,0,0,var(--sh))}
 .card .hd{height:32px;display:flex;align-items:center;justify-content:space-between;font-size:16px;font-weight:500}.card .hd span{font-size:12px;color:var(--muted);font-weight:400}
-.card .hero{display:flex;align-items:flex-start;gap:4px}.card .hero b{font-size:56px;font-weight:400;letter-spacing:-.03em;font-variant-numeric:normal}
+.card .hero{display:flex;align-items:flex-start;gap:12px}.card .hero b{font-size:56px;font-weight:400;letter-spacing:-.03em;font-variant-numeric:normal}
 .card .hero .cap{display:flex;flex-direction:column;gap:4px;margin-top:10px;font-size:15px}.card .hero .cap span{font-size:12px;color:var(--muted)}
 .card .hero .end{margin-left:auto;align-self:center}
 .card .stats{display:grid;grid-template-columns:1fr 1fr;gap:16px 24px}.card .stats div{display:flex;flex-direction:column;gap:4px}.card .stats b{font-size:16px;font-weight:400}.card .stats span{font-size:12px;color:var(--muted)}
@@ -155,6 +155,22 @@ BASE_CSS = """
 .rows{display:flex;flex-direction:column;gap:8px}.row{height:40px;border-radius:20px;display:flex;align-items:center;gap:12px;padding:0 16px}.row .n{flex:1}.row .k{font-size:12px;color:var(--muted)}.row.sel{background:rgba(var(--fg-rgb),var(--a3))}.row.hov{background:rgba(var(--fg-rgb),var(--a2))}
 .note{background:var(--raised);border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:8px;line-height:1.5;border:1px solid rgba(var(--fg-rgb),.10);box-shadow:0 8px 32px rgba(0,0,0,var(--sh))}
 .note .app{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);line-height:1}.note .app .t{margin-left:auto}.note .title{font-size:16px;font-weight:500;margin-top:4px}.note .thumbs{display:flex;gap:8px;margin-top:8px}.note .thumbs span{width:56px;height:56px;border-radius:8px;overflow:hidden}.note .body{color:var(--muted)}
+.spec{display:flex;flex-direction:column;gap:12px}.spec .r{display:flex;align-items:baseline;justify-content:space-between;gap:16px}.spec .r span{font-size:12px;color:var(--muted);white-space:nowrap}
+.spec .d{font-size:56px;font-weight:400;letter-spacing:-.03em;line-height:1}.spec .h{font-size:18px;font-weight:500}.spec .t{font-size:16px;font-weight:500}.spec .b{font-size:14px}.spec .c{font-size:12px;color:var(--muted)}
+.sw{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 8px}.sw div{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--muted)}.sw i{display:block;height:40px;border-radius:20px;box-shadow:inset 0 0 0 1px rgba(var(--fg-rgb),.10)}
+.bset{display:flex;flex-direction:column;gap:12px}.bset .row3{display:flex;gap:8px;align-items:center}
+.bt{height:40px;padding:0 20px;border-radius:20px;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:14px}
+.bt.pri{background:var(--fg);color:var(--raised)}.bt.pri.hov{opacity:.85}.bt.pri.dis{opacity:.35}
+.bt.sec{background:rgba(var(--fg-rgb),var(--a1))}.bt.sec.hov{background:rgba(var(--fg-rgb),var(--a2))}.bt.sec.on{background:rgba(var(--fg-rgb),var(--a3))}.bt.sec.dis{opacity:.4}
+.bt.gho{background:transparent;color:var(--muted)}.bt.gho.hov{background:rgba(var(--fg-rgb),var(--a1));color:var(--fg)}
+.flds{display:flex;flex-direction:column;gap:12px}.fld{height:40px;border-radius:20px;background:rgba(var(--fg-rgb),var(--a1));display:flex;align-items:center;padding:0 16px;gap:8px;color:var(--muted)}
+.fld.foc{background:rgba(var(--fg-rgb),var(--a3));color:var(--fg);box-shadow:0 0 0 1px rgba(var(--fg-rgb),var(--ring))}.fld.err{box-shadow:0 0 0 1px var(--red);color:var(--fg)}.fld .cur{width:1px;height:16px;background:var(--fg)}
+.ctl{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:13px}.ctl div{display:flex;align-items:center;gap:8px}
+.tg{width:40px;height:24px;border-radius:12px;background:rgba(var(--fg-rgb),var(--a3));position:relative}.tg i{position:absolute;top:4px;left:4px;width:16px;height:16px;border-radius:8px;background:var(--raised)}.tg.on{background:var(--accent)}.tg.on i{left:20px}
+.cb{width:18px;height:18px;border-radius:6px;box-shadow:inset 0 0 0 1.5px var(--muted)}.cb.on{background:var(--accent);box-shadow:none;display:flex;align-items:center;justify-content:center;color:#fff}
+.rd{width:18px;height:18px;border-radius:9px;box-shadow:inset 0 0 0 1.5px var(--muted)}.rd.on{box-shadow:inset 0 0 0 5px var(--accent)}
+.icons{display:grid;grid-template-columns:repeat(8,1fr);gap:12px 0;justify-items:center;color:var(--fg)}
+.toast{background:var(--raised);border-radius:24px;padding:16px 16px 16px 24px;display:flex;align-items:center;gap:16px;border:1px solid rgba(var(--fg-rgb),.10);box-shadow:0 8px 32px rgba(0,0,0,var(--sh))}.toast .m{flex:1;display:flex;flex-direction:column;gap:2px}.toast .m span{font-size:12px;color:var(--muted)}
 .osd{width:280px;height:56px;background:var(--raised);border-radius:24px;display:flex;align-items:center;gap:16px;padding:0 24px;border:1px solid rgba(var(--fg-rgb),.10);box-shadow:0 8px 32px rgba(0,0,0,var(--sh))}.osd .hair{flex:1}.osd .n{font-size:16px;font-weight:500;width:2ch;text-align:right}
 """
 
@@ -205,7 +221,7 @@ def widgets(t):
 <div class="fg">{"".join(f'<div class="fd"><svg width="40" height="32" viewBox="0 0 56 44"><path d="M2 8a4 4 0 0 1 4-4h14l4 4h24a4 4 0 0 1 4 4v26a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z" fill="#e9cf86"/><path d="M2 14h52v24a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z" fill="#f3dd9a"/></svg><span>{f}</span></div>' for f in ("Desktop","Documents","Downloads","Music","Pictures","Videos"))}</div></div></div>''',
      "picker": f'''<div class="card picker" style="width:352px;gap:16px"><div class="tabs"><span class="on">Screens</span><span>Windows</span><span>Region</span></div>
 <div class="shots"><div class="shot on"><i style="background:url('file://{t["arts"][0][1]}') center/cover"></i>DP-1 · 3840 × 2160</div><div class="shot"><i style="background:url('file://{t["arts"][1][1]}') center/cover"></i>eDP-1 · 2880 × 1800</div></div><span class="go">Share</span></div>''',
-     "lock": f'''<div class="card lock" style="width:352px"><div class="mark">Adam Perlis</div><div class="in">{ic("lock",20)}<span class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></span></div></div>''',
+     "lock": f'''<div class="card lock" style="width:352px"><div class="mark">Marvin</div><div class="in">{ic("lock",20)}<span class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></span></div></div>''',
      "polkit": f'''<div class="card pk" style="width:352px;gap:24px"><div class="row2"><div class="ic">{ic("battery",20)}</div><div class="tt"><b>Authentication required</b><span>Omarchy wants to change the power profile. Enter your password to allow this.</span></div></div><div class="in"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="btns"><span>Cancel</span><span class="go">Authenticate</span></div></div>''',
      "terminal": f'''<div class="card term" style="width:352px;gap:0;padding:24px"><div><span class="p">❯</span> omarchy theme set marvin
 <span class="c">Theme set to marvin</span>
@@ -217,6 +233,12 @@ def widgets(t):
      "clipboard": f'''<div class="launcher clip" style="width:352px"><div class="field">{ic("search",20)}<div><i>Search clipboard</i></div></div><div class="rows">
 <div class="row sel"><span class="n">Padding equals radius, so content sits at the centre of the corner arc.</span><span class="k">2m</span></div><div class="row"><span class="n">https://github.com/adamperlis/omarchy-marvin</span><span class="k">14m</span></div><div class="row"><span class="n">omarchy theme set marvin-light</span><span class="k">1h</span></div><div class="row"><span class="n">#7aa6ff</span><span class="k">3h</span></div></div></div>''',
      "themes": f'''<div class="card pick" style="width:352px;gap:12px"><div class="hd" style="height:auto">Theme<span>4 of 22</span></div><div class="strip"><div class="th"><i style="background:url('file://{t["arts"][1][1]}') center/cover"></i></div><div class="th on"><i style="background:url('file://{t["arts"][0][1]}') center/cover"></i></div><div class="th"><i style="background:linear-gradient(135deg,#1a1b26,#414868)"></i></div></div><div class="names"><span>Marvin Light</span><span class="on">Marvin</span><span>Tokyo Night</span></div></div>''',
+     "type": f'''<div class="card spec" style="width:352px"><div class="hd">Type scale<span>Inter · 12 to 56</span></div><div class="r"><div class="d">56</div><span>display-large · 400 · −3%</span></div><div class="r"><div class="h">Heading</div><span>18 · 500</span></div><div class="r"><div class="t">Title</div><span>16 · 500</span></div><div class="r"><div class="b">Body, the working size</div><span>14 · 400</span></div><div class="r"><div class="c">Caption and labels</div><span>12 · 400</span></div></div>''',
+     "colour": f'''<div class="card" style="width:352px;gap:16px"><div class="hd">Colour<span>one accent</span></div><div class="sw"><div><i style="background:{t["bg"]}"></i>base {t["bg"]}</div><div><i style="background:{t["raised"]}"></i>raised {t["raised"]}</div><div><i style="background:{t["fg"]}"></i>text {t["fg"]}</div><div><i style="background:{t["muted"]}"></i>muted {t["muted"]}</div><div><i style="background:{t["accent"]}"></i>accent {t["accent"]}</div><div><i style="background:{t["chip"][0]}"></i>chip {t["chip"][0]}</div><div><i style="background:{t["red"]}"></i>error {t["red"]}</div><div><i style="background:{t["green"]}"></i>ok {t["green"]}</div></div></div>''',
+     "buttons": f'''<div class="card bset" style="width:352px;gap:16px"><div class="hd">Buttons<span>normal · hover · pressed</span></div><div class="row3"><span class="bt pri">Save</span><span class="bt pri hov">Save</span><span class="bt pri dis">Save</span></div><div class="row3"><span class="bt sec">Cancel</span><span class="bt sec hov">Cancel</span><span class="bt sec on">Cancel</span></div><div class="row3"><span class="bt gho">{ic("chevron_left",16)}Back</span><span class="bt gho hov">{ic("chevron_left",16)}Back</span><span class="bt sec">{ic("search",16)}</span><span class="bt sec on">{ic("star",16)}</span></div></div>''',
+     "fields": f'''<div class="card flds" style="width:352px;gap:16px"><div class="hd">Fields<span>never an accent ring</span></div><div class="fld">{ic("search",16)}Search</div><div class="fld foc">{ic("search",16)}fire<span class="cur"></span></div><div class="fld err">{ic("lock",16)}••••••<span style="margin-left:auto;font-size:12px;color:var(--red)">Wrong password</span></div><div class="ctl"><div><span class="tg on"><i></i></span>On</div><div><span class="tg"><i></i></span>Off</div><div><span class="cb on">{ic("check",12)}</span>Done</div><div><span class="cb"></span>Open</div><div><span class="rd on"></span></div><div><span class="rd"></span></div></div></div>''',
+     "icons": f'''<div class="card" style="width:352px;gap:16px"><div class="hd">Icons<span>Material · 16 / 20 / 24</span></div><div class="icons">{"".join(ic(n,20) for n in ("apps","search","wifi","bluetooth","volume","battery_full","update","home","clock","star","trash","download","network","lock","sun","cloud","partly","moon","eco","balance","bolt","prev","pause","next"))}</div></div>''',
+     "toast": f'''<div class="toast" style="width:352px">{ic("check",20)}<div class="m">Theme set to Marvin<span>Light · 22 wallpapers</span></div><span class="bt sec" style="height:32px;padding:0 16px;border-radius:16px;font-size:13px">Undo</span></div>''',
      "osd": f'''<div class="osd">{ic("volume",20)}<div class="hair"><i style="width:64%"></i></div><div class="n">64</div></div>''',
     }
 
@@ -316,7 +338,7 @@ html,body{{width:1920px;height:1080px;overflow:hidden}}body{{background:{t["grou
 .mark{{font-size:96px;font-weight:500;letter-spacing:-.03em}}
 .input{{width:280px;height:32px;border-radius:16px;background:rgba({hexrgb(t["raised"])},.85);display:flex;align-items:center;justify-content:center;gap:8px}}
 .input i{{width:8px;height:8px;border-radius:4px;background:var(--fg)}}
-</style></head><body><div class="mark">Adam Perlis</div><div class="input"><i></i><i></i><i></i><i></i></div></body></html>"""
+</style></head><body><div class="mark">Marvin</div><div class="input"><i></i><i></i><i></i><i></i></div></body></html>"""
 
 def workspace(t, fonts):
     """Bar over the wallpaper with one notification: the wallpaper as the ground."""
@@ -346,12 +368,12 @@ def sheet(t, fonts):
     # Three columns in flow, balanced to the same height; the lock card sits
     # at the middle of the middle column.
     cols = [
-        cell("Music", w["media"]) + cell("Launcher", w["launcher"]) + cell("Omarchy menu", w["menu"]) + cell("Notes · Obsidian", w["notes"]) + cell("Theme picker", w["themes"]) + cell("Weather · sunset", w["weather_sunset"]) + cell("Volume", w["osd"]),
-        cell("Battery", w["power"]) + cell("Weather", w["weather"]) + cell("Lock screen", w["lock"]) + cell("Files", w["files"]) + cell("Clipboard", w["clipboard"]) + cell("Terminal", w["terminal"]),
-        cell("Calendar", w["clock"]) + cell("Notification", w["note"]) + cell("Screen share", w["picker"]) + cell("Authentication", w["polkit"]) + cell("Backgrounds", w["mood"]) + cell("Weather · night", w["weather_night"]),
+        cell("Music", w["media"]) + cell("Launcher", w["launcher"]) + cell("Omarchy menu", w["menu"]) + cell("Notes · Obsidian", w["notes"]) + cell("Theme picker", w["themes"]) + cell("Type scale", w["type"]) + cell("Buttons", w["buttons"]) + cell("Toast", w["toast"]),
+        cell("Battery", w["power"]) + cell("Weather", w["weather"]) + cell("Lock screen", w["lock"]) + cell("Files", w["files"]) + cell("Clipboard", w["clipboard"]) + cell("Terminal", w["terminal"]) + cell("Colour", w["colour"]) + cell("Icons", w["icons"]),
+        cell("Calendar", w["clock"]) + cell("Notification", w["note"]) + cell("Screen share", w["picker"]) + cell("Authentication", w["polkit"]) + cell("Backgrounds", w["mood"]) + cell("Volume", w["osd"]) + cell("Fields", w["fields"]),
     ]
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>{font_face(fonts)}{vars_css(t)}{BASE_CSS}
-html,body{{width:1600px;height:2320px;overflow:hidden}}body{{background:{ground};padding:56px 0}}
+html,body{{width:1600px;height:2760px;overflow:hidden}}body{{background:{ground};padding:56px 0}}
 .g{{display:grid;grid-template-columns:352px 352px 352px;gap:0 56px;justify-content:center;align-items:start}}
 .col{{display:flex;flex-direction:column;gap:40px}}
 
@@ -368,7 +390,7 @@ if __name__ == "__main__":
         for name, html, size, dests in (
             ("desktop", desktop(t, a.fonts), (1800, 1012), [out / f"{pre}preview.png"]),
             ("boot", boot(t, a.fonts), (1920, 1080), [out / f"{pre}preview-unlock.png"]),
-            ("widgets", sheet(t, a.fonts), (1600, 2320), [out / f"docs/images/widgets-{tag}.png"]),
+            ("widgets", sheet(t, a.fonts), (1600, 2760), [out / f"docs/images/widgets-{tag}.png"]),
             ("workspace", workspace(t, a.fonts), (1800, 1012), [out / f"docs/images/workspace-{tag}.png"]),
             ("backgrounds", backgrounds(t, a.fonts), (1600, 1100), [out / f"docs/images/backgrounds-{tag}.png"]),
         ):

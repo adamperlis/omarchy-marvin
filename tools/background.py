@@ -98,16 +98,34 @@ def _lin_to_srgb(c):
 def _sig(x, k):
     return 1 / (1 + np.exp(-np.clip(x / k, -30, 30)))
 
+def _rect_mask(xx, yy, x0, y0, x1, y1, soft=0.6, shape="rect"):
+    """1 inside the opening. Edges are crisp (a sub-pixel ramp). An arch rounds the top; a slot is just tall."""
+    m = _sig(xx - x0, soft) * _sig(x1 - xx, soft) * _sig(yy - y0, soft) * _sig(y1 - yy, soft)
+    if shape == "arch":
+        cx, r = (x0 + x1) / 2, (x1 - x0) / 2
+        cap = _sig(r - np.sqrt((xx - cx) ** 2 + (yy - (y0 + r)) ** 2), soft)
+        m = np.where(yy < y0 + r, cap * _sig(yy - y0 + r, soft), m)
+    return m
+
 def room(palette, seed, grain=2.5):
-    """A gradient room in perspective: four planes meeting at a far opening, seams softened, light bloomed."""
+    """A gradient room in perspective. Some edges are hard, some are soft; that mix is what makes it read as light."""
     rng = np.random.default_rng(seed)
     w, h = OUT_W // 2, OUT_H // 2
     far, left, right, floor, ceil, door, edge = (_srgb_to_lin(hex_rgb(c)) for c in palette)
-    # the far opening sits off to one side more often than not
-    vx, vy = rng.uniform(0.18, 0.82) * w, rng.uniform(0.28, 0.72) * h
-    dw, dh = rng.uniform(0.05, 0.20) * w, rng.uniform(0.12, 0.34) * h
-    if rng.random() < 0.35: dw, dh = dh * 0.5, dw * 1.7            # a tall slot
-    x0, x1, y0, y1 = vx - dw / 2, vx + dw / 2, vy - dh / 2, vy + dh / 2
+    layout = rng.choice(["corridor", "corridor", "backwall", "corner"])
+    # the vanishing point; a corner room puts it near one edge so only two or three planes show
+    if layout == "corner":
+        vx = (rng.uniform(0.04, 0.14) if rng.random() < 0.5 else rng.uniform(0.86, 0.96)) * w
+        vy = rng.uniform(0.25, 0.75) * h
+    else:
+        vx, vy = rng.uniform(0.18, 0.82) * w, rng.uniform(0.30, 0.70) * h
+    # the far plane: for a corridor it is the opening itself; for a back wall it is a big plane with an opening in it
+    if layout == "backwall":
+        fw, fh = rng.uniform(0.45, 0.80) * w, rng.uniform(0.55, 0.85) * h
+    else:
+        fw, fh = rng.uniform(0.06, 0.22) * w, rng.uniform(0.14, 0.40) * h
+        if rng.random() < 0.35: fw, fh = fh * 0.45, fw * 1.8
+    x0, x1, y0, y1 = vx - fw / 2, vx + fw / 2, vy - fh / 2, vy + fh / 2
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32) + 0.5
     dx, dy = xx - vx, yy - vy
     eps = 1e-6
@@ -117,31 +135,55 @@ def room(palette, seed, grain=2.5):
     ex = np.where(dx > 0, (w - vx) / (dx + eps), (0 - vx) / (dx - eps))
     ey = np.where(dy > 0, (h - vy) / (dy + eps), (0 - vy) / (dy - eps))
     s_scr = np.minimum(ex, ey)
-    t = np.clip((1.0 - s_rect) / np.maximum(s_scr - s_rect, eps), 0, 1)     # 0 at the opening, 1 at the screen edge
-    inside = _sig(s_rect - 1.0, 0.02)                                           # the opening, with a soft edge
-    # plane membership, softened so the corners of the room read as creases, not cuts
-    side = _sig(sy - sx, 0.09 * np.maximum(s_rect, 0.05))                     # 1 on the side walls
-    lr = _sig(dx, 0.025 * w)                                                    # 1 on the right wall
-    fc = _sig(dy, 0.025 * h)                                                    # 1 on the floor
-    # light: the opening lights what is near it, radially, and the planes darken toward the viewer
-    dist = np.sqrt((np.clip(np.abs(dx) - dw / 2, 0, None) / w) ** 2 + (np.clip(np.abs(dy) - dh / 2, 0, None) / h) ** 2)
-    lit = np.exp(-dist / rng.uniform(0.08, 0.16))
-    g = rng.uniform(0.45, 0.8)
-    depth = t ** g                                                              # 0 at the opening, 1 at the viewer
+    t = np.clip((1.0 - s_rect) / np.maximum(s_scr - s_rect, eps), 0, 1)
+    in_far = _rect_mask(xx, yy, x0, y0, x1, y1, soft=0.6)
+    # creases: each room decides whether its corners are knife-sharp or soft, per crease
+    k_side = rng.choice([0.012, 0.03, 0.14]) * np.maximum(s_rect, 0.05)
+    k_lr, k_fc = rng.choice([0.004, 0.02, 0.05]) * w, rng.choice([0.004, 0.02, 0.05]) * h
+    side = _sig(sy - sx, k_side); lr = _sig(dx, k_lr); fc = _sig(dy, k_fc)
+    dist = np.sqrt((np.clip(np.abs(dx) - fw / 2, 0, None) / w) ** 2 + (np.clip(np.abs(dy) - fh / 2, 0, None) / h) ** 2)
+    lit = np.exp(-dist / rng.uniform(0.08, 0.18))
+    depth = t ** rng.uniform(0.45, 0.8)
+    # the opening inside the far plane (backwall) or the far plane itself (corridor, corner)
+    if layout == "backwall":
+        ow, oh = rng.uniform(0.10, 0.30) * fw, rng.uniform(0.25, 0.55) * fh
+        if rng.random() < 0.4: ow, oh = oh * 0.5, ow * 1.6
+        ox, oy = rng.uniform(x0 + ow, x1 - ow), rng.uniform(y0 + oh, y1 - oh * 0.6)
+        shape = rng.choice(["rect", "rect", "arch"])
+        opening = _rect_mask(xx, yy, ox - ow / 2, oy - oh / 2, ox + ow / 2, oy + oh / 2, 0.6, shape)
+        frame = _rect_mask(xx, yy, ox - ow / 2 - 0.02 * w, oy - oh / 2 - 0.02 * w, ox + ow / 2 + 0.02 * w, oy + oh / 2 + 0.02 * w, 0.6, shape)
+    else:
+        shape = rng.choice(["rect", "rect", "arch"])
+        opening = _rect_mask(xx, yy, x0, y0, x1, y1, 0.6, shape)
+        frame = _rect_mask(xx, yy, x0 - 0.012 * w, y0 - 0.012 * w, x1 + 0.012 * w, y1 + 0.012 * w, 0.6, shape)
+    rim = np.clip(frame - opening, 0, 1) * (rng.random() < 0.5)          # a bright rim around the opening, sometimes
+    nested = rng.random() < 0.35                                             # a dark doorway with a lit slab inside it
+    if nested:
+        cx, cy = (ox, oy) if layout == "backwall" else (vx, vy)
+        cw, ch = (ow, oh) if layout == "backwall" else (fw, fh)
+        inner = _rect_mask(xx, yy, cx - cw * 0.22, cy - ch * 0.10, cx + cw * 0.22, cy + ch * 0.45, 0.6)
     img = np.zeros((h, w, 3), dtype=np.float32)
     for i in range(3):
         wall_c = left[i] * (1 - lr) + right[i] * lr
         vert_c = ceil[i] * (1 - fc) + floor[i] * fc
         plane = wall_c * side + vert_c * (1 - side)
-        # every plane runs from the far light at the opening to its own colour at the viewer,
-        # a little darker at the near edge, and the opening spills light radially on top
         plane = (far[i] * (1 - depth) + plane * depth) * (1 - 0.18 * depth) + far[i] * 0.6 * lit * (1 - depth)
-        dd = np.clip(((xx - x0) / max(dw, 1)) * 0.5 + ((yy - y0) / max(dh, 1)) * 0.5, 0, 1)
+        if layout == "backwall":
+            # the back wall is its own flat plane: a soft vertical gradient, darkening toward its bottom corners
+            v = np.clip((yy - y0) / max(fh, 1), 0, 1)
+            back = (ceil[i] * (1 - v) + wall_c * v) * (0.85 + 0.15 * (1 - np.abs((xx - vx) / max(fw / 2, 1))))
+            plane = plane * (1 - in_far) + back * in_far
+        dd = np.clip(((xx - x0) / max(fw, 1)) * 0.5 + ((yy - y0) / max(fh, 1)) * 0.5, 0, 1)
         door_c = door[i] * (1 - dd) + edge[i] * dd
-        img[..., i] = door_c * inside + plane * (1 - inside)
+        if nested:
+            door_c = door_c * (1 - inner) + (edge[i] * 0.6 + far[i] * 0.4) * inner
+        c = plane * (1 - opening) + door_c * opening
+        c = c * (1 - rim) + edge[i] * rim
+        img[..., i] = c
     im = Image.fromarray((_lin_to_srgb(img) * 255).astype(np.uint8))
+    # bloom: light from the opening, wide and soft, screened over an image whose edges stay where they are
     glow = im.filter(ImageFilter.GaussianBlur(radius=h * 0.10))
-    soft = im.filter(ImageFilter.GaussianBlur(radius=h * 0.016))
+    soft = im.filter(ImageFilter.GaussianBlur(radius=float(h * rng.choice([0.0, 0.004, 0.010]))))
     a = np.asarray(soft, dtype=np.float32); b = np.asarray(glow, dtype=np.float32)
     lum = (0.2126 * b[..., 0] + 0.7152 * b[..., 1] + 0.0722 * b[..., 2]) / 255
     a = 255 - (255 - a) * (255 - b * (0.5 * lum[..., None])) / 255

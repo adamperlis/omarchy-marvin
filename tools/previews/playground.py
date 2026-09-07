@@ -69,24 +69,31 @@ def main():
 {D["vars"]}
 {desk_css}
 html,body{{margin:0;background:var(--pg-bg);color:var(--pg-fg);font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased}}
-.page{{display:flex;flex-direction:column;gap:24px;padding:24px;min-height:100vh;box-sizing:border-box}}
-.head{{display:flex;align-items:baseline;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-right:320px}}
-.head h1{{font-size:16px;font-weight:500;margin:0}}.head p{{margin:0;color:var(--pg-muted);max-width:64ch}}
-.frame{{display:flex;justify-content:center}}
+.page{{display:grid;grid-template-columns:minmax(0,1fr) 336px;grid-template-rows:auto 1fr;gap:24px;padding:24px;min-height:100vh;box-sizing:border-box}}
+.head{{grid-column:1/-1;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}}
+.head h1{{font-size:16px;font-weight:500;margin:0}}.head p{{margin:0;color:var(--pg-muted);max-width:72ch}}
+.main{{display:flex;flex-direction:column;gap:24px;min-width:0}}
+.side{{display:flex;flex-direction:column;gap:16px;min-width:0;position:sticky;top:24px;align-self:start}}
+.side .panel{{background:var(--pg-raised);border-radius:24px;box-shadow:0 0 0 1px rgba(var(--pg-fg-rgb),.10);overflow:hidden}}
+.side .panel .dk{{padding:8px}}
+.side .panel .dk > *{{position:static !important;width:100% !important;max-width:none !important;box-shadow:none !important}}
+.frame{{display:flex;justify-content:center;min-width:0}}
 .scaler{{position:relative}}
+@media (max-width: 1100px){{.page{{grid-template-columns:1fr}}.side{{position:static;order:-1}}.head{{order:-2}}}}
 .stage{{position:absolute;left:0;top:0;width:1800px;height:1012px;overflow:hidden;border-radius:24px;transform-origin:0 0;box-shadow:0 8px 40px rgba(0,0,0,var(--pg-sh)),0 0 0 1px rgba(var(--pg-fg-rgb),.10);isolation:isolate}}
 .wall{{position:absolute;inset:-48px;background-size:cover;background-position:center;will-change:filter}}
 .scrim{{position:absolute;inset:0;pointer-events:none}}
 .grain{{position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:.18}}
 .tone{{position:absolute;inset:0}}.tone[hidden]{{display:none}}
 .tone .bar{{position:absolute}}
-.strip{{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}}
-.film{{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:8px;border-radius:16px;padding:8px;background:var(--pg-raised);box-shadow:0 0 0 1px rgba(var(--pg-fg-rgb),.10);color:var(--pg-fg)}}
+.strip{{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px}}
+.film{{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:6px;border-radius:14px;padding:6px;background:var(--pg-raised);box-shadow:0 0 0 1px rgba(var(--pg-fg-rgb),.10);color:var(--pg-fg);transition:box-shadow .12s ease,transform .12s ease}}
+.film:hover{{box-shadow:0 0 0 1px rgba(var(--pg-fg-rgb),.24)}}
 .film:focus-visible{{box-shadow:0 0 0 1px rgba(var(--pg-fg-rgb),.24),0 0 0 4px rgba(var(--pg-fg-rgb),.10)}}
 .film.on{{box-shadow:0 0 0 2px var(--pg-accent)}}
 .film img,.film .none{{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px}}.film .none{{background:linear-gradient(180deg,var(--pg-raised),var(--pg-bg));box-shadow:inset 0 0 0 1px rgba(var(--pg-fg-rgb),.10)}}
-.film .cap{{display:flex;flex-direction:column;gap:2px;padding:0 4px}}.film .cap b{{font-weight:500;font-size:13px}}.film .cap i{{font-style:normal;color:var(--pg-muted);font-size:12px}}
-.film .px{{font-size:11px;color:var(--pg-muted);padding:0 4px 4px;font-variant-numeric:tabular-nums}}.film .px.ok{{color:var(--pg-accent)}}
+.film .cap{{display:flex;flex-direction:column;gap:1px;padding:0 4px}}.film .cap b{{font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}.film .cap i{{font-style:normal;color:var(--pg-muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.film .px{{font-size:11px;color:var(--pg-muted);padding:0 4px 4px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}.film .px.ok{{color:var(--pg-accent)}}
 .readout{{display:grid;grid-template-columns:1fr auto;gap:12px 24px;align-items:center;background:var(--pg-raised);border-radius:24px;padding:16px 24px;box-shadow:0 0 0 1px rgba(var(--pg-fg-rgb),.10)}}
 .readout .who{{display:flex;flex-direction:column;gap:2px}}.readout .who b{{font-weight:500}}.readout .who span{{color:var(--pg-muted);font-size:12px}}
 .readout code{{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--pg-fg);white-space:nowrap;overflow-x:auto;display:block;grid-column:1/-1;padding:12px 16px;border-radius:12px;background:rgba(var(--pg-fg-rgb),.04)}}
@@ -94,7 +101,8 @@ html,body{{margin:0;background:var(--pg-bg);color:var(--pg-fg);font-family:Inter
 @media (prefers-reduced-motion: no-preference){{.wall{{transition:filter .15s}}}}
 </style>
 <div class="page">
-  <div class="head"><h1>Marvin Wallpaper Bench</h1><p>The desktop as the theme renders it, over a painting you grade live. Blur, saturation, mix toward the ground and grain map one to one onto <code style="font-family:'JetBrains Mono';font-size:12px">tools/background.py</code>; the command below reproduces whatever the panel shows. Tone switches the whole desktop.</p></div>
+  <div class="head"><h1>Marvin Wallpaper Bench</h1><p>The desktop as the theme renders it, over a background you grade live. The command under the desktop reproduces whatever the panel shows.</p></div>
+  <div class="main">
   <div class="frame"><div class="scaler" id="scaler"><div class="stage" id="stage">
     <div class="wall" id="wall"></div>
     <div class="scrim" id="scrim"></div>
@@ -103,18 +111,19 @@ html,body{{margin:0;background:var(--pg-bg);color:var(--pg-fg);font-family:Inter
     <div class="tone tone-dark" id="tone-dark" hidden>{D["body"]}</div>
   </div></div></div>
   <div class="readout"><div class="who" id="who"></div><div class="flag" id="flag"></div><code id="cmd"></code></div>
-  <div class="strip" id="strip">{strip}</div>
+  </div>
+  <div class="side"><div class="panel"><div class="dk" id="dk"></div></div><div class="strip" id="strip">{strip}</div></div>
 </div>
 <script>{dk_js}</script>
 <script>
 (function(){{
   var P = {json.dumps([{k: m[k] for k in ("key","artist","title","year","w","h","eligible")} for m in paintings])};
   var SRC = {{}};
-  document.querySelectorAll('.film').forEach(function(b){{ SRC[b.dataset.key] = b.querySelector('img').src; }});
+  document.querySelectorAll('.film').forEach(function(b){{ var im = b.querySelector('img'); if (im) SRC[b.dataset.key] = im.src; }});
   var GROUND = {{light: "{L["ground"]}", dark: "{D["ground"]}"}};
   var titles = ["None"].concat(P.map(function(m){{ return m.title; }}));
   var RAISED = {{light: "{L["raised"]}", dark: "{D["raised"]}"}};
-  var root = DialKit.createDialRoot({{position: "top-right"}});
+  var root = DialKit.createDialRoot({{mode: "inline", target: document.getElementById('dk'), theme: "system"}});
   var kit = DialKit.createDialKit("Wallpaper", {{
     painting: {{type: "select", options: titles}},
     tone: {{type: "select", options: ["light", "dark"]}},
@@ -141,7 +150,7 @@ html,body{{margin:0;background:var(--pg-bg);color:var(--pg-fg);font-family:Inter
     document.getElementById('tone-dark').hidden = tone !== "dark";
     document.querySelectorAll('#tone-light .win, #tone-light .bar, #tone-light > div[style], #tone-dark .win, #tone-dark .bar, #tone-dark > div[style]').forEach(function(el){{ el.style.visibility = v.windows ? '' : 'hidden'; }});
     document.querySelectorAll('.film').forEach(function(b){{ b.classList.toggle('on', b.dataset.key === m.key); }});
-    who.innerHTML = '<b>' + m.artist + ', <i style="font-style:normal">' + m.title + '</i> (' + m.year + ')</b><span>source ' + m.w + ' × ' + m.h + ' · shown in the ' + tone + ' tone</span>';
+    who.innerHTML = '<b>' + (none ? 'No image: the plain ground' : m.artist + ', <i style="font-style:normal">' + m.title + '</i> (' + m.year + ')') + '</b><span>' + (none ? 'white falling to the base grey' : 'source ' + m.w + ' × ' + m.h) + ' · shown in the ' + tone + ' tone</span>';
     flag.textContent = m.eligible ? 'Full resolution on a 4K screen' : 'Under 3840 wide: a 4K screen would upscale it';
     flag.classList.toggle('ok', m.eligible);
     cmd.textContent = none ? 'tools/background.py --style plain --index 1' : 'tools/background.py --source ' + m.key + '.jpg --name ' + m.key + ' --index 1 --blur ' + frac.toFixed(4) + ' --sat ' + v.saturation.toFixed(2) + ' --mix ' + v.mix.toFixed(2) + ' --grain ' + (v.grain ? '1.6' : '0');
@@ -154,7 +163,7 @@ html,body{{margin:0;background:var(--pg-bg);color:var(--pg-fg);font-family:Inter
     if (kit.setValues) kit.setValues({{painting: title}}); else if (kit.set) kit.set({{painting: title}});
   }});
   function fit(){{
-    var pad = 48, w = Math.min(window.innerWidth - pad, 1800), s = w / 1800;
+    var frame = document.querySelector('.frame'), w = Math.min(frame.clientWidth, 1800), s = w / 1800;
     var sc = document.getElementById('scaler'); sc.style.width = (1800 * s) + 'px'; sc.style.height = (1012 * s) + 'px';
     document.getElementById('stage').style.transform = 'scale(' + s + ')';
   }}

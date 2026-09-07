@@ -290,7 +290,7 @@ Panel {
             Row {
               id: heroRow
               anchors.left: parent.left
-              spacing: Style.spacing.xs
+              spacing: Style.spacing.md   // the day numeral and the month need air between them
 
               Text {
                 id: heroDay
