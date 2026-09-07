@@ -4,6 +4,20 @@ A design system for [Omarchy 4](https://omarchy.org), delivered as a theme, a
 reversible config layer, and fourteen restyled widgets — with 63 wallpapers
 included.
 
+A composed desktop under Marvin — the Notes app, Files and a terminal
+alongside the weather, media and battery widgets:
+
+![Marvin — a composed desktop, light](light/preview.png)
+
+![Marvin — a composed desktop, dark](preview.png)
+
+Tone is a property of each surface: weather is a gradient, the battery card is
+inverted with a ring of ticks, state is a soft-fill chip, and the rest stay
+quiet.
+
+And the 63 wallpapers it ships with — blurred gradient rooms drawn from the
+palette, plus soft abstractions:
+
 ![Marvin backgrounds](docs/images/backgrounds-all.jpg)
 
 ## Install
@@ -25,17 +39,6 @@ rounding, gaps, shadow and motion, and the fourteen widget plugins — run the
 [config layer](#2-the-config-layer) once the theme is set. It snapshots
 everything first and reverts byte-for-byte; full steps are
 [below](#install-in-detail).
-
-A composed desktop under Marvin — the Notes app, Files and a terminal
-alongside the weather, media and battery widgets, over one of the wallpapers:
-
-![Marvin — a composed desktop, dark](preview.png)
-
-![Marvin — a composed desktop, light](light/preview.png)
-
-Tone is a property of each surface: weather is a gradient, the battery card is
-inverted with a ring of ticks, state is a soft-fill chip, and the rest stay
-quiet.
 
 Omarchy's stock look is assembled rather than designed: an irregular spacing
 ramp, six type sizes crammed between 10 and 16px, every surface the same

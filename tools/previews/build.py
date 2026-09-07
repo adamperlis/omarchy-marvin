@@ -84,10 +84,10 @@ def tone(root, light):
     return dict(light=light, bg=c["background"], raised=c["lighter_background"], ground=c["dark_background"], fg=c["foreground"], muted=c["muted"],
                 accent=c["accent"], attn=c["attention"], red=c["red"], green=c["green"], yellow=c["yellow"], blue=c["blue"], magenta=c["magenta"], cyan=c["cyan"],
                 bright_fg=c["bright_foreground"], selection=c["selection"], ansi=[c[k] for k in ("background","red","green","yellow","blue","magenta","cyan","foreground","muted","bright_red","bright_green","bright_yellow","bright_blue","bright_magenta","bright_cyan","bright_foreground")],
-                wall=root / "backgrounds" / ("abstract-04.jpg" if light else "abstract-45.jpg"),
-                room=root / "backgrounds" / ("abstract-04.jpg" if light else "abstract-45.jpg"),
+                wall=root / "backgrounds" / ("abstract-04.jpg" if light else "abstract-05.jpg"),
+                room=root / "backgrounds" / ("abstract-04.jpg" if light else "abstract-05.jpg"),
                 walls=[(n, root / (("light/" if light else "") + f"backgrounds/{n}")) for n in WALLS],
-                arts=[(n, root / "docs/images/art" / n) for n in ARTS],
+                arts=[(n, root / "backgrounds" / n) for n in ("abstract-35.jpg", "abstract-23.jpg", "abstract-08.jpg", "abstract-50.jpg")],
                 wx=(wx["background"], wx["text"], wx["muted"], wx.get("background-end", wx["background"])),
                 sky=dict(sunset=(wx["sunset"], wx["sunset-end"], wx["sunset-muted"]), night=(wx["night"], wx["night-end"], wx["night-muted"])),
                 pw=(pw["background"], pw["text"], pw["muted"], pw.get("background-end", pw["background"])),
@@ -288,7 +288,7 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 .obs{{display:grid;grid-template-columns:272px 1fr;height:100%}}.obs .sb{{background:var(--bg);padding:24px 16px;display:flex;flex-direction:column;gap:4px}}
 .obs .vault{{font-size:12px;color:var(--muted);padding:0 16px 12px}}.obs .sb .si{{height:40px;border-radius:20px;padding:0 16px;display:flex;align-items:center;gap:12px}}.obs .sb .si.on{{background:rgba(var(--fg-rgb),var(--a3));font-weight:500}}
 .obs .ed{{background:var(--raised);position:relative;padding:0}}.obs .tabs{{height:48px;display:flex;align-items:center;gap:8px;padding:8px 16px}}.obs .tab{{height:32px;padding:0 16px;border-radius:16px;display:flex;align-items:center;color:var(--muted)}}.obs .tab.on{{background:rgba(var(--fg-rgb),var(--a3));color:var(--fg);font-weight:500}}
-.obs .doc{{padding:24px 48px;max-width:640px;font-size:15px;line-height:1.5}}.obs h1{{font-size:32px;font-weight:500;letter-spacing:-.02em;margin:0 0 16px;line-height:1.15}}.obs h2{{font-size:18px;font-weight:500;margin:24px 0 8px}}.obs p{{margin:0 0 12px}}
+.obs .doc{{padding:24px 32px;max-width:640px;font-size:15px;line-height:1.5}}.obs h1{{font-size:32px;font-weight:500;letter-spacing:-.02em;margin:0 0 16px;line-height:1.15}}.obs h2{{font-size:18px;font-weight:500;margin:24px 0 8px}}.obs p{{margin:0 0 12px}}
 .obs .chk{{display:flex;align-items:center;gap:10px;margin:4px 0}}.obs .chk i{{width:16px;height:16px;border-radius:8px;border:1.5px solid var(--muted);display:inline-block}}.obs .chk i.d{{background:var(--accent);border-color:var(--accent)}}.obs .chk s{{color:var(--muted)}}
 .obs .tag{{display:inline-flex;align-items:center;height:24px;padding:0 12px;border-radius:16px;background:rgba(var(--acc-rgb),.12);color:var(--accent);font-size:13px;font-weight:500;margin-right:8px}}
 .obs code{{font-family:'JetBrains Mono';font-size:13px;background:rgba(var(--fg-rgb),var(--a1));border-radius:8px;padding:2px 6px}}.obs blockquote{{margin:12px 0;padding-left:16px;border-left:2px solid var(--accent);color:var(--muted)}}
@@ -296,28 +296,29 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 .files{{display:grid;grid-template-columns:272px 1fr;height:100%;gap:0;min-height:0}}.files .sb{{width:auto;padding:24px 16px;display:flex;flex-direction:column;gap:4px;background:var(--raised)}}.files .si{{width:auto}}
 .si{{height:40px;border-radius:20px;padding:0 16px;display:flex;align-items:center;gap:12px;color:var(--fg)}}.si.on{{background:rgba(var(--fg-rgb),var(--a3))}}
 .files .main{{padding:24px}}.files .top{{display:flex;align-items:center;gap:12px;margin-bottom:24px}}.files .top .pathf{{height:40px;flex:1;border-radius:20px;background:rgba(var(--fg-rgb),var(--a1));display:flex;align-items:center;padding:0 16px;gap:8px}}
-.fgrid{{display:grid;grid-template-columns:repeat(6,1fr);gap:24px 16px}}.fd{{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11px}}
+.fgrid{{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 12px}}.fd{{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11px}}
+.desk{{position:absolute;left:24px;right:24px;top:56px;bottom:24px;display:grid;gap:24px;grid-template-columns:1.35fr 1.35fr 1fr;grid-template-rows:1fr 1fr;grid-auto-flow:column}}
+.desk>.win{{position:static;width:auto;height:auto}}
+.desk>.card{{width:100%!important;height:100%!important;justify-content:center}}
 </style></head><body>
 {bar(t)}
-<div class="win focus" style="left:24px;top:56px;width:760px;height:560px">
+<div class="desk">
+<div class="win focus">
   <div class="obs"><div class="sb"><div class="vault">Notes</div>{obs_side}</div>
   <div class="ed"><div class="tabs"><div class="tab on">Principles</div><div class="tab">Grid</div><div class="tab">Motion</div></div>
   <div class="doc"><h1>Principles</h1>
-  <p>Understand the grid, set a clean type scale, art-direct a few key widgets, then propagate. After that it gets rather easy.</p>
+  <p>Understand the grid, set a type scale, art-direct a few widgets, then propagate.</p>
   <h2>Rules</h2>
-  <div class="chk"><i class="d"></i><s>Every step in a scale must be perceptible</s></div>
+  <div class="chk"><i class="d"></i><s>Every step must be perceptible</s></div>
   <div class="chk"><i class="d"></i><s>Depth from surfaces, not outlines</s></div>
   <div class="chk"><i></i>Tone is a property of each surface</div>
-  <div class="chk"><i></i>Large numerals, small labels</div>
-  <p style="margin-top:16px">Padding equals radius: <code>popup-padding = 16</code>, so content sits at the centre of the corner arc.</p>
-  <blockquote>Leave a little room for the unexpected.</blockquote>
-  <p><span class="tag">#design-system</span><span class="tag">#omarchy</span></p></div>
+  <div class="chk"><i></i>Large numerals, small labels</div></div>
   <div class="status"><span>212 words</span><span>1,280 characters</span></div></div></div>
 </div>
-<div class="win" style="left:24px;top:640px;width:760px;height:348px">
+<div class="win">
   <div class="files"><div class="sb">{side}</div><div class="main"><div class="top">{ic("chevron_left",20)}{ic("chevron_right",20)}<div class="pathf">{ic("home",16)}Home</div>{ic("search",20)}</div><div class="fgrid">{fgrid}</div></div></div>
 </div>
-<div class="win" style="left:808px;top:56px;width:480px;height:360px">
+<div class="win">
   <div class="term mono"><span class="p">❯</span> omarchy theme set marvin
 <span class="c">Theme set · radius 24 · type 12–56</span>
 <span class="p">❯</span> omarchy theme list
@@ -329,8 +330,10 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 <span style="color:{t["green"]}">ok</span>  install → revert  <span class="c">byte for byte</span>
 <span class="p">❯</span> <span style="display:inline-block;width:8px;height:16px;background:var(--fg);vertical-align:-3px"></span></div>
 </div>
-<div style="position:absolute;left:808px;top:440px">{w["media"]}</div>
-<div style="position:absolute;right:24px;top:56px;display:flex;flex-direction:column;gap:24px;align-items:flex-end">{w["weather"]}{w["power"]}</div>
+{w["media"]}
+{w["weather"]}
+{w["power"]}
+</div>
 </body></html>"""
 
 def boot(t, fonts):
