@@ -233,26 +233,27 @@ travels with them in `plugins/LICENSE-omarchy`.
 ## Backgrounds
 
 The wallpaper is the ground the whole system sits on, so it is graded, not
-chosen: a painting softened only slightly, so the brushwork stays, saturation
+chosen: a painting left sharp, so the brushwork stays, saturation
 pushed up a little so the field stays rich, mixed lightly toward the theme
 ground, luminance clamped into a band the bar stays readable over, grain
 added against banding.
 
-Three paintings ship, chosen for the palette they share with the widgets —
-sky blue, navy, pale yellow, warm orange — and for colour that carries at
-desktop scale:
+Two paintings ship, chosen for the palette they share with the widgets —
+sky blue, navy, pale yellow, warm orange — and because their reproductions
+are at least 3840 wide, so a 4K screen shows them at full resolution with
+no upscaling:
 
-| | Painting | Why |
-|---|---|---|
-| 1 | Claude Monet, *The Houses of Parliament, Sunset* (1900–03) | blue and orange against violet; the weather card's blues and the sunrise |
-| 2 | Vincent van Gogh, *The Starry Night* (1889) | navy and pale yellow; the battery card and the draft chip |
-| 3 | Wassily Kandinsky, *Composition VII* (1913) | every colour in the system at once |
+| | Painting | Source size | Why |
+|---|---|---|---|
+| 1 | Vincent van Gogh, *The Starry Night* (1889) | 5000 × 3959 | navy and pale yellow; the battery card and the draft chip |
+| 2 | Wassily Kandinsky, *Composition VII* (1913) | 4032 × 3022 | every colour in the system at once |
 
-All three are in the public domain; sources and the grading recipe are in
-`backgrounds/README.md`. To grade another painting:
+Both are in the public domain; sources and the grading recipe are in
+`backgrounds/README.md`. To grade another painting (it must be at least
+3840 × 2160 after a 16:9 crop; the tool refuses smaller sources):
 
 ```
-tools/background.py --source path/to/painting.jpg --name parliament --index 1
+tools/background.py --source path/to/painting.jpg --name starry --index 1
 ```
 
 It writes both tones. Needs Pillow and numpy.

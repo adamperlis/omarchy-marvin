@@ -12,7 +12,7 @@ Outputs backgrounds/<n>-<name>.jpg (dark) and light/backgrounds/<n>-<name>.jpg.
 Needs Pillow and numpy.
 
 Grading, per tone:
-  1. a light blur (--blur, a fraction of the height; 0.004 by default, 0 for none)
+  1. no blur by default (--blur, a fraction of the height, if you want one)
   2. push saturation up a little, so the field stays rich under the grading
   3. mix toward the theme ground colour, then clamp luminance into a band that
      keeps the bar (dark #161616 / light #f5f5f5) readable over it
@@ -65,16 +65,18 @@ def synthesize(palette, seed):
 
 def prepare_source(path):
     im = Image.open(path).convert("RGB")
-    # cover-crop to 16:9 at output resolution: the painting keeps its brushwork
+    # cover-crop to 16:9 at the source's own resolution; never upscale
     w, h = im.size
-    target = WORK_W / WORK_H
+    target = OUT_W / OUT_H
     if w / h > target:
         nw = int(h * target); im = im.crop(((w - nw) // 2, 0, (w - nw) // 2 + nw, h))
     else:
         nh = int(w / target); im = im.crop((0, (h - nh) // 2, w, (h - nh) // 2 + nh))
+    if im.size[0] < OUT_W or im.size[1] < OUT_H:
+        sys.exit(f"{path}: {w}x{h} crops to {im.size[0]}x{im.size[1]}, under {OUT_W}x{OUT_H}; a 4K screen would have to upscale it. Find a larger reproduction.")
     return im.resize((OUT_W, OUT_H), Image.LANCZOS)
 
-def grade(im, tone, seed, blur=0.004):
+def grade(im, tone, seed, blur=0.0):
     t = TONES[tone]
     if im.size != (OUT_W, OUT_H):
         im = im.resize((OUT_W, OUT_H), Image.BICUBIC)   # synthesized fields come in small
@@ -109,7 +111,8 @@ def main():
     p.add_argument("--name", help="output name; defaults to the palette name or the source stem")
     p.add_argument("--index", type=int, default=1, help="ordering prefix in backgrounds/")
     p.add_argument("--seed", type=int, default=7)
-    p.add_argument("--blur", type=float, default=0.004, help="Gaussian radius as a fraction of the height; 0 for none")
+    p.add_argument("--quality", type=int, default=88, help="JPEG quality (default 88)")
+    p.add_argument("--blur", type=float, default=0.0, help="Gaussian radius as a fraction of the height; 0 (default) for none")
     args = p.parse_args()
     if not args.source and not args.palette:
         p.error("give --source or --palette")
@@ -120,7 +123,7 @@ def main():
         out = root / t["out"] / f"{args.index}-{name}.jpg"
         out.parent.mkdir(parents=True, exist_ok=True)
         img = grade(base, tone, args.seed, args.blur)
-        img.save(out, "JPEG", quality=88, optimize=True, progressive=True)
+        img.save(out, "JPEG", quality=args.quality, optimize=True, progressive=True)
         L = luminance(np.asarray(img, dtype=np.float32) / 255)
         print(f"{out.relative_to(root)}  {img.size[0]}x{img.size[1]}  L p1/p50/p99 = {np.percentile(L,1):.3f}/{np.percentile(L,50):.3f}/{np.percentile(L,99):.3f}  {out.stat().st_size//1024} KB")
 
