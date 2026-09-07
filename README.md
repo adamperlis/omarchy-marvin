@@ -233,14 +233,14 @@ travels with them in `plugins/LICENSE-omarchy`.
 ## Backgrounds
 
 The wallpaper is the ground the whole system sits on, so it is graded, not
-chosen: a painting blurred until nothing is recognisable, saturation pushed
-up so the field stays rich under the blur, mixed lightly toward the theme
+chosen: a painting softened only slightly, so the brushwork stays, saturation
+pushed up a little so the field stays rich, mixed lightly toward the theme
 ground, luminance clamped into a band the bar stays readable over, grain
 added against banding.
 
 Three paintings ship, chosen for the palette they share with the widgets —
-sky blue, navy, pale yellow, warm orange — and for colour that survives the
-blur:
+sky blue, navy, pale yellow, warm orange — and for colour that carries at
+desktop scale:
 
 | | Painting | Why |
 |---|---|---|

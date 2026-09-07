@@ -210,7 +210,7 @@ the short step and workspaces get the long one, the inverse of upstream.
 
 ## Backgrounds
 
-Confirmed. A famous painting, public domain, blurred past recognition into a
+Confirmed. A famous painting, public domain, softened a little into a
 colour field, graded so it complements the palette: saturation up (1.5,
 the reference's imagery is rich, not pastel), mixed lightly toward the
 ground, luminance in a band the bar reads over (dark 0.02–0.34, light

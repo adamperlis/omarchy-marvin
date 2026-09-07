@@ -1,6 +1,6 @@
 # Backgrounds
 
-Three public-domain paintings, blurred into colour fields and graded to each
+Three public-domain paintings, lightly softened and graded to each
 tone by `tools/background.py`. The same three files exist under
 `light/backgrounds/`, graded to the light ground.
 
@@ -16,7 +16,8 @@ The reproductions were taken from the style images vendored in
 4032 × 3022. Faithful photographs of public-domain paintings carry no new
 copyright, so the graded files here are under this repository's MIT licence.
 
-Grading, per tone: Gaussian blur at 1/30 of the height, saturation × 1.3,
+Grading, per tone, at full 3840 × 2160: a Gaussian blur of 0.4 % of the
+height (about 9 px; `--blur 0` for none), saturation × 1.3,
 a 5–6 % mix toward the theme ground, luminance clamped into a band the bar
 stays readable over (dark 0.02–0.34, light 0.30–0.90), then fine grain
 against banding. Reproducible:

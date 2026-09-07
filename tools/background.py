@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Marvin backgrounds.
 
-Turns a source painting into a wallpaper the system can sit on: blurred past
-recognition, then graded toward the theme's ground so the bar and every card
-read as surfaces over it rather than against it.
+Turns a source painting into a wallpaper the system can sit on: softened a
+little, then graded toward the theme's ground so the bar and every card read
+as surfaces over it rather than against it. The painting stays recognisable.
 
     tools/background.py --source path/to/painting.jpg --name lilies
     tools/background.py --palette lilies          # no source: synthesize a field
@@ -12,8 +12,8 @@ Outputs backgrounds/<n>-<name>.jpg (dark) and light/backgrounds/<n>-<name>.jpg.
 Needs Pillow and numpy.
 
 Grading, per tone:
-  1. blur hard (radius ~ 1/16 of the short edge), so only the colour field is left
-  2. pull saturation down — a wallpaper is ground, not accent
+  1. a light blur (--blur, a fraction of the height; 0.004 by default, 0 for none)
+  2. push saturation up a little, so the field stays rich under the grading
   3. mix toward the theme ground colour, then clamp luminance into a band that
      keeps the bar (dark #161616 / light #f5f5f5) readable over it
   4. add fine grain so the gradients do not band
@@ -65,18 +65,21 @@ def synthesize(palette, seed):
 
 def prepare_source(path):
     im = Image.open(path).convert("RGB")
-    # cover-crop to 16:9, then work small
+    # cover-crop to 16:9 at output resolution: the painting keeps its brushwork
     w, h = im.size
     target = WORK_W / WORK_H
     if w / h > target:
         nw = int(h * target); im = im.crop(((w - nw) // 2, 0, (w - nw) // 2 + nw, h))
     else:
         nh = int(w / target); im = im.crop((0, (h - nh) // 2, w, (h - nh) // 2 + nh))
-    return im.resize((WORK_W, WORK_H), Image.LANCZOS)
+    return im.resize((OUT_W, OUT_H), Image.LANCZOS)
 
-def grade(im, tone, seed):
+def grade(im, tone, seed, blur=0.004):
     t = TONES[tone]
-    im = im.filter(ImageFilter.GaussianBlur(radius=WORK_H / 30))
+    if im.size != (OUT_W, OUT_H):
+        im = im.resize((OUT_W, OUT_H), Image.BICUBIC)   # synthesized fields come in small
+    if blur > 0:
+        im = im.filter(ImageFilter.GaussianBlur(radius=OUT_H * blur))
     a = np.asarray(im, dtype=np.float32) / 255
     # saturation
     grey = a.mean(axis=2, keepdims=True)
@@ -93,9 +96,8 @@ def grade(im, tone, seed):
     gain = (target / np.maximum(L, 1e-4))[..., None]
     # apply gain in linear-ish space: cheap approximation via sqrt of gain on sRGB
     a = np.clip(a * np.sqrt(gain), 0, 1)
-    # upscale then grain
-    big = Image.fromarray((a * 255).astype(np.uint8)).resize((OUT_W, OUT_H), Image.BICUBIC)
-    b = np.asarray(big, dtype=np.float32)
+    # grain
+    b = a * 255
     rng = np.random.default_rng(seed + 1)
     b = np.clip(b + rng.normal(0, 1.6, b.shape).astype(np.float32), 0, 255)
     return Image.fromarray(b.astype(np.uint8))
@@ -107,6 +109,7 @@ def main():
     p.add_argument("--name", help="output name; defaults to the palette name or the source stem")
     p.add_argument("--index", type=int, default=1, help="ordering prefix in backgrounds/")
     p.add_argument("--seed", type=int, default=7)
+    p.add_argument("--blur", type=float, default=0.004, help="Gaussian radius as a fraction of the height; 0 for none")
     args = p.parse_args()
     if not args.source and not args.palette:
         p.error("give --source or --palette")
@@ -116,7 +119,7 @@ def main():
     for tone, t in TONES.items():
         out = root / t["out"] / f"{args.index}-{name}.jpg"
         out.parent.mkdir(parents=True, exist_ok=True)
-        img = grade(base, tone, args.seed)
+        img = grade(base, tone, args.seed, args.blur)
         img.save(out, "JPEG", quality=88, optimize=True, progressive=True)
         L = luminance(np.asarray(img, dtype=np.float32) / 255)
         print(f"{out.relative_to(root)}  {img.size[0]}x{img.size[1]}  L p1/p50/p99 = {np.percentile(L,1):.3f}/{np.percentile(L,50):.3f}/{np.percentile(L,99):.3f}  {out.stat().st_size//1024} KB")
