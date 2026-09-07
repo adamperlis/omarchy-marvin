@@ -82,7 +82,7 @@ because staging never overwrites a file the theme already carries:
 
 - `obsidian.css` — Omarchy copies it into every vault as the "Omarchy"
   theme on each switch. Ours carries fonts (Inter for the interface,
-  Newsreader for note text, monospace only for code), radii, spacing, and
+  Libre Baskerville for note text, monospace only for code), radii, spacing, and
   every surface and state role. Generated from `colors.toml` by
   `tools/appcss.py`; regenerate after changing a colour.
 - `hyprland-preview-share-picker.css` — GTK CSS for the screen-share
@@ -99,7 +99,7 @@ because staging never overwrites a file the theme already carries:
    absent, plus the active theme name. Taken once; a re-run keeps the
    original.
 2. **marvin-light.** Copies `light/` to `~/.config/omarchy/themes/marvin-light`.
-3. **Fonts.** Copies `fonts/*.ttf` (Inter, Newsreader — OFL, vendored) to
+3. **Fonts.** Copies `fonts/*.ttf` (Inter, Libre Baskerville — OFL, vendored) to
    `~/.local/share/fonts/marvin/` and runs `fc-cache`, then places a
    fontconfig rule that says: for the process named `quickshell`, `monospace`
    resolves to Inter first. Terminals never see it; Nerd Font icon glyphs fall

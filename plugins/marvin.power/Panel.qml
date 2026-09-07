@@ -357,7 +357,7 @@ Panel {
             text: "Battery"
             color: root.ink
             font.family: root.bar.fontFamily
-            font.pixelSize: Style.font.heading
+            font.pixelSize: Style.font.title
             font.weight: Font.Medium
           }
 

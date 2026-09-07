@@ -28,8 +28,8 @@ WORK_W, WORK_H = 960, 540
 # Theme grounds, from colors.toml dark_background / darker_background and the
 # light ramp. Luminance bands are in 0..1 relative luminance.
 TONES = {
-    "dark":  dict(ground=(0x0f, 0x0f, 0x0f), band=(0.020, 0.340), mix=0.05, sat=1.50, out="backgrounds"),
-    "light": dict(ground=(0xeb, 0xeb, 0xeb), band=(0.300, 0.900), mix=0.06, sat=1.50, out="light/backgrounds"),
+    "dark":  dict(ground=(0x0f, 0x0f, 0x0f), band=(0.020, 0.340), mix=0.05, sat=1.30, out="backgrounds"),
+    "light": dict(ground=(0xeb, 0xeb, 0xeb), band=(0.300, 0.900), mix=0.06, sat=1.30, out="light/backgrounds"),
 }
 
 # Palette-derived fields for when no source painting is on disk. Colours are

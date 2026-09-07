@@ -414,7 +414,7 @@ Panel {
         text: ""
         color: root.foreground
         font.family: root.fontFamily
-        font.pixelSize: Style.font.heading
+        font.pixelSize: Style.font.title
         Layout.alignment: Qt.AlignVCenter
       }
 

@@ -55,7 +55,7 @@ These are renders from the tokens, not screenshots of the shell — see
 | **Text** | two tones, no third | foreground and muted |
 | **Depth** | surfaces, not outlines | a hairline at 10% and a wide faint shadow; no dividers, no structural borders |
 | **Tone** | a property of each surface | bar is base, popups are raised, weather is a gradient, battery is inverted |
-| **State** | emphasis rises in one direction; focus ≠ hover | fills 0.05 → 0.07 → 0.09 → 0.12 in light (0.06 → 0.10 → 0.14 → 0.18 in dark); focus is the selected fill plus a 1px text-colour ring, never an accent outline |
+| **State** | emphasis rises in one direction; focus ≠ hover | fills 0.04 → 0.05 → 0.07 → 0.09 in light (0.06 → 0.10 → 0.14 → 0.18 in dark); focus is the selected fill plus a 1px text-colour ring, never an accent outline |
 | **Progress** | a hairline | 2px, track at 0.08, fill muted (the reference's played portion is mid-grey) or accent |
 | **Motion** | a scale, exits faster than entrances | 120 / 200 / 320 ms, exits at 0.6; workspaces slide, borders don't linger |
 | **Icons** | Material Design Icons on their own grid | 16 / 20 / 24 |
@@ -96,7 +96,7 @@ Adds, in order:
   `omarchy theme set marvin-light` to switch.
 - **Inter for the shell** — through a fontconfig rule scoped to the shell's
   process, so your terminal font is untouched and `omarchy font set` keeps
-  working. Inter and Newsreader are installed to your user font directory
+  working. Inter and Libre Baskerville are installed to your user font directory
   from `fonts/`; no package, no `sudo`.
 - **Hyprland** — rounding 16, gaps 8 inside and 16 at the edge, a 1px
   theme-coloured focus border, a shadow in place of surface outlines, and
@@ -138,7 +138,7 @@ Everything in the grid above is a surface the system actually reaches:
 | Terminals, btop, Chromium, VS Code, Claude Code, Helix, Neovim | colours from `colors.toml` through Omarchy's templates | theme |
 | Boot splash | `unlock.png` | theme |
 
-Notes get a serif for the text itself — Newsreader, falling back to Noto
+Notes get a serif for the text itself — Libre Baskerville, falling back to Noto
 Serif — and Inter for everything around it. The reference does exactly this
 and it is the one place a second voice belongs: the chrome is the system's,
 the words are yours.
@@ -166,7 +166,7 @@ ways:
   files: Files and every GTK app get Inter and the blue accent through
   `gsettings` (snapshotted, restored on revert), and Hyprland's group bar
   gets Inter at body size on a 32px row. The fonts themselves — Inter and
-  Newsreader, both OFL — are vendored under `fonts/` and installed per user,
+  Libre Baskerville, both OFL — are vendored under `fonts/` and installed per user,
   so nothing needs a package manager or `sudo`.
 
 Everything else Omarchy templates — btop, Chromium, VS Code, Claude Code,
@@ -215,7 +215,7 @@ the shell journal open) and what to send back.
 | `tools/restyle.py` | The rules as a script; builds a widget from upstream's. |
 | `tools/background.py` | Grades a painting (or a palette) into wallpapers. |
 | `tools/appcss.py` | Generates `obsidian.css` and the share-picker stylesheet from `colors.toml`. |
-| `fonts/` | Inter and Newsreader, vendored under the OFL. |
+| `fonts/` | Inter and Libre Baskerville, vendored under the OFL. |
 | `tools/previews/build.py` | Renders `preview.png`, the boot screen and the widget sheets from the tokens (needs node + Playwright). |
 | `test/run` | Every check. |
 | `docs/system.md` | How the whole thing fits together, and how to change it. |
@@ -238,13 +238,21 @@ up so the field stays rich under the blur, mixed lightly toward the theme
 ground, luminance clamped into a band the bar stays readable over, grain
 added against banding.
 
-The shipped set is synthesised from named palettes — the dominant hues of
-Monet's *Water Lilies* and *Impression, Sunrise* — because no image host was
-reachable from the environment that built it. To grade a real public-domain
-painting:
+Three paintings ship, chosen for the palette they share with the widgets —
+sky blue, navy, pale yellow, warm orange — and for colour that survives the
+blur:
+
+| | Painting | Why |
+|---|---|---|
+| 1 | Claude Monet, *The Houses of Parliament, Sunset* (1900–03) | blue and orange against violet; the weather card's blues and the sunrise |
+| 2 | Vincent van Gogh, *The Starry Night* (1889) | navy and pale yellow; the battery card and the draft chip |
+| 3 | Wassily Kandinsky, *Composition VII* (1913) | every colour in the system at once |
+
+All three are in the public domain; sources and the grading recipe are in
+`backgrounds/README.md`. To grade another painting:
 
 ```
-tools/background.py --source path/to/monet.jpg --name lilies --index 1
+tools/background.py --source path/to/painting.jpg --name parliament --index 1
 ```
 
 It writes both tones. Needs Pillow and numpy.

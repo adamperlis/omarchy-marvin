@@ -96,7 +96,7 @@ install_font() {
   mkdir -p "$USERFONTS"
   cp "$THEME_DIR"/fonts/*.ttf "$USERFONTS/"
   command -v fc-cache >/dev/null && fc-cache -f "$USERFONTS" >/dev/null 2>&1 || true
-  note "→ $USERFONTS (Inter, Newsreader)"
+  note "→ $USERFONTS (Inter, Libre Baskerville)"
   mkdir -p "$FONTCONF"
   cp "$THEME_DIR/config/fontconfig/60-marvin-shell.conf" "$FONTCONF/60-marvin-shell.conf"
   note "→ $FONTCONF/60-marvin-shell.conf (Inter for quickshell only; terminals unchanged)"

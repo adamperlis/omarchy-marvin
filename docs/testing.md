@@ -55,7 +55,7 @@ installed. Then check:
 - Motion: open and close a window, switch workspaces (they slide now),
   change focus (the border recolours quickly, not over half a second).
 - `omarchy theme set marvin-light` works and swaps only tone.
-- Open Files: Inter, blue accent on selection. Open Obsidian: Inter chrome, note text in Newsreader, hairline panes,
+- Open Files: Inter, blue accent on selection. Open Obsidian: Inter chrome, note text in Libre Baskerville, hairline panes,
   neutral headings, tag chips; code blocks are the only monospace. Lock the
   screen: the wordmark and a pill input with an accent ring while typing.
   Trigger a polkit prompt (change the power profile): the dialog is a card. Group two windows (`SUPER+G`): the group bar is Inter on a

@@ -507,7 +507,7 @@ Panel {
               text: Qt.formatDate(root.viewDate, "MMMM yyyy")
               color: root.contentForeground
               font.family: root.contentFontFamily
-              font.pixelSize: Style.font.heading
+              font.pixelSize: Style.font.title
               font.weight: Font.Medium
             }
 

@@ -7,7 +7,7 @@ which permits redistribution; the licences are alongside.
 | Family | Files | Used for | Licence |
 |--------|-------|----------|---------|
 | Inter | `Inter-Regular.ttf`, `Inter-Medium.ttf`, `Inter-SemiBold.ttf` | the shell, GTK apps, the group bar, Obsidian's interface | `OFL-Inter.txt` |
-| Newsreader | `Newsreader.ttf` (variable: optical size and weight) | note text in Obsidian | `OFL-Newsreader.txt` |
+| Libre Baskerville | `LibreBaskerville.ttf` (variable weight) | note text in Obsidian; the reference sets its note in Baskerville | `OFL-LibreBaskerville.txt` |
 
 `install/marvin` copies them to `~/.local/share/fonts/marvin/` and runs
 `fc-cache`. Inter from the `inter-font` package works just as well if it is

@@ -6,7 +6,7 @@
 
 body {
   --font-interface-theme: "Inter", sans-serif;
-  --font-text-theme: "Newsreader", "Noto Serif", serif;
+  --font-text-theme: "Libre Baskerville", "Baskerville", "Noto Serif", serif;
   --font-monospace-theme: "JetBrains Mono", monospace;
   --font-text-size: 17px;
   --font-ui-smaller: 12px;

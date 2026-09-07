@@ -575,7 +575,7 @@ Panel {
                 text: root.reportLocation || "Weather"
                 color: root.ink
                 font.family: root.bar.fontFamily
-                font.pixelSize: Style.font.heading
+                font.pixelSize: Style.font.title
                 font.weight: Font.Medium
                 anchors.verticalCenter: parent.verticalCenter
               }

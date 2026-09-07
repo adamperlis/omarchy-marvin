@@ -972,7 +972,7 @@ Panel {
         text: row.isConnected ? "󰂱" : "󰂯"
         color: row.statusColor
         font.family: root.bar.fontFamily
-        font.pixelSize: Style.font.heading
+        font.pixelSize: Style.font.title
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
       }

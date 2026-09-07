@@ -80,7 +80,7 @@ Proposed.
   numerals use proportional figures, never tabular — tabular spacing is
   for columns, and a hero number is not in a column. Confirmed.
 - **A second voice only for the words that are yours.** The interface is
-  Inter everywhere. Note text in Obsidian is a serif — Newsreader — because
+  Inter everywhere. Note text in Obsidian is a serif — Libre Baskerville — because
   the reference does exactly this for its note card, and reading prose is
   the one place a second voice belongs. Confirmed.
 - **No monospace outside terminals and code.** The reference has none.
@@ -137,7 +137,7 @@ Extracted from the reference; proposed as rules.
 - **Controls are the text color at alpha**, so they survive any tone.
   Upstream's model is right and its values are too faint (0.04 normal).
   The reference's Search pill is #f4f4f4 on white and its button #f1f1f1:
-  0.05 of the text colour. Light runs 0.05 / 0.07 / 0.09 / 0.12; dark needs
+  0.05 of the text colour. Light runs 0.04 / 0.05 / 0.07 / 0.09; dark needs
   more to read at all and runs 0.06 / 0.10 / 0.14 / 0.18. Alphas are the one geometry
   token that differs by tone.
 - **One inverted element per surface, and it is the primary action.**
@@ -172,7 +172,7 @@ Proposed. Direct correction of upstream.
 - **Focus is always visible and always distinct from hover.** Upstream
   defaults focus to identical values as hover.
 - **Never an accent outline on an input.** A focused field is the
-  selected fill with a 1px ring of the text colour (0.16 light, 0.24
+  selected fill with a 1px ring of the text colour (0.12 light, 0.24
   dark).
 - **One blue, pulled from the reference.** The inbox dots, the activity
   bars and the flight line are all the same sky blue, `#2f93d3`. It is
@@ -215,8 +215,9 @@ colour field, graded so it complements the palette: saturation up (1.5,
 the reference's imagery is rich, not pastel), mixed lightly toward the
 ground, luminance in a band the bar reads over (dark 0.02–0.34, light
 0.30–0.90), fine grain against banding. `tools/background.py` is the
-rule made executable. Shipped set is palette-synthesised until a source
-painting is supplied.
+rule made executable. Shipped set: Monet's *Houses of Parliament, Sunset*,
+Van Gogh's *Starry Night*, Kandinsky's *Composition VII*, all public domain,
+chosen for sharing the system's sky blue, navy, pale yellow and orange.
 
 ## Apps
 
