@@ -15,6 +15,8 @@
   color: @foreground;
 }
 .window { background: @background; border: 1px solid alpha(@foreground, 0.10); border-radius: 24px; margin: 0; padding: 24px; }
+tabs > tab, flowboxchild > .card, button > .card, .region-button { transition: background-color 120ms ease, box-shadow 120ms ease, opacity 120ms ease; }
+tabs > tab:hover { background: alpha(@foreground, 0.10); }
 tabs { padding: 0 0 16px 0; }
 tabs > tab { margin-right: 8px; padding: 0 20px; min-height: 40px; border-radius: 20px; }
 .tab-label { color: @muted; }

@@ -126,7 +126,10 @@ Extracted from the reference; proposed as rules.
   gradient stop, tested.
 - **Tone varies across the set, not within a card.** The reference's life
   comes from one gradient card, one dark card and white for the rest. So:
-  weather is a vertical gradient (`background` → `background-end`), power
+  weather is a sky, a vertical gradient that follows the hour: day
+  (`background` → `background-end`), sunset in the first and last hour of
+  daylight (`sunset` → `sunset-end`), night after dark (`night` →
+  `night-end`), read from Open-Meteo's `is_day` and the clock; power
   is the inverted card in both tones with a ring of sixty ticks around the
   numeral, and every other surface stays raised. Applied.
 - **State is muted text.** The reference's focus card says "In progress"
@@ -210,7 +213,8 @@ the short step and workspaces get the long one, the inverse of upstream.
 
 ## Backgrounds
 
-Confirmed. A famous painting, public domain, unblurred, graded into a
+Confirmed. An avant-garde painting, public domain, or an original drawn in
+that idiom, blurred into a
 colour field, graded so it complements the palette: saturation up (1.5,
 the reference's imagery is rich, not pastel), mixed lightly toward the
 ground, luminance in a band the bar reads over (dark 0.02–0.34, light

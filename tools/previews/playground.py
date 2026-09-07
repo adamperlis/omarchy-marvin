@@ -116,7 +116,7 @@ html,body{{margin:0;background:var(--pg-bg);color:var(--pg-fg);font-family:Inter
   var kit = DialKit.createDialKit("Wallpaper", {{
     painting: {{type: "select", options: titles}},
     tone: {{type: "select", options: ["light", "dark"]}},
-    blur: [0, 0, 60, 1],
+    blur: [45, 0, 60, 1],
     saturation: [1.3, 0.5, 2, 0.05],
     mix: [0.06, 0, 0.6, 0.01],
     grain: true,

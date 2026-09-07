@@ -35,10 +35,23 @@ Panel {
   // card takes the ordinary popup surface and the shell's own two text tones.
   readonly property var toneValues: Color.shellValues
   readonly property bool tinted: !!(toneValues["marvin-weather.background"])
-  readonly property color tintBackground: tinted ? Color.flatColor(toneValues["marvin-weather.background"], Color.popups.background) : Color.popups.background
-  readonly property color tintEnd: (tinted && toneValues["marvin-weather.background-end"]) ? Color.flatColor(toneValues["marvin-weather.background-end"], tintBackground) : tintBackground
+  // The sky. Open-Meteo says whether it is day; the first and last hour of
+  // daylight read as sunset. Each sky has its own gradient in [marvin-weather]
+  // (sunset / sunset-end, night / night-end); day is background / background-end.
+  property int hourNow: new Date().getHours()
+  Timer { interval: 5 * 60 * 1000; running: true; repeat: true; onTriggered: root.hourNow = new Date().getHours() }
+  readonly property bool skyIsDay: !(dailyForecastReport && dailyForecastReport.current && Number(dailyForecastReport.current.is_day) === 0)
+  readonly property string sky: !skyIsDay ? "night" : ((hourNow < 8 || hourNow >= 17) ? "sunset" : "day")
+  function skyKey(suffix) {
+    var k = sky === "day" ? ("marvin-weather." + (suffix === "" ? "background" : suffix === "-end" ? "background-end" : "muted")) : ("marvin-weather." + sky + suffix)
+    return toneValues[k]
+  }
+  readonly property color tintBackground: tinted ? Color.flatColor(skyKey("") || toneValues["marvin-weather.background"], Color.popups.background) : Color.popups.background
+  readonly property color tintEnd: tinted ? Color.flatColor(skyKey("-end") || toneValues["marvin-weather.background-end"] || toneValues["marvin-weather.background"], tintBackground) : tintBackground
   readonly property color ink: (tinted && toneValues["marvin-weather.text"]) ? Color.flatColor(toneValues["marvin-weather.text"], Color.popups.text) : Color.popups.text
-  readonly property color inkMuted: (tinted && toneValues["marvin-weather.muted"]) ? Color.flatColor(toneValues["marvin-weather.muted"], Color.muted) : Color.muted
+  readonly property color inkMuted: tinted ? Color.flatColor(skyKey("-muted") || toneValues["marvin-weather.muted"], Color.muted) : Color.muted
+  Behavior on tintBackground { ColorAnimation { duration: 320 } }
+  Behavior on tintEnd { ColorAnimation { duration: 320 } }
 
   function shortDayName(dateString) {
     return Model.dayName(dateString, function(date) { return Qt.formatDate(date, "ddd") })

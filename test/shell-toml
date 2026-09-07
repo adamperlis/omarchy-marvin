@@ -79,6 +79,10 @@ for name, d in (("shell.toml", dark), ("light/shell.toml", light)):
                 ok = v >= floor
                 failed += not ok
                 print(f"{name} [{sec}] {label} {fg} on {bg}: {v:5.2f} floor {floor} {'ok' if ok else 'BAD'}")
+        for sky in ("sunset", "night"):
+            if d.get(f"{sec}.{sky}-end") and tx:
+                v = contrast(tx, d[f"{sec}.{sky}-end"]); ok = v >= 2.5; failed += not ok
+                print(f"{name} [{sec}] {sky} text {tx} on {d[f'{sec}.{sky}-end']}: {v:5.2f} floor 2.5 {'ok' if ok else 'BAD'}")
         if d.get(f"{sec}.attention-fill"):
             v = contrast(d[f"{sec}.attention-text"], d[f"{sec}.attention-fill"]); ok = v >= 4.5; failed += not ok
             print(f"{name} [{sec}] chip {d[f'{sec}.attention-text']} on {d[f'{sec}.attention-fill']}: {v:5.2f} floor 4.5 {'ok' if ok else 'BAD'}")

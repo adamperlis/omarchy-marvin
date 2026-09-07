@@ -165,6 +165,11 @@ body {{
 .markdown-rendered code, .cm-inline-code {{ border-radius: 8px; padding: 2px 6px; }}
 .markdown-rendered pre, .HyperMD-codeblock {{ border-radius: 12px; }}
 
+/* Every control moves: 120 ms on fill, colour and ring, the same scale as the compositor's shortest step. */
+button, .clickable-icon, .nav-file-title, .nav-folder-title, .tag, .tab-header, .workspace-tab-header, .suggestion-item, .menu-item, input[type=text], input[type=search], .prompt-input, .checkbox-container {{ transition: background-color .12s ease, color .12s ease, box-shadow .12s ease, opacity .12s ease; }}
+.clickable-icon:hover, .nav-file-title:hover, .nav-folder-title:hover, .menu-item:hover, .suggestion-item:hover, .workspace-tab-header:hover {{ background-color: rgba({rgb(fg)}, {hov}); }}
+@media (prefers-reduced-motion: reduce) {{ button, .clickable-icon, .nav-file-title, .nav-folder-title, .tag {{ transition: none; }} }}
+
 /* Controls are the text colour at alpha; focus is a deeper fill and a hairline, never an accent outline. */
 button, .clickable-icon {{ border-radius: 20px; }}
 input[type=text], input[type=search], .prompt-input {{ border-radius: 20px; background: var(--background-modifier-form-field); border: none; min-height: 40px; }}
@@ -192,6 +197,8 @@ PICKER = """@define-color foreground {fg};
   color: @foreground;
 }}
 .window {{ background: @background; border: 1px solid alpha(@foreground, 0.10); border-radius: 24px; margin: 0; padding: 24px; }}
+tabs > tab, flowboxchild > .card, button > .card, .region-button {{ transition: background-color 120ms ease, box-shadow 120ms ease, opacity 120ms ease; }}
+tabs > tab:hover {{ background: alpha(@foreground, {hov}); }}
 tabs {{ padding: 0 0 16px 0; }}
 tabs > tab {{ margin-right: 8px; padding: 0 20px; min-height: 40px; border-radius: 20px; }}
 .tab-label {{ color: @muted; }}

@@ -18,7 +18,7 @@ Grading, per tone:
      keeps the bar (dark #161616 / light #f5f5f5) readable over it
   4. add fine grain so the gradients do not band
 """
-import argparse, math, pathlib, sys
+import argparse, math, pathlib, sys, random
 import numpy as np
 from PIL import Image, ImageFilter
 
@@ -28,8 +28,8 @@ WORK_W, WORK_H = 960, 540
 # Theme grounds, from colors.toml dark_background / darker_background and the
 # light ramp. Luminance bands are in 0..1 relative luminance.
 TONES = {
-    "dark":  dict(ground=(0x0f, 0x0f, 0x0f), band=(0.020, 0.340), mix=0.05, sat=1.30, out="backgrounds"),
-    "light": dict(ground=(0xeb, 0xeb, 0xeb), band=(0.300, 0.900), mix=0.06, sat=1.30, out="light/backgrounds"),
+    "dark":  dict(ground=(0x0f, 0x0f, 0x0f), band=(0.020, 0.900), mix=0.00, sat=1.30, out="backgrounds"),
+    "light": dict(ground=(0xeb, 0xeb, 0xeb), band=(0.200, 0.920), mix=0.04, sat=1.30, out="light/backgrounds"),
 }
 
 # Palette-derived fields for when no source painting is on disk. Colours are
@@ -63,7 +63,49 @@ def synthesize(palette, seed):
         img = img * (1 - w) + c * w
     return Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8))
 
-def prepare_source(path):
+
+# Original compositions in the idiom of the 1910s avant-garde, drawn at 4K so
+# nothing is upscaled and nothing is anyone else's copyright. "orphic" is
+# Delaunay's Rythme: overlapping discs of concentric rings. "planes" is
+# Malevich and Léger: flat rotated planes over an ivory ground.
+POP = ["#2f93d3", "#1b2436", "#f9ecad", "#ffd23f", "#ef7a3a", "#e0475b", "#7e6fb8", "#2f8f6b"]
+IVORY = "#f6f1e8"
+
+def compose(style, seed):
+    from PIL import ImageDraw
+    rng = random.Random(seed)
+    S = 2  # supersample for clean edges
+    W, H = OUT_W * S, OUT_H * S
+    im = Image.new("RGB", (W, H), IVORY); d = ImageDraw.Draw(im)
+    if style == "orphic":
+        centres = [(0.28, 0.55, 0.62), (0.68, 0.40, 0.55), (0.55, 0.95, 0.45), (0.92, 0.85, 0.35)]
+        for cx, cy, r in centres:
+            cols = rng.sample(POP, len(POP)); n = rng.randint(7, 10)
+            R = r * H
+            for i in range(n):
+                rr = R * (1 - i / n)
+                d.ellipse((cx * W - rr, cy * H - rr, cx * W + rr, cy * H + rr), fill=cols[i % len(cols)])
+        # two quarter arcs, the way Delaunay cuts a disc with another
+        for _ in range(2):
+            cx, cy, R = rng.uniform(0.1, 0.9) * W, rng.uniform(0.1, 0.9) * H, rng.uniform(0.25, 0.4) * H
+            a0 = rng.choice([0, 90, 180, 270])
+            d.pieslice((cx - R, cy - R, cx + R, cy + R), a0, a0 + 90, fill=rng.choice(POP))
+    else:
+        cols = rng.sample(POP, len(POP))
+        for i in range(7):
+            w, h = rng.uniform(0.18, 0.55) * W, rng.uniform(0.06, 0.32) * H
+            cx, cy = rng.uniform(0.15, 0.85) * W, rng.uniform(0.15, 0.85) * H
+            ang = rng.choice([0, 0, 12, -18, 30, 90])
+            layer = Image.new("RGBA", (int(w) + 8, int(h) + 8), (0, 0, 0, 0))
+            ImageDraw.Draw(layer).rectangle((4, 4, int(w) + 4, int(h) + 4), fill=cols[i % len(cols)])
+            layer = layer.rotate(ang, expand=True, resample=Image.BICUBIC)
+            im.paste(layer, (int(cx - layer.width / 2), int(cy - layer.height / 2)), layer)
+        for _ in range(2):
+            R = rng.uniform(0.08, 0.18) * H; cx, cy = rng.uniform(0.1, 0.9) * W, rng.uniform(0.1, 0.9) * H
+            ImageDraw.Draw(im).ellipse((cx - R, cy - R, cx + R, cy + R), fill=rng.choice(POP))
+    return im.resize((OUT_W, OUT_H), Image.LANCZOS)
+
+def prepare_source(path, allow_upscale=False):
     im = Image.open(path).convert("RGB")
     # cover-crop to 16:9 at the source's own resolution; never upscale
     w, h = im.size
@@ -72,8 +114,8 @@ def prepare_source(path):
         nw = int(h * target); im = im.crop(((w - nw) // 2, 0, (w - nw) // 2 + nw, h))
     else:
         nh = int(w / target); im = im.crop((0, (h - nh) // 2, w, (h - nh) // 2 + nh))
-    if im.size[0] < OUT_W or im.size[1] < OUT_H:
-        sys.exit(f"{path}: {w}x{h} crops to {im.size[0]}x{im.size[1]}, under {OUT_W}x{OUT_H}; a 4K screen would have to upscale it. Find a larger reproduction.")
+    if (im.size[0] < OUT_W or im.size[1] < OUT_H) and not allow_upscale:
+        sys.exit(f"{path}: {w}x{h} crops to {im.size[0]}x{im.size[1]}, under {OUT_W}x{OUT_H}; a 4K screen would have to upscale it. Pass --allow-upscale if the output is blurred anyway.")
     return im.resize((OUT_W, OUT_H), Image.LANCZOS)
 
 def grade(im, tone, seed, blur=0.0, sat=None, mix=None, grain=1.6):
@@ -113,6 +155,9 @@ def main():
     p.add_argument("--palette", choices=sorted(PALETTES), help="synthesize from a named palette instead")
     p.add_argument("--name", help="output name; defaults to the palette name or the source stem")
     p.add_argument("--index", type=int, default=1, help="ordering prefix in backgrounds/")
+    p.add_argument("--style", choices=("orphic", "planes"), help="draw an original composition instead of grading a source")
+    p.add_argument("--allow-upscale", action="store_true", help="accept a source under 3840 × 2160 (fine when the output is blurred)")
+    p.add_argument("--crop-out", help="also write the sharp, ungraded 16:9 crop at 1600 × 900 into this directory, for imagery inside the UI")
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--quality", type=int, default=88, help="JPEG quality (default 88)")
     p.add_argument("--sat", type=float, help="saturation multiplier; defaults to the tone's (1.3)")
@@ -120,11 +165,15 @@ def main():
     p.add_argument("--grain", type=float, default=1.6, help="grain sigma in 8-bit levels; 0 for none (default 1.6)")
     p.add_argument("--blur", type=float, default=0.0, help="Gaussian radius as a fraction of the height; 0 (default) for none")
     args = p.parse_args()
-    if not args.source and not args.palette:
-        p.error("give --source or --palette")
-    name = args.name or args.palette or pathlib.Path(args.source).stem
+    if not args.source and not args.palette and not args.style:
+        p.error("give --source, --style or --palette")
+    name = args.name or args.style or args.palette or (pathlib.Path(args.source).stem if args.source else None)
     root = pathlib.Path(__file__).resolve().parent.parent
-    base = prepare_source(args.source) if args.source else synthesize(PALETTES[args.palette], args.seed)
+    base = compose(args.style, args.seed) if args.style else (prepare_source(args.source, args.allow_upscale) if args.source else synthesize(PALETTES[args.palette], args.seed))
+    if args.crop_out:
+        cdir = pathlib.Path(args.crop_out); cdir.mkdir(parents=True, exist_ok=True)
+        base.resize((1600, 900), Image.LANCZOS).save(cdir / f"{name}.jpg", "JPEG", quality=85, optimize=True, progressive=True)
+        print(f"{cdir / (name + '.jpg')}  1600x900 sharp crop")
     for tone, t in TONES.items():
         out = root / t["out"] / f"{args.index}-{name}.jpg"
         out.parent.mkdir(parents=True, exist_ok=True)

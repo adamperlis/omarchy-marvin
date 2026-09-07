@@ -54,7 +54,7 @@ These are renders from the tokens, not screenshots of the shell — see
 | **Colour** | true-neutral ramp, one accent, one attention role | one sky blue, `#2f93d3` light / `#6db8ee` dark, pulled from the reference and used for accent and attention alike; status is muted text, or the reference's pale-yellow draft chip |
 | **Text** | two tones, no third | foreground and muted |
 | **Depth** | surfaces, not outlines | a hairline at 10% and a wide faint shadow; no dividers, no structural borders |
-| **Tone** | a property of each surface | bar is base, popups are raised, weather is a gradient, battery is inverted |
+| **Tone** | a property of each surface | bar is base, popups are raised, weather is a sky that follows the hour (day, sunset, night), battery is inverted |
 | **State** | emphasis rises in one direction; focus ≠ hover | fills 0.04 → 0.05 → 0.07 → 0.09 in light (0.06 → 0.10 → 0.14 → 0.18 in dark); focus is the selected fill plus a 1px text-colour ring, never an accent outline |
 | **Progress** | a hairline | 2px, track at 0.08, fill muted (the reference's played portion is mid-grey) or accent |
 | **Motion** | a scale, exits faster than entrances | 120 / 200 / 320 ms, exits at 0.6; workspaces slide, borders don't linger |
@@ -238,22 +238,31 @@ pushed up a little so the field stays rich, mixed lightly toward the theme
 ground, luminance clamped into a band the bar stays readable over, grain
 added against banding.
 
-Two paintings ship, chosen for the palette they share with the widgets —
-sky blue, navy, pale yellow, warm orange — and because their reproductions
-are at least 3840 wide, so a 4K screen shows them at full resolution with
-no upscaling:
+Four ship, all avant-garde, none of them the paintings everybody knows.
+The desktop gets each one fully blurred into a colour field; the same
+image, sharp, is what the widgets show as album art, thumbnails and
+mood-board tiles (`docs/images/art/`):
 
-| | Painting | Source size | Why |
-|---|---|---|---|
-| 1 | Vincent van Gogh, *The Starry Night* (1889) | 5000 × 3959 | navy and pale yellow; the battery card and the draft chip |
-| 2 | Wassily Kandinsky, *Composition VII* (1913) | 4032 × 3022 | every colour in the system at once |
+| | Work | What it is |
+|---|---|---|
+| 1 | *Orphic* | an original composition in Delaunay's idiom: overlapping discs of concentric rings in the system's colours, drawn at 4K |
+| 2 | Wassily Kandinsky, *Composition VII* (1913) | the most colour in one place; public domain, 4032 × 3022 |
+| 3 | Francis Picabia, *Edtaonisl* (1913) | Orphism at its loudest; public domain, upscaled under the blur |
+| 4 | *Planes* | an original: flat rotated planes over ivory, after Malevich and Léger, drawn at 4K |
 
-Both are in the public domain; sources and the grading recipe are in
-`backgrounds/README.md`. To grade another painting (it must be at least
-3840 × 2160 after a 16:9 crop; the tool refuses smaller sources):
+Nothing later than the 1920s can ship here: Basquiat, Rothko, Miró and
+everything contemporary is still in copyright, and an MIT repository
+can't carry it. The two originals exist for that reason. If you own or
+license a contemporary work, drop it in and grade it the same way. Sources
+and the recipe are in `backgrounds/README.md`:
 
 ```
-tools/background.py --source path/to/painting.jpg --name starry --index 1
+tools/background.py --source path/to/painting.jpg --name mine --index 5 --blur 0.045 --crop-out docs/images/art
+tools/background.py --style orphic --index 6 --blur 0.045 --seed 3
 ```
+
+The blur is 4.5 % of the height. Dark and light tones get the same
+saturation and the dark tone is not dimmed: the bar is opaque, so the
+wallpaper never has to carry text.
 
 It writes both tones. Needs Pillow and numpy.

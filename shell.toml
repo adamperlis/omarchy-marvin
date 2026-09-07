@@ -220,11 +220,20 @@ unselected-border-alpha = 0.2
 # The reference's gradients, verbatim: sky for weather, navy for the battery.
 # White type on a gradient is measured against the deeper stop at AA large
 # (3:1), because everything set on these surfaces is large. Tested.
+# The weather card is a sky. Day is the reference's blue; the plugin switches
+# to sunset in the first and last hours of daylight and to night after dark
+# (Open-Meteo's is_day), each its own gradient. Text stays white.
 [marvin-weather]
 background     = "#a8cbe9"
 background-end = "#6ea5d8"
 text           = "#ffffff"
 muted          = "#eaf2fb"
+sunset         = "#f2b27a"
+sunset-end     = "#8a6bb3"
+sunset-muted   = "#fbe9d8"
+night          = "#2c3a5c"
+night-end      = "#0f1626"
+night-muted    = "#b8c1d3"
 
 # The reference's dark card, on both tones. The chip is a soft fill of the
 # attention hue with lighter text of the same hue.
