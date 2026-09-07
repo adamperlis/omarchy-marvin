@@ -22,8 +22,9 @@ active-border-foreground = "rgba(1a1a1a8c)"
 
 [controls]
 # Fill is the text color at alpha, so controls survive any surface tone.
-# Emphasis rises monotonically: 0.06 -> 0.10 -> 0.14 -> 0.18. No borders,
-# except focus: the one border that must exist, and it is not hover.
+# Emphasis rises monotonically: 0.06 -> 0.10 -> 0.14 -> 0.18. Focus is the
+# selected fill plus a hairline of the text colour: visible, distinct from
+# hover, and never an accent outline — inputs in the reference have none.
 normal-color        = "#1a1a1a"
 normal-fill-alpha   = 0.06
 normal-border       = "#1a1a1a"
@@ -37,10 +38,10 @@ hover-cursor-border-width = 0
 hover-cursor-border-alpha = 0
 
 focus-color        = "#1a1a1a"
-focus-fill-alpha   = 0.10
-focus-border       = "#2a63d8"
-focus-border-width = 2
-focus-border-alpha = 1.0
+focus-fill-alpha   = 0.14
+focus-border       = "#1a1a1a"
+focus-border-width = 1
+focus-border-alpha = 0.24
 
 selected-color        = "#1a1a1a"
 selected-fill-alpha   = 0.14
@@ -118,7 +119,7 @@ background       = "#ffffff"
 background-alpha = 1.0
 text             = "#1a1a1a"
 border           = "#1a1a1a"
-border-alpha     = 0.08
+border-alpha     = 0.10
 border-width     = 1
 
 [tooltip]
@@ -134,7 +135,7 @@ background       = "#ffffff"
 background-alpha = 1.0
 text             = "#1a1a1a"
 border           = "#1a1a1a"
-border-alpha     = 0.08
+border-alpha     = 0.10
 border-width     = 1
 # Progress is a hairline; its fill is accent because time left means something.
 countdown        = "#2a63d8"
@@ -144,7 +145,7 @@ background                = "#ffffff"
 background-alpha          = 1.0
 text                      = "#1a1a1a"
 border           = "#1a1a1a"
-border-alpha     = 0.08
+border-alpha     = 0.10
 border-width     = 1
 scrim                     = "#1a1a1a"
 scrim-alpha               = 0.3
@@ -161,7 +162,7 @@ background                = "#ffffff"
 background-alpha          = 1.0
 text                      = "#1a1a1a"
 border           = "#1a1a1a"
-border-alpha     = 0.08
+border-alpha     = 0.10
 border-width     = 1
 scrim                     = "#1a1a1a"
 scrim-alpha               = 0.3
@@ -193,14 +194,14 @@ background-alpha    = 0.85
 text                = "#1a1a1a"
 placeholder         = "#6b6b6b"
 text-error          = "#c03a3a"
-# Idle: no border. Typing: focus ring. Wrong password: error ring.
+# Idle: no border. Typing: a hairline of the text colour. Wrong password: red.
 border              = "#ffffff"
 border-width        = 0
-border-active       = "#2a63d8"
-border-active-width = 2
+border-active       = "#1a1a1a"
+border-active-width = 1
 border-error        = "#c03a3a"
 border-error-width  = 2
-border-alpha        = 1.0
+border-alpha        = 0.24
 selection           = "#2a63d8"
 selection-alpha     = 0.35
 
@@ -216,19 +217,21 @@ unselected-border-alpha = 0.2
 # ---------------------------------------------------------------- widgets
 # Per-widget tone. Structure never changes; only the surface does.
 
-# A gradient: background is the top stop, background-end the bottom. Text and
-# muted clear the floors against both stops, tested.
+# The reference's gradients, verbatim: sky for weather, navy for the battery.
+# White type on a gradient is measured against the deeper stop at AA large
+# (3:1), because everything set on these surfaces is large. Tested.
 [marvin-weather]
-background     = "#d4e3f5"
-background-end = "#bcd3ef"
-text           = "#0c2238"
-muted          = "#34527a"
+background     = "#a9cdf0"
+background-end = "#4f90d5"
+text           = "#ffffff"
+muted          = "#eef5fc"
 
-# Inverted: the one dark card on the light theme. The status chip is a soft
-# fill of the attention hue with lighter text of the same hue.
+# The reference's dark card, on both tones. The chip is a soft fill of the
+# attention hue with lighter text of the same hue.
 [marvin-power]
-background     = "#1a1a1a"
-text           = "#f5f5f5"
-muted          = "#9a9a9a"
+background     = "#2f3b58"
+background-end = "#1a2338"
+text           = "#ffffff"
+muted          = "#b6c0d6"
 attention-fill = "#3b2f16"
 attention-text = "#f0c66b"

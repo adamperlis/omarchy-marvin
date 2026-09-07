@@ -54,7 +54,7 @@ Proposed.
   at radius 20. Chosen to match the reference after seeing it at full size.
 - **Padding = radius.** Popup padding 24. Content origin sits at the center
   of the corner arc, so content never collides with the curve.
-- Card widths are 360 (content 312), captions above cards in the muted
+- Cards are 352 wide (content 304 inside the 24 inset), captions above cards in the muted
   tone, columns 56 apart.
 - The grid is **fixed**, not fluid. `[font]` and `[spacing]` per-token
   overrides do not scale with `base-size` (only `[bar]` does), so a pinned
@@ -79,6 +79,10 @@ Proposed.
   In QML: `font.letterSpacing: -Style.font.displayLarge * 0.03`. Hero
   numerals use proportional figures, never tabular — tabular spacing is
   for columns, and a hero number is not in a column. Confirmed.
+- **A second voice only for the words that are yours.** The interface is
+  Inter everywhere. Note text in Obsidian is a serif — Newsreader — because
+  the reference does exactly this for its note card, and reading prose is
+  the one place a second voice belongs. Confirmed.
 - **No monospace outside terminals and code.** The reference has none.
   The shell is Inter through the config layer; GTK apps through
   `gsettings`; the group bar through `marvin.lua`; Obsidian and the share
@@ -97,15 +101,18 @@ Confirmed.
   96 of 117 glyphs. No substitution font.
 - Sizes pin to **16 / 20 / 24** (`icon-small`, `icon`, `icon-large`), on
   the 4px grid, not derived from the type scale.
-- App icons resolve through **Yaru**; the color variant follows the accent.
+- App icons resolve through **Yaru**, in its yellow variant, so folders
+  read as manila rather than a saturated block of accent. The reference's
+  files view is warm paper, not blue.
 
 ## Surfaces and depth
 
 Extracted from the reference; proposed as rules.
 
-- **Depth from surfaces, not outlines.** Every card gets a hairline at 8%
-  of the text colour and, in the config layer, a wide faint shadow (range
-  40, 12%). Never a structural border: no accent, no gradient, never more
+- **Depth from surfaces, not outlines.** Every card gets a hairline at 10%
+  of the text colour (a hair darker than it first looks right; the
+  reference's border is just visible) and, in the config layer, a wide
+  faint shadow (range 40, 12%). Never a structural border: no accent, no gradient, never more
   than 1px. The reference uses exactly this pair.
 - **No dividers.** Rows separate by whitespace — a full unit — not
   hairlines.
@@ -159,6 +166,16 @@ Proposed. Direct correction of upstream.
   border down on hover).
 - **Focus is always visible and always distinct from hover.** Upstream
   defaults focus to identical values as hover.
+- **Never an accent outline on an input.** A focused field is a deeper
+  fill (0.10 of the text colour) with a 1px ring of the text colour at
+  0.24, in every tone. The reference never draws a blue ring; the field
+  itself darkens. Applies to the launcher, lock, polkit, Obsidian and the
+  share picker.
+- **Card geometry is 352 wide, radius 24, inset 24, rows on the 8
+  grid.** Music: art beside title (16 · 500), artist (14 · 400) and the
+  transport, then a hairline with elapsed and remaining (12 · 400).
+  Quick note: the text sits in its own hairline field in the serif, with
+  a soft-fill chip below. Both measured off the reference at 1:1.
 
 ## Motion
 

@@ -516,8 +516,7 @@ Panel {
     open: root.opened
     centerOnBar: true
     focusTarget: keyCatcher
-    contentWidth: panel.fittedContentWidth(Style.space(480))
-    contentWidth: panel.fittedContentWidth(Style.space(360))
+    contentWidth: panel.fittedContentWidth(Style.space(304))
     contentHeight: panel.fittedContentHeight(weatherColumn.implicitHeight)
 
     // Surface tint. Same shape as the card it sits on: fill plus the card

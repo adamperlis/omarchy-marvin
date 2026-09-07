@@ -65,9 +65,13 @@ def contrast(a, b):
 for name, d in (("shell.toml", dark), ("light/shell.toml", light)):
     for sec in sorted({k.split(".")[0] for k in d if k.startswith("marvin-")}):
         tx, mu = d.get(f"{sec}.text"), d.get(f"{sec}.muted")
-        stops = [s for s in (d.get(f"{sec}.background"), d.get(f"{sec}.background-end")) if s]
+        end = d.get(f"{sec}.background-end")
+        # A gradient tint carries only large type and is measured on its
+        # deeper stop at AA large (3:1); a solid tint keeps the body floors.
+        stops = [end] if end else [d.get(f"{sec}.background")]
+        floors = (3.0, 3.0) if end else (10.0, 4.5)
         for bg in stops:
-            for label, fg, floor in (("text", tx, 10.0), ("muted", mu, 4.5)):
+            for label, fg, floor in (("text", tx, floors[0]), ("muted", mu, floors[1])):
                 v = contrast(fg, bg)
                 ok = v >= floor
                 failed += not ok

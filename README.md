@@ -96,8 +96,8 @@ Adds, in order:
   `omarchy theme set marvin-light` to switch.
 - **Inter for the shell** — through a fontconfig rule scoped to the shell's
   process, so your terminal font is untouched and `omarchy font set` keeps
-  working. Installs `inter-font` with `sudo pacman` if it is missing (one
-  prompt).
+  working. Inter and Newsreader are installed to your user font directory
+  from `fonts/`; no package, no `sudo`.
 - **Hyprland** — rounding 16, gaps 8 inside and 16 at the edge, a 1px
   theme-coloured focus border, a shadow in place of surface outlines, and
   the motion scale. Written to `~/.config/hypr/marvin.lua` and required from
@@ -122,7 +122,37 @@ Enabling a clone replaces the built-in in its bar slot; disabling it brings
 the built-in back. Plugins are unsandboxed QML and land disabled so you can
 read them first. See [`plugins/README.md`](plugins/README.md).
 
-## Apps
+## Apps and surfaces
+
+Everything in the grid above is a surface the system actually reaches:
+
+| Surface | How | Where |
+|---------|-----|-------|
+| Bar, launcher, the Omarchy menu, clipboard manager, emoji picker, theme picker, notifications, OSD, tooltips, popups | `shell.toml` tokens — `[bar] [launcher] [menu] [image-picker] [notifications] [popups] [tooltip]` | theme |
+| Every widget card — weather, clock, battery, media, audio, network, … | fourteen `clonedFrom` plugins | config layer |
+| Lock screen, authentication dialog | `[lock]` and `[polkit]` tokens | theme |
+| Notes (Obsidian) | `obsidian.css`, synced into every vault by Omarchy | theme |
+| Screen-share picker | `hyprland-preview-share-picker.css` | theme |
+| Files and every GTK app | Inter and the accent via `gsettings` | config layer |
+| Windows: rounding, gaps, shadow, motion, group bar | `hypr/marvin.lua` | config layer |
+| Terminals, btop, Chromium, VS Code, Claude Code, Helix, Neovim | colours from `colors.toml` through Omarchy's templates | theme |
+| Boot splash | `unlock.png` | theme |
+
+Notes get a serif for the text itself — Newsreader, falling back to Noto
+Serif — and Inter for everything around it. The reference does exactly this
+and it is the one place a second voice belongs: the chrome is the system's,
+the words are yours.
+
+What could still be customised, and why it is not yet:
+
+- **The login screen (SDDM)** — a fixed theme installed by root; reaching it
+  needs `sudo` and a rebuild, which the config layer deliberately avoids.
+- **GTK window chrome** — libadwaita accepts a `gtk.css` for header bars and
+  sidebars, but rules there leak into every GTK app unevenly; font and
+  accent through `gsettings` was the safe part.
+- **Chromium, VS Code, Neovim, btop beyond colour** — each takes only a
+  palette from a theme. Their own settings would carry the rest.
+- **Firefox, Signal, Spotify, LibreOffice** — not themed by Omarchy at all.
 
 The system reaches past the shell into the apps Omarchy installs, in two
 ways:
@@ -135,7 +165,9 @@ ways:
 - **Set by the config layer**, because they are settings rather than theme
   files: Files and every GTK app get Inter and the blue accent through
   `gsettings` (snapshotted, restored on revert), and Hyprland's group bar
-  gets Inter at body size on a 32px row.
+  gets Inter at body size on a 32px row. The fonts themselves — Inter and
+  Newsreader, both OFL — are vendored under `fonts/` and installed per user,
+  so nothing needs a package manager or `sudo`.
 
 Everything else Omarchy templates — btop, Chromium, VS Code, Claude Code,
 Helix, Neovim, the terminals — takes its colours from `colors.toml`
@@ -182,6 +214,8 @@ the shell journal open) and what to send back.
 | `plugins/marvin.*` | Fourteen restyled clones of the built-in widgets. |
 | `tools/restyle.py` | The rules as a script; builds a widget from upstream's. |
 | `tools/background.py` | Grades a painting (or a palette) into wallpapers. |
+| `tools/appcss.py` | Generates `obsidian.css` and the share-picker stylesheet from `colors.toml`. |
+| `fonts/` | Inter and Newsreader, vendored under the OFL. |
 | `tools/previews/build.py` | Renders `preview.png`, the boot screen and the widget sheets from the tokens (needs node + Playwright). |
 | `test/run` | Every check. |
 | `docs/system.md` | How the whole thing fits together, and how to change it. |

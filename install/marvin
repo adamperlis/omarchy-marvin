@@ -19,6 +19,7 @@ THEMES="$CFG/omarchy/themes"
 PLUGINS="$CFG/omarchy/plugins"
 HYPR="$CFG/hypr"
 FONTCONF="$CFG/fontconfig/conf.d"
+USERFONTS="$HOME/.local/share/fonts/marvin"
 SHELL_JSON="$CFG/omarchy/shell.json"
 STATE_DIR="$HOME/.local/state/marvin"
 SNAP="$STATE_DIR/snapshot"
@@ -89,16 +90,16 @@ install_light() {
 }
 
 install_font() {
-  say "Inter for the shell"
-  if ! fc-list | grep -qi "Inter-\|Inter:\|/Inter"; then
-    note "Inter is not installed. On Arch: sudo pacman -S --needed inter-font"
-    if command -v pacman >/dev/null; then
-      sudo pacman -S --needed --noconfirm inter-font || note "could not install inter-font; the shell keeps its monospace face until it is present"
-    fi
-  fi
+  say "Fonts"
+  # Vendored, OFL. Installed per user so nothing needs a package manager or
+  # sudo, and so revert can take them out again.
+  mkdir -p "$USERFONTS"
+  cp "$THEME_DIR"/fonts/*.ttf "$USERFONTS/"
+  command -v fc-cache >/dev/null && fc-cache -f "$USERFONTS" >/dev/null 2>&1 || true
+  note "→ $USERFONTS (Inter, Newsreader)"
   mkdir -p "$FONTCONF"
   cp "$THEME_DIR/config/fontconfig/60-marvin-shell.conf" "$FONTCONF/60-marvin-shell.conf"
-  note "→ $FONTCONF/60-marvin-shell.conf (scoped to quickshell; terminals unchanged)"
+  note "→ $FONTCONF/60-marvin-shell.conf (Inter for quickshell only; terminals unchanged)"
 }
 
 install_gtk() {
@@ -197,6 +198,9 @@ revert() {
     [[ -e "$SNAP/plugins/$id" ]] && cp -a "$SNAP/plugins/$id" "$PLUGINS/$id" && note "restored plugins/$id"
   done
 
+  rm -rf "$USERFONTS"; command -v fc-cache >/dev/null && fc-cache -f >/dev/null 2>&1 || true
+  note "removed  ~/.local/share/fonts/marvin"
+
   clean_shell_json
 
   if command -v gsettings >/dev/null && [[ -f "$SNAP/state" ]]; then
@@ -218,7 +222,6 @@ revert() {
 
   rm -rf "$SNAP"
   note "snapshot consumed. The theme itself is still installed: omarchy theme remove marvin"
-  note "inter-font stays installed if this script added it: sudo pacman -Rns inter-font"
 }
 
 # shell.json fallback: drop every marvin.* entry and re-enable each built-in

@@ -21,6 +21,7 @@ Panel {
   readonly property var toneValues: Color.shellValues
   readonly property bool tinted: !!(toneValues["marvin-power.background"])
   readonly property color tintBackground: tinted ? Color.flatColor(toneValues["marvin-power.background"], Color.popups.background) : Color.popups.background
+  readonly property color tintEnd: (tinted && toneValues["marvin-power.background-end"]) ? Color.flatColor(toneValues["marvin-power.background-end"], tintBackground) : tintBackground
   readonly property color ink: (tinted && toneValues["marvin-power.text"]) ? Color.flatColor(toneValues["marvin-power.text"], Color.popups.text) : Color.popups.text
   readonly property color inkMuted: (tinted && toneValues["marvin-power.muted"]) ? Color.flatColor(toneValues["marvin-power.muted"], Color.muted) : Color.muted
   readonly property color chipFill: toneValues["marvin-power.attention-fill"] ? Color.flatColor(toneValues["marvin-power.attention-fill"], Util.alpha(ink, 0.08)) : Util.alpha(ink, 0.08)
@@ -310,7 +311,7 @@ Panel {
     bar: root.bar
     open: root.opened && root.batteryPresent
     focusTarget: keyCatcher
-    contentWidth: panel.fittedContentWidth(Style.space(328))
+    contentWidth: panel.fittedContentWidth(Style.space(304))
     contentHeight: panel.fittedContentHeight(column.implicitHeight)
 
     // Surface tone, drawn to the card's own shape beneath the content.
@@ -318,9 +319,13 @@ Panel {
       anchors.fill: parent
       anchors.margins: -panel.padding
       radius: Style.cornerRadius
-      color: root.tintBackground
       visible: root.tinted
       z: -1
+      gradient: Gradient {
+        orientation: Gradient.Vertical
+        GradientStop { position: 0.0; color: root.tintBackground }
+        GradientStop { position: 1.0; color: root.tintEnd }
+      }
     }
 
     PanelKeyCatcher {
