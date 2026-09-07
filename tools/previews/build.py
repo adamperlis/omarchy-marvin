@@ -329,18 +329,21 @@ def sheet(t, fonts):
     w = widgets(t)
     ground = "#f5f5f5" if t["light"] else "#0f0f0f"
     def cell(label, html): return f'<div class="cell"><div class="lab">{label}</div>{html}</div>'
+    # The lock card sits at the dead centre of the sheet; the middle column
+    # stacks away from it, upward above and downward below.
     cols = [
-        cell("Music", w["media"]) + cell("Launcher", w["launcher"]) + cell("Omarchy menu", w["menu"]) + cell("Notes · Obsidian", w["notes"]) + cell("Lock screen", w["lock"]) + cell("Terminal", w["terminal"]),
-        cell("Battery", w["power"]) + cell("Weather", w["weather"]) + cell("Clipboard", w["clipboard"]) + cell("Files", w["files"]) + cell("Theme picker", w["themes"]) + cell("Volume", w["osd"]),
-        cell("Calendar", w["clock"]) + cell("Notification", w["note"]) + cell("Screen share", w["picker"]) + cell("Authentication", w["polkit"]) + cell("Backgrounds", w["mood"]),
+        cell("Music", w["media"]) + cell("Launcher", w["launcher"]) + cell("Omarchy menu", w["menu"]) + cell("Notes · Obsidian", w["notes"]) + cell("Terminal", w["terminal"]) + cell("Theme picker", w["themes"]),
+        f'<div class="up">{cell("Weather", w["weather"]) + cell("Clipboard", w["clipboard"])}</div><div class="lockcell">{cell("Lock screen", w["lock"])}</div><div class="down">{cell("Battery", w["power"]) + cell("Files", w["files"])}</div>',
+        cell("Calendar", w["clock"]) + cell("Notification", w["note"]) + cell("Screen share", w["picker"]) + cell("Authentication", w["polkit"]) + cell("Backgrounds", w["mood"]) + cell("Volume", w["osd"]),
     ]
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>{font_face(fonts)}{vars_css(t)}{BASE_CSS}
-html,body{{width:1600px;height:2200px;overflow:hidden}}body{{background:{ground};padding:56px 0}}
+html,body{{width:1600px;height:2300px;overflow:hidden}}body{{background:{ground};padding:56px 0}}
 .g{{display:grid;grid-template-columns:352px 352px 352px;gap:0 56px;justify-content:center;align-items:start}}
 .col{{display:flex;flex-direction:column;gap:40px}}
+.mid{{position:relative;height:2188px}}.mid .up,.mid .down{{position:absolute;left:0;right:0;display:flex;flex-direction:column;gap:40px}}.mid .up{{bottom:calc(50% + 160px)}}.mid .down{{top:calc(50% + 160px)}}.mid .lockcell{{position:absolute;left:0;right:0;top:calc(50% - 144px)}}
 .cell{{display:flex;flex-direction:column;gap:12px}}.lab{{font-size:12px;color:var(--muted);padding-left:4px}}
 .card,.note,.launcher{{width:352px}}
-</style></head><body><div class="g">{"".join(f'<div class="col">{c}</div>' for c in cols)}</div></body></html>"""
+</style></head><body><div class="g">{"".join(f'<div class="col{" mid" if i == 1 else ""}">{c}</div>' for i, c in enumerate(cols))}</div></body></html>"""
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--fonts", required=True); ap.add_argument("--out", default=str(ROOT)); a = ap.parse_args()
@@ -351,7 +354,7 @@ if __name__ == "__main__":
         for name, html, size, dests in (
             ("desktop", desktop(t, a.fonts), (1800, 1012), [out / f"{pre}preview.png"]),
             ("boot", boot(t, a.fonts), (1920, 1080), [out / f"{pre}preview-unlock.png"]),
-            ("widgets", sheet(t, a.fonts), (1600, 2200), [out / f"docs/images/widgets-{tag}.png"]),
+            ("widgets", sheet(t, a.fonts), (1600, 2300), [out / f"docs/images/widgets-{tag}.png"]),
             ("workspace", workspace(t, a.fonts), (1800, 1012), [out / f"docs/images/workspace-{tag}.png"]),
             ("backgrounds", backgrounds(t, a.fonts), (1600, 560), [out / f"docs/images/backgrounds-{tag}.png"]),
         ):
