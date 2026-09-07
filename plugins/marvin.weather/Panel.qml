@@ -36,6 +36,7 @@ Panel {
   readonly property var toneValues: Color.shellValues
   readonly property bool tinted: !!(toneValues["marvin-weather.background"])
   readonly property color tintBackground: tinted ? Color.flatColor(toneValues["marvin-weather.background"], Color.popups.background) : Color.popups.background
+  readonly property color tintEnd: (tinted && toneValues["marvin-weather.background-end"]) ? Color.flatColor(toneValues["marvin-weather.background-end"], tintBackground) : tintBackground
   readonly property color ink: (tinted && toneValues["marvin-weather.text"]) ? Color.flatColor(toneValues["marvin-weather.text"], Color.popups.text) : Color.popups.text
   readonly property color inkMuted: (tinted && toneValues["marvin-weather.muted"]) ? Color.flatColor(toneValues["marvin-weather.muted"], Color.muted) : Color.muted
 
@@ -525,9 +526,13 @@ Panel {
       anchors.fill: parent
       anchors.margins: -panel.padding
       radius: Style.cornerRadius
-      color: root.tintBackground
       visible: root.tinted
       z: -1
+      gradient: Gradient {
+        orientation: Gradient.Vertical
+        GradientStop { position: 0.0; color: root.tintBackground }
+        GradientStop { position: 1.0; color: root.tintEnd }
+      }
     }
 
     PanelKeyCatcher {

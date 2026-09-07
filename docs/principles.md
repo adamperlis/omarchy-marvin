@@ -106,7 +106,16 @@ Extracted from the reference; proposed as rules.
   in a `[marvin-<widget>]` section of `shell.toml` (the shell's parser takes
   any section name) and the widget reads it from `Color.shellValues`; the
   theme owns the tint, the plugin owns only geometry. Tint text and muted
-  clear the same 10:1 and 4.5:1 floors as the palette, tested.
+  clear the same 10:1 and 4.5:1 floors as the palette, against every
+  gradient stop, tested.
+- **Tone varies across the set, not within a card.** The reference's life
+  comes from one gradient card, one dark card and white for the rest. So:
+  weather is a vertical gradient (`background` → `background-end`), power
+  is the inverted card in both tones with a ring of sixty ticks around the
+  numeral, and every other surface stays raised. Applied.
+- **Semantic colour is a soft-fill chip**: the hue at a light fill with
+  darker text of the same hue (`attention-fill` / `attention-text`), never
+  a saturated block. The battery's charging state is the first one.
 - **Controls are the text color at alpha**, so they survive any tone.
   Upstream's model is right and its values are too faint (0.04 normal).
   Target roughly 0.06–0.08 on light surfaces, 0.12–0.16 on dark.

@@ -16,27 +16,29 @@ understand the grid, set a clean type scale, art-direct a few key widgets,
 then propagate — is his, and his widget studies are the visual reference. He
 is not involved in this project; the name is a credit, not an endorsement.
 
-![Marvin, dark](preview.png)
-
 ![Marvin, light](light/preview.png)
 
-The bar, launcher, notification, OSD and the restyled widgets, at the
-token values, in both tones:
+![Marvin, dark](preview.png)
 
-![Widgets, dark](docs/images/widgets-dark.png)
+The launcher, notification, OSD and the restyled widgets at the token
+values. Tone is a property of each surface: weather is a gradient, the
+battery card is inverted with a ring of ticks, state is a soft-fill chip,
+and the rest stay quiet.
 
 ![Widgets, light](docs/images/widgets-light.png)
+
+![Widgets, dark](docs/images/widgets-dark.png)
 
 The wallpaper is the ground the whole system sits on — an empty workspace
 with one notification, then the shipped backgrounds themselves:
 
-![Workspace, dark](docs/images/workspace-dark.png)
-
 ![Workspace, light](docs/images/workspace-light.png)
 
-![Backgrounds, dark](docs/images/backgrounds-dark.png)
+![Workspace, dark](docs/images/workspace-dark.png)
 
 ![Backgrounds, light](docs/images/backgrounds-light.png)
+
+![Backgrounds, dark](docs/images/backgrounds-dark.png)
 
 These are renders from the tokens, not screenshots of the shell — see
 [Testing it](#testing-it).
@@ -49,10 +51,10 @@ These are renders from the tokens, not screenshots of the shell — see
 | **Radius** | half the unit, one radius for everything | 16px — cards, pills, windows |
 | **Padding** | equals the radius | 16px, so content sits at the centre of the corner arc |
 | **Type** | Inter, pinned scale, every step perceptible | 11 / 13 / 15 / 18 / 24 / 48; hero numerals tracked −0.03em |
-| **Colour** | true-neutral ramp, one accent, one attention role | accent `#7aa6ff` / `#2a63d8`; attention amber, not terminal red |
+| **Colour** | true-neutral ramp, one accent, one attention role | accent `#7aa6ff` / `#2a63d8`; attention amber, not terminal red; semantic colour is a soft-fill chip |
 | **Text** | two tones, no third | foreground and muted |
 | **Depth** | surfaces, not outlines | no borders, no dividers; shadow in the config layer |
-| **Tone** | a property of each surface | bar is base, popups are raised, weather is tinted |
+| **Tone** | a property of each surface | bar is base, popups are raised, weather is a gradient, battery is inverted |
 | **State** | emphasis rises in one direction; focus ≠ hover | fills 0.06 → 0.10 → 0.14 → 0.18; focus is a 2px accent ring |
 | **Progress** | a hairline | 2px, track at 0.06, fill foreground or accent |
 | **Motion** | a scale, exits faster than entrances | 120 / 200 / 320 ms, exits at 0.6; workspaces slide, borders don't linger |

@@ -216,7 +216,19 @@ unselected-border-alpha = 0.2
 # ---------------------------------------------------------------- widgets
 # Per-widget tone. Structure never changes; only the surface does.
 
+# A gradient: background is the top stop, background-end the bottom. Text and
+# muted clear the floors against both stops, tested.
 [marvin-weather]
-background = "#d4e3f5"
-text       = "#14304f"
-muted      = "#3f5d84"
+background     = "#d4e3f5"
+background-end = "#bcd3ef"
+text           = "#0c2238"
+muted          = "#34527a"
+
+# Inverted: the one dark card on the light theme. The status chip is a soft
+# fill of the attention hue with lighter text of the same hue.
+[marvin-power]
+background     = "#1a1a1a"
+text           = "#f5f5f5"
+muted          = "#9a9a9a"
+attention-fill = "#3b2f16"
+attention-text = "#f0c66b"

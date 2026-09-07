@@ -64,12 +64,17 @@ def contrast(a, b):
     return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
 for name, d in (("shell.toml", dark), ("light/shell.toml", light)):
     for sec in sorted({k.split(".")[0] for k in d if k.startswith("marvin-")}):
-        bg, tx, mu = d.get(f"{sec}.background"), d.get(f"{sec}.text"), d.get(f"{sec}.muted")
-        for label, fg, floor in (("text", tx, 10.0), ("muted", mu, 4.5)):
-            v = contrast(fg, bg)
-            ok = v >= floor
-            failed += not ok
-            print(f"{name} [{sec}] {label} {fg} on {bg}: {v:5.2f} floor {floor} {'ok' if ok else 'BAD'}")
+        tx, mu = d.get(f"{sec}.text"), d.get(f"{sec}.muted")
+        stops = [s for s in (d.get(f"{sec}.background"), d.get(f"{sec}.background-end")) if s]
+        for bg in stops:
+            for label, fg, floor in (("text", tx, 10.0), ("muted", mu, 4.5)):
+                v = contrast(fg, bg)
+                ok = v >= floor
+                failed += not ok
+                print(f"{name} [{sec}] {label} {fg} on {bg}: {v:5.2f} floor {floor} {'ok' if ok else 'BAD'}")
+        if d.get(f"{sec}.attention-fill"):
+            v = contrast(d[f"{sec}.attention-text"], d[f"{sec}.attention-fill"]); ok = v >= 4.5; failed += not ok
+            print(f"{name} [{sec}] chip {d[f'{sec}.attention-text']} on {d[f'{sec}.attention-fill']}: {v:5.2f} floor 4.5 {'ok' if ok else 'BAD'}")
 
 print(f"\n{failed} failures")
 sys.exit(1 if failed else 0)
