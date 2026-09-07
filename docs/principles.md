@@ -164,8 +164,9 @@ painting is supplied.
 Confirmed: panels first, dashboard later. System widgets are restyled as
 `clonedFrom` plugins under `plugins/` — upstream's data code verbatim, the
 layout rewritten. Plugins are unsandboxed QML and belong to the config
-layer, never the theme. Done: `marvin.weather`, `marvin.clock`,
-`marvin.power`. Any module that can be styled but has no supplied design is
+layer, never the theme. Hand-built: `marvin.weather`, `marvin.clock`, `marvin.power`,
+`marvin.media`. Mechanical (`tools/restyle.py`): audio, bluetooth, monitor,
+network, tailscale, agents. Any module that can be styled but has no supplied design is
 built from the system: the same rules, no new ones.
 
 ## Open

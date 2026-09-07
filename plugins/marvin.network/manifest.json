@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.network",
+  "name": "Marvin Network",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "Wi-Fi and network as a card",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Marvin Network",
+    "description": "Wi-Fi and network as a card",
+    "category": "Network",
+    "allowMultiple": false
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.network"
+  }
+}

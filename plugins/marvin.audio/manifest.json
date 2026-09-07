@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.audio",
+  "name": "Marvin Audio",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "Volume, output picker and per-app mixer as a card",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Marvin Audio",
+    "description": "Volume, output picker and per-app mixer as a card",
+    "category": "Audio",
+    "allowMultiple": false
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.audio"
+  }
+}
