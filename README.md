@@ -31,7 +31,6 @@ cd ~
 omarchy theme install https://github.com/adamperlis/omarchy-marvin
 omarchy theme set marvin
 ~/.config/omarchy/themes/marvin/install/marvin
-omarchy plugin enable marvin.weather --section center
 omarchy-restart-shell
 ```
 
@@ -39,14 +38,17 @@ omarchy-restart-shell
 > sitting **inside** the theme folder while the installer replaces it, the
 > clone aborts with `Unable to read current working directory`.
 
-`marvin.weather` is Marvin's restyled build of the weather widget — enable that
-one, not the stock `omarchy.weather`, or you get Omarchy's unstyled version.
+That installs **everything** — no hand-edits: the theme, the light sibling,
+Inter and the Libre Baskerville serif (registered and verified), the Hyprland
+geometry, all sixteen widgets *placed on the bar* (weather in the center, the
+light/dark control and to-dos on the right, every clone in its slot),
+auto-update, and Marvin's **Obsidian** theme installed and activated in every
+vault you've opened.
 
-That installs the theme, the light sibling, Inter, the Hyprland geometry, all
-sixteen widgets, the light/dark control panel, and auto-update. Two finishing
-touches are hand-edits (spelled out below): adding the `marvin.mode` and
-`marvin.todos` widgets to the bar, and setting your weather location — both in
-`~/.config/omarchy/shell.json`.
+The only thing left to you is your **weather location**, and even that's
+optional — it auto-detects from your IP. To pin a city, click the location
+label in the weather popup and type it. (Restart Obsidian once so it picks up
+the theme and the new font.)
 
 Prefer to go step by step, or want to know what each command does? The rest of
 this section breaks it down.
@@ -103,13 +105,21 @@ Adds, in order:
   marvin-mode schedule 07:00 19:00  # light at 07:00, dark at 19:00, daily
   ```
 
-  Both new widgets clone nothing, so they land enabled but **unplaced** — add
-  them to a `bar.layout` array in `~/.config/omarchy/shell.json`
-  (`{"id": "marvin.mode"}`, `{"id": "marvin.todos"}`), then `omarchy-restart-shell`.
+  These two clone nothing, so nothing places them automatically — the installer
+  puts `marvin.mode` and `marvin.todos` on the right of the bar for you (first
+  install only; it won't touch your layout on an update). Move them by editing a
+  `bar.layout` array in `~/.config/omarchy/shell.json` if you'd rather.
+
+- **Obsidian** — Marvin's note styling (`obsidian.css`) is installed as a theme
+  called *Marvin* in every vault you've opened, and activated if that vault is
+  still on the default theme. Restart Obsidian once to see it. (Only vaults
+  Obsidian has registered are found; open a new vault once, then re-run the
+  installer.)
 
 It snapshots every file it touches (and the active theme) first, so
-`install/marvin --revert` restores everything byte-for-byte (and removes any
-schedule), and `install/marvin --status` shows what is installed.
+`install/marvin --revert` restores everything byte-for-byte (removes any
+schedule, and drops the Obsidian theme), and `install/marvin --status` shows
+what is installed.
 
 **3. Widgets by hand** (optional) — to enable them one at a time instead
 (recommended for a first look), skip the installer's enable step and:
@@ -123,9 +133,9 @@ Enabling a clone replaces the built-in in its bar slot; disabling it brings the
 built-in back. Plugins are unsandboxed QML and land disabled so you can read
 them first — see [`plugins/README.md`](plugins/README.md).
 
-**Weather** doesn't show until you turn it on — Omarchy ships the widget, but
-it isn't always on the bar, and it needs a location. Enable **Marvin's** build
-of it (the styled clone, not stock `omarchy.weather`), placed in the center:
+**Weather** is placed for you by the installer (`marvin.weather` in the center).
+If you ever need to place it by hand — Marvin's build, the styled clone, not
+stock `omarchy.weather`:
 
 ```
 omarchy plugin enable marvin.weather --section center

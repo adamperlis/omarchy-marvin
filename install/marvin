@@ -180,7 +180,21 @@ install_plugins() {
     omarchy-shell shell rescanPlugins >/dev/null 2>&1 || true
     if [[ "$FIRST_INSTALL" == 1 ]]; then
       for id in $(plugin_ids); do
-        omarchy-plugin-enable "$id" >/dev/null 2>&1 && note "enabled $id" || note "enable $id yourself: omarchy plugin enable $id"
+        # Clones replace a built-in and inherit its slot, so they need no
+        # placement. The three that clone nothing — weather, mode, todos — would
+        # land enabled-but-unplaced (invisible), so give them a bar section.
+        local sect=""
+        case "$id" in
+          marvin.weather)           sect="center" ;;
+          marvin.mode|marvin.todos) sect="right" ;;
+        esac
+        if [[ -n "$sect" ]] && command -v omarchy >/dev/null 2>&1; then
+          omarchy plugin enable "$id" --section "$sect" >/dev/null 2>&1 \
+            && note "enabled $id ($sect)" \
+            || note "enable $id yourself: omarchy plugin enable $id --section $sect"
+        else
+          omarchy-plugin-enable "$id" >/dev/null 2>&1 && note "enabled $id" || note "enable $id yourself: omarchy plugin enable $id"
+        fi
       done
     else
       note "kept your widget layout (refreshed their code only)"
@@ -203,7 +217,6 @@ install_mode() {
   note "→ ~/.local/bin/marvin-mode    (toggle · system · schedule)"
   note "→ ~/.local/bin/marvin-update  (pull + re-apply; --enable for a daily timer)"
   note "→ ~/.local/bin/marvin-todo    (backs the marvin.todos widget; ~/todos.md)"
-  note "the marvin.mode and marvin.todos widgets drive these — add them to the bar"
   # Auto-update on by default — but only turn it on at first install. On an
   # update, whatever the user set (they may have turned it off in the panel) is
   # left alone; re-enabling here would override their choice.
@@ -213,6 +226,79 @@ install_mode() {
   else
     note "auto-update left as you set it"
   fi
+}
+
+# ---------------------------------------------------------------- obsidian
+# Every registered Obsidian vault. Native, Flatpak and Snap keep the same
+# vault registry, just at different paths.
+obsidian_vaults() {
+  local reg
+  for reg in "$CFG/obsidian/obsidian.json" \
+             "$HOME/.var/app/md.obsidian.Obsidian/config/obsidian/obsidian.json" \
+             "$HOME/snap/obsidian/current/.config/obsidian/obsidian.json"; do
+    [[ -f "$reg" ]] && jq -r '.vaults[]?.path // empty' "$reg" 2>/dev/null
+  done | sort -u
+}
+
+# Omarchy copies obsidian.css only into vaults it already knows, so a vault it
+# hasn't seen gets nothing. Install the theme into every registered vault and
+# switch to it — but only when the vault is still on the default theme, so a
+# theme the user chose themselves is never overridden.
+install_obsidian() {
+  say "Obsidian"
+  command -v jq >/dev/null || { note "no jq; skipped (Obsidian styling needs it)"; return; }
+  local css="$THEME_DIR/obsidian.css"
+  [[ "$(current_theme)" == *light ]] && css="$THEME_DIR/light/obsidian.css"
+  local found=0 vault dir appearance cur tmp
+  while IFS= read -r vault; do
+    [[ -z "$vault" || ! -d "$vault/.obsidian" ]] && continue
+    found=1
+    dir="$vault/.obsidian/themes/Marvin"
+    mkdir -p "$dir"
+    cp "$css" "$dir/theme.css"
+    cat >"$dir/manifest.json" <<'JSON'
+{ "name": "Marvin", "version": "1.0.0", "minAppVersion": "1.0.0", "author": "Marvin theme", "authorUrl": "https://github.com/adamperlis/omarchy-marvin" }
+JSON
+    note "→ ${vault##*/}/.obsidian/themes/Marvin"
+    appearance="$vault/.obsidian/appearance.json"
+    cur=""
+    [[ -f "$appearance" ]] && cur=$(jq -r '.cssTheme // ""' "$appearance" 2>/dev/null || echo "")
+    if [[ -z "$cur" ]]; then
+      if [[ -f "$appearance" ]]; then
+        tmp=$(mktemp); jq '.cssTheme = "Marvin"' "$appearance" >"$tmp" && mv "$tmp" "$appearance"
+      else
+        printf '{\n  "cssTheme": "Marvin"\n}\n' >"$appearance"
+      fi
+      note "activated Marvin in ${vault##*/}"
+    elif [[ "$cur" == "Marvin" ]]; then
+      note "Marvin already active in ${vault##*/} (css refreshed)"
+    else
+      note "left ${vault##*/} on your theme ($cur) — pick Marvin in Appearance to switch"
+    fi
+  done < <(obsidian_vaults)
+  if [[ $found -eq 0 ]]; then
+    note "no Obsidian vaults found — open one once, then re-run install/marvin"
+  else
+    note "restart Obsidian to see it (it loads themes and fonts at launch)"
+  fi
+}
+
+# Revert: drop the Marvin theme from each vault, and if it was the active one,
+# fall back to the default theme.
+uninstall_obsidian() {
+  command -v jq >/dev/null || return 0
+  local vault appearance cur tmp
+  while IFS= read -r vault; do
+    [[ -z "$vault" ]] && continue
+    rm -rf "$vault/.obsidian/themes/Marvin"
+    appearance="$vault/.obsidian/appearance.json"
+    [[ -f "$appearance" ]] || continue
+    cur=$(jq -r '.cssTheme // ""' "$appearance" 2>/dev/null || echo "")
+    if [[ "$cur" == "Marvin" ]]; then
+      tmp=$(mktemp); jq '.cssTheme = ""' "$appearance" >"$tmp" && mv "$tmp" "$appearance"
+      note "reverted Obsidian theme in ${vault##*/}"
+    fi
+  done < <(obsidian_vaults)
 }
 
 apply() {
@@ -286,6 +372,8 @@ revert() {
   rm -f "$HOME/.local/bin/marvin-mode" "$HOME/.local/bin/marvin-update" "$HOME/.local/bin/marvin-todo"
   note "removed  ~/.local/bin/marvin-mode, marvin-update, marvin-todo, and any timers"
 
+  uninstall_obsidian
+
   clean_shell_json
 
   if command -v gsettings >/dev/null && [[ -f "$SNAP/state" ]]; then
@@ -352,6 +440,6 @@ case "${1:-}" in
   --revert|--remove) revert ;;
   --status) status ;;
   -h|--help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//' ;;
-  "") snapshot; install_light; install_font; install_gtk; install_hypr; install_plugins; install_mode; apply ;;
+  "") snapshot; install_light; install_font; install_gtk; install_hypr; install_plugins; install_mode; install_obsidian; apply ;;
   *) echo "usage: install/marvin [--revert | --status]" >&2; exit 1 ;;
 esac
