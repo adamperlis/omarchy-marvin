@@ -69,7 +69,13 @@ Item {
     property string label: ""
     property bool live: false
     readonly property int dia: Style.spacing.huge * 2      // 96
-    readonly property int lit: Math.round(overlay.fraction(value) * 60)
+    // Ease the fill toward the reading instead of snapping tick-to-tick.
+    readonly property real frac: overlay.fraction(value)
+    property real shownFrac: 0
+    onFracChanged: shownFrac = frac
+    Component.onCompleted: shownFrac = frac
+    Behavior on shownFrac { NumberAnimation { duration: 550; easing.type: Easing.OutCubic } }
+    readonly property int lit: Math.round(shownFrac * 60)
     spacing: Style.spacing.md
 
     Item {

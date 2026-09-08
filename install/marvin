@@ -59,6 +59,29 @@ with_spinner() {
   fi
   "$@"
 }
+
+# The MARVIN wordmark, revealed line by line then swept with a blue shimmer.
+# Terminal only, so the auto-update timer's log stays plain.
+marvin_banner() {
+  [[ -t 1 ]] || return 0
+  local r=$'\e[0m' l c
+  local -a L=(
+'███╗   ███╗ █████╗ ██████╗ ██╗   ██╗██╗███╗   ██╗'
+'████╗ ████║██╔══██╗██╔══██╗██║   ██║██║████╗  ██║'
+'██╔████╔██║███████║██████╔╝██║   ██║██║██╔██╗ ██║'
+'██║╚██╔╝██║██╔══██║██╔══██╗╚██╗ ██╔╝██║██║╚██╗██║'
+'██║ ╚═╝ ██║██║  ██║██║  ██║ ╚████╔╝ ██║██║ ╚████║'
+'╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝  ╚═══╝  ╚═╝╚═╝  ╚═══╝'
+  )
+  printf '\n'
+  for l in "${L[@]}"; do printf '  \e[38;5;75m%s%s\n' "$l" "$r"; sleep 0.05; done
+  for c in 111 45 39 75; do
+    printf '\e[6A'
+    for l in "${L[@]}"; do printf '\r  \e[38;5;%sm%s%s\n' "$c" "$l" "$r"; done
+    sleep 0.09
+  done
+  printf '  \e[38;5;68m%s%s\n\n' "a theme for Omarchy" "$r"
+}
 plugin_ids() { local p; for p in "$THEME_DIR"/plugins/marvin.*/; do basename "$p"; done; }
 current_theme() { cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null || true; }
 
@@ -490,6 +513,6 @@ case "${1:-}" in
   --revert|--remove) revert ;;
   --status) status ;;
   -h|--help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//' ;;
-  "") snapshot; install_light; install_font; install_gtk; install_hypr; install_plugins; install_mode; install_obsidian; apply ;;
+  "") marvin_banner; snapshot; install_light; install_font; install_gtk; install_hypr; install_plugins; install_mode; install_obsidian; apply ;;
   *) echo "usage: install/marvin [--revert | --status]" >&2; exit 1 ;;
 esac

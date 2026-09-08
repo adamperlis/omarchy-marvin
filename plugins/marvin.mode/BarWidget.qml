@@ -39,7 +39,7 @@ BarWidget {
   property string currentBg: ""
   property var wallpapers: []
 
-  function refreshMode() { if (!modeProc.running) modeProc.running = true }
+  function refreshMode() { themeFile.reload() }
   function refreshAuto() { if (!autoProc.running) autoProc.running = true }
   function refreshStatus() { if (!statusProc.running) statusProc.running = true }
   function refreshBg() { if (!bgProc.running) bgProc.running = true }
@@ -94,15 +94,16 @@ BarWidget {
   implicitHeight: button.implicitHeight
   Component.onCompleted: { refreshMode(); refreshAuto(); refreshStatus(); refreshBg() }
 
-  // The live theme, so the panel knows which appearance is active.
-  Process {
-    id: modeProc
-    running: false
-    command: ["cat", root.home + "/.local/state/omarchy/current/theme.name"]
-    stdout: StdioCollector {
-      waitForEnd: true
-      onStreamFinished: root.themeName = String(text || "").trim()
-    }
+  // The live theme, watched rather than polled: the panel reflects the real
+  // appearance the moment theme.name changes, and a stale re-read can never
+  // revert an optimistic switch (which showed Light as Dark on the first click).
+  FileView {
+    id: themeFile
+    path: root.home + "/.local/state/omarchy/current/theme.name"
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: root.themeName = String(text() || "").trim()
   }
 
   // Whether the auto-update timer is on, so the toggle reflects reality.
@@ -164,7 +165,7 @@ BarWidget {
   Timer {
     id: settle
     interval: 3500
-    onTriggered: { root.applying = false; root.refreshMode(); root.refreshStatus() }
+    onTriggered: { root.applying = false; root.refreshStatus() }
   }
   // A wallpaper set lands quickly; re-resolve so the preview updates.
   Timer {
