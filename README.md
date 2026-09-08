@@ -24,6 +24,25 @@ palette, plus soft abstractions:
 
 ## Install
 
+**Everything, in one go** — copy-paste the lot:
+
+```
+omarchy theme install https://github.com/adamperlis/omarchy-marvin
+omarchy theme set marvin
+~/.config/omarchy/themes/marvin/install/marvin
+omarchy plugin enable omarchy.weather --section center
+omarchy-restart-shell
+```
+
+That installs the theme, the light sibling, Inter, the Hyprland geometry, all
+sixteen widgets, the light/dark control panel, and auto-update. Two finishing
+touches are hand-edits (spelled out below): adding the `marvin.mode` and
+`marvin.todos` widgets to the bar, and setting your weather location — both in
+`~/.config/omarchy/shell.json`.
+
+Prefer to go step by step, or want to know what each command does? The rest of
+this section breaks it down.
+
 **1. The theme** — two commands:
 
 ```
@@ -63,8 +82,8 @@ Adds, in order:
 - **`marvin-mode` · `marvin-update` · `marvin-todo`** — helpers installed to
   `~/.local/bin`. The **`marvin.mode`** widget (a sun in light, a moon in dark)
   opens a **control panel** on left click — appearance (light/dark/system),
-  next wallpaper, reduce motion, a daily schedule — and right click is a quick
-  flip. The **`marvin.todos`** widget is a to-do list stored in `~/todos.md`, so
+  next wallpaper, reduce motion, a daily schedule, and **auto-update** (on by
+  default) — and right click is a quick flip. The **`marvin.todos`** widget is a to-do list stored in `~/todos.md`, so
   Obsidian and OmaWrite share the same checklist. Light/dark also works from the
   command line:
 
@@ -107,17 +126,19 @@ Then set your city and unit in `~/.config/omarchy/shell.json` — the
 `omarchy.weather` entry, e.g. `{ "id": "omarchy.weather", "unit": "fahrenheit" }`
 — and `omarchy-restart-shell`.
 
-**Already installed it?** The config layer installs `marvin-update`, which pulls
-the latest and re-applies it without disturbing your wallpaper:
+**Staying up to date.** The config layer turns on **auto-update by default** —
+a daily user timer that pulls the latest and re-applies it without disturbing
+your wallpaper. Toggle it in the `marvin.mode` panel, or by hand:
 
 ```
-marvin-update                  # pull + re-apply now
-marvin-update --enable         # or run it on a daily systemd timer
-marvin-update --disable
+marvin-update                  # pull + re-apply right now
+marvin-update --enable         # daily timer (on by default)
+marvin-update --disable        # turn auto-update off
+marvin-update --status
 ```
 
-Omarchy has no auto-update for third-party themes, so this is Marvin's own; by
-hand it is just `cd ~/.config/omarchy/themes/marvin && git pull`.
+Omarchy has no auto-update for third-party themes, so this is Marvin's own; the
+bare-hands version is `cd ~/.config/omarchy/themes/marvin && git pull`.
 
 Omarchy's stock look is assembled rather than designed: an irregular spacing
 ramp, six type sizes crammed between 10 and 16px, every surface the same

@@ -163,6 +163,11 @@ install_mode() {
   note "→ ~/.local/bin/marvin-update  (pull + re-apply; --enable for a daily timer)"
   note "→ ~/.local/bin/marvin-todo    (backs the marvin.todos widget; ~/todos.md)"
   note "the marvin.mode and marvin.todos widgets drive these — add them to the bar"
+  # Auto-update on by default: a daily user timer that pulls and re-applies,
+  # keeping the wallpaper. Toggle it in the marvin.mode panel, or turn it off
+  # with `marvin-update --disable`.
+  "$HOME/.local/bin/marvin-update" --enable >/dev/null 2>&1 || true
+  note "auto-update: on (daily) — turn off in the marvin.mode panel or with marvin-update --disable"
 }
 
 apply() {
