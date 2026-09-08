@@ -3,9 +3,8 @@ import Quickshell.Io
 import qs.Commons
 import qs.Ui
 
-// The shared gauge-cluster overlay (SpeedTestOverlay) dressed for the
-// internet speed test: download and upload dials in Mbps, titled with the
-// connection under test.
+// Marvin's own SpeedOverlay (not the shell's shared gauge cluster): download
+// and upload as hero numbers in Mbps, titled with the connection under test.
 //
 // Standalone panel plugin: summoning it starts a fresh run, dismissing it
 // stops the traffic, so the download workers never keep saturating the link
@@ -182,7 +181,7 @@ Item {
     }
   }
 
-  SpeedTestOverlay {
+  SpeedOverlay {
     fontFamily: Style.font.family
     layerNamespace: "omarchy-network-speedtest"
     title: root.connectionName

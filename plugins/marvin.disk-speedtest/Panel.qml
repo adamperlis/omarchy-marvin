@@ -129,7 +129,7 @@ Item {
     }
   }
 
-  SpeedTestOverlay {
+  SpeedOverlay {
     fontFamily: Style.font.family
     layerNamespace: "omarchy-disk-speedtest"
     title: root.diskName
