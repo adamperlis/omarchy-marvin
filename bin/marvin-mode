@@ -170,8 +170,10 @@ EOF
     want=""; a=""; b=""
     [ -f "$APPEARANCE" ] && read -r want a b <"$APPEARANCE" || true
     case "$want" in
-      auto)  systemctl --user is-enabled marvin-light.timer >/dev/null 2>&1 \
-               || "$0" schedule "${a:-07:00}" "${b:-19:00}" ;;
+      # Re-run schedule outright: it re-arms the timers (idempotent) and sets the
+      # tone for right now — so a reinstall that forced a tone is put back, not
+      # just the timers restored.
+      auto)  "$0" schedule "${a:-07:00}" "${b:-19:00}" >/dev/null ;;
       light) [ "$(current)" != "$LIGHT" ] && set_theme "$LIGHT" || true ;;
       dark)  [ "$(current)" != "$DARK" ]  && set_theme "$DARK"  || true ;;
     esac ;;

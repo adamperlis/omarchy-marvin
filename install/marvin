@@ -327,6 +327,12 @@ apply() {
   else
     note "already on $cur; theme and wallpaper left as they are"
   fi
+  # Restore the appearance the user chose (light / dark / auto). A reinstall runs
+  # `omarchy theme set marvin` first, which forces dark; this puts their choice
+  # back. Recorded by marvin-mode, so it survives every reinstall and update.
+  if [[ "$FIRST_INSTALL" != 1 && -x "$HOME/.local/bin/marvin-mode" ]]; then
+    "$HOME/.local/bin/marvin-mode" reassert >/dev/null 2>&1 && note "restored your appearance choice" || true
+  fi
   command -v hyprctl >/dev/null && hyprctl reload >/dev/null 2>&1 || true
   shell_running && omarchy-restart-shell >/dev/null 2>&1 || true
   note "done. Light: omarchy theme set marvin-light. Undo everything: install/marvin --revert"

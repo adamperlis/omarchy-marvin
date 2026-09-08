@@ -6,12 +6,12 @@ import Quickshell.Io
 import qs.Commons
 import qs.Ui
 
-// Marvin's light/dark control, as a bar widget with a pop-out panel.
+// Marvin's settings control, as a bar widget with a pop-out panel.
 //
-// The bar icon is a sun in light, a moon in dark. Left click opens the panel
-// (appearance, wallpaper, reduce motion, a daily schedule, auto-update); right
-// click is a quick light/dark flip. The logic lives in marvin-mode and
-// marvin-update, installed to ~/.local/bin by the config layer.
+// The bar icon is a gear — this is the theme's settings. Left click opens the
+// panel (appearance, wallpaper, reduce motion, auto-update); right click is a
+// quick light/dark flip. The logic lives in marvin-mode and marvin-update,
+// installed to ~/.local/bin by the config layer.
 BarWidget {
   id: root
   moduleName: "marvin.mode"
@@ -87,7 +87,7 @@ BarWidget {
   implicitHeight: button.implicitHeight
   Component.onCompleted: { refreshMode(); refreshAuto(); refreshStatus(); refreshBg() }
 
-  // The live theme, so the glyph is a sun or a moon.
+  // The live theme, so the panel knows which appearance is active.
   Process {
     id: modeProc
     running: false
@@ -204,7 +204,7 @@ BarWidget {
     anchors.fill: parent
     bar: root.bar
     slotSize: Style.bar.statusSlot
-    text: root.isLight ? "" : ""   // Nerd Font: sun / moon
+    text: "\uf013"   // Nerd Font: gear (settings)
     tooltipText: "Marvin — left: panel · right: quick toggle"
 
     onPressed: function(b) {
