@@ -24,13 +24,19 @@ palette, plus soft abstractions:
 
 ## Install
 
-**Everything, in one go** — copy-paste the lot:
+**Everything, in one go** — copy-paste the lot. Same block whether it's a fresh
+install or an update: a new machine clones and activates; an existing checkout
+just pulls the latest and re-applies (keeping your appearance and wallpaper).
 
 ```
 cd ~
-omarchy theme install https://github.com/adamperlis/omarchy-marvin
-omarchy theme set marvin
-~/.config/omarchy/themes/marvin/install/marvin
+D=~/.config/omarchy/themes/marvin
+if [ -d "$D/.git" ]; then
+  git -C "$D" pull --ff-only
+else
+  omarchy theme install https://github.com/adamperlis/omarchy-marvin && omarchy theme set marvin
+fi
+"$D"/install/marvin
 omarchy-restart-shell
 ```
 
