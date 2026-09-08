@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+"""Static checks for the plugin QML the shell loads.
+
+We can't run Quickshell off the target, so these catch the classes of fatal
+error that a brace check alone misses. Run from the repo root: ./test/qml-lint
+
+Checks, per plugins/**/*.qml:
+  - `Behavior on <p>` where <p> is declared `readonly property`. A Behavior is a
+    property interceptor, i.e. an assignment, so this is a fatal compile error:
+    the whole component fails to load and the widget silently never appears.
+    (This is exactly what hid the weather panel — Panel.qml declared tintEnd
+    readonly and put a Behavior on it.)
+  - Unbalanced braces / parens / brackets (ignoring strings and // comments).
+"""
+import re, sys, glob
+
+failed = 0
+files = sorted(glob.glob("plugins/**/*.qml", recursive=True))
+
+
+def balance(src):
+    """Net {} () [] depth, skipping "..." strings and // comments."""
+    bal = {"{": 0, "(": 0, "[": 0}
+    close = {"}": "{", ")": "(", "]": "["}
+    for line in src.split("\n"):
+        i = 0
+        while i < len(line):
+            c = line[i]
+            if c == "/" and i + 1 < len(line) and line[i + 1] == "/":
+                break
+            if c == '"':
+                i += 1
+                while i < len(line) and line[i] != '"':
+                    if line[i] == "\\":
+                        i += 1
+                    i += 1
+            elif c in bal:
+                bal[c] += 1
+            elif c in close:
+                bal[close[c]] -= 1
+            i += 1
+    return bal
+
+
+print("== Behavior on readonly (fatal)")
+for f in files:
+    s = open(f, encoding="utf-8").read()
+    for prop in re.findall(r"Behavior on\s+([A-Za-z_][\w.]*)", s):
+        base = prop.split(".")[0]
+        bad = re.search(r"\breadonly\s+property\s+\w+\s+" + re.escape(base) + r"\b", s)
+        if bad:
+            failed += 1
+            print(f"  BAD {f}: Behavior on readonly property '{base}'")
+print("  ok — no Behavior attached to a readonly property" if not failed else "")
+
+print("== brace / paren / bracket balance")
+for f in files:
+    bal = balance(open(f, encoding="utf-8").read())
+    if bal != {"{": 0, "(": 0, "[": 0}:
+        failed += 1
+        print(f"  BAD {f}: unbalanced {bal}")
+print(f"  ok — {len(files)} files balanced" if all(
+    balance(open(f, encoding='utf-8').read()) == {'{': 0, '(': 0, '[': 0} for f in files) else "")
+
+print(f"\n{failed} failures")
+sys.exit(1 if failed else 0)

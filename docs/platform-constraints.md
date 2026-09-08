@@ -338,7 +338,19 @@ What a plugin can and cannot restyle:
   including sections the shell itself never reads, so a theme can carry
   per-widget tokens.
 - `omarchy-plugin-validate` is jq-only and checks the manifest and entry
-  points; it does not parse QML. There is no QML lint in the repo.
+  points; it does not parse QML. `test/qml-lint` adds the static checks that
+  matter off-target — brace balance, and the fatal patterns below.
+- **A `Behavior on <p>` where `<p>` is a `readonly property` is a fatal compile
+  error, not a warning.** A Behavior is a property interceptor (an assignment),
+  which a readonly property forbids; the whole component fails to load, so a
+  panel's `Loader.item` stays null and the widget silently never appears — no
+  visible error unless you read the shell log (`Invalid property assignment:
+  "<p>" is a read-only property`). Only the *last* such property is named in the
+  log. A property that carries a Behavior (a crossfade, a size tween) must be a
+  plain `property`, never `readonly`. `test/qml-lint` fails on this.
+- After a plugin fails to compile, `rescanPlugins` is not enough — the shell
+  keeps the failed component cached and re-logs the same error.
+  `omarchy-restart-shell` clears it.
 
 ## Config layer mechanics
 

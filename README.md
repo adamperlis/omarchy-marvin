@@ -89,9 +89,10 @@ Adds, in order:
   Enabled if the shell is running.
 - **`marvin-mode` · `marvin-update` · `marvin-todo`** — helpers installed to
   `~/.local/bin`. The **`marvin.mode`** widget (a sun in light, a moon in dark)
-  opens a **control panel** on left click — appearance (light/dark/system),
-  next wallpaper, reduce motion, a daily schedule, and **auto-update** (on by
-  default) — and right click is a quick flip. The **`marvin.todos`** widget is a to-do list stored in `~/todos.md`, so
+  opens a **control panel** on left click — appearance (**Light / Dark / Auto**,
+  where Auto switches by time of day), a **wallpaper picker** with previews,
+  reduce motion, and **auto-update** (on by default) — and right click is a
+  quick flip. Your appearance choice is remembered across updates. The **`marvin.todos`** widget is a to-do list stored in `~/todos.md`, so
   Obsidian and OmaWrite share the same checklist. Light/dark also works from the
   command line:
 
@@ -129,6 +130,11 @@ of it (the styled clone, not stock `omarchy.weather`), placed in the center:
 ```
 omarchy plugin enable marvin.weather --section center
 ```
+
+It appears as a cloud icon the moment it's enabled and detects your location
+from your IP, then fills in with the current condition and temperature. (If you
+only ever see a blank slot, you likely enabled stock `omarchy.weather` instead —
+that one hides itself until its own fetch returns. Use `marvin.weather`.)
 
 Then set your city right in the popup: click the location label at the top of
 the weather card and type a city. To pin the unit, add it to the widget's entry

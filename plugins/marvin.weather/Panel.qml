@@ -46,8 +46,12 @@ Panel {
     var k = sky === "day" ? ("marvin-weather." + (suffix === "" ? "background" : suffix === "-end" ? "background-end" : "muted")) : ("marvin-weather." + sky + suffix)
     return toneValues[k]
   }
-  readonly property color tintBackground: tinted ? Color.flatColor(skyKey("") || toneValues["marvin-weather.background"], Color.popups.background) : Color.popups.background
-  readonly property color tintEnd: tinted ? Color.flatColor(skyKey("-end") || toneValues["marvin-weather.background-end"] || toneValues["marvin-weather.background"], tintBackground) : tintBackground
+  // NOT readonly: a `Behavior on` is a property interceptor (an assignment), so
+  // attaching one to a readonly property is a fatal compile error — it kills the
+  // whole component, panelLoader.item stays null, and the widget never appears.
+  // These two carry the sky crossfade below, so they must stay writable.
+  property color tintBackground: tinted ? Color.flatColor(skyKey("") || toneValues["marvin-weather.background"], Color.popups.background) : Color.popups.background
+  property color tintEnd: tinted ? Color.flatColor(skyKey("-end") || toneValues["marvin-weather.background-end"] || toneValues["marvin-weather.background"], tintBackground) : tintBackground
   readonly property color ink: (tinted && toneValues["marvin-weather.text"]) ? Color.flatColor(toneValues["marvin-weather.text"], Color.popups.text) : Color.popups.text
   readonly property color inkMuted: tinted ? Color.flatColor(skyKey("-muted") || toneValues["marvin-weather.muted"], Color.muted) : Color.muted
   Behavior on tintBackground { ColorAnimation { duration: 320 } }
