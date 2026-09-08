@@ -30,13 +30,12 @@ just pulls the latest and re-applies (keeping your appearance and wallpaper).
 
 ```
 cd ~
-D=~/.config/omarchy/themes/marvin
-if [ -d "$D/.git" ]; then
-  git -C "$D" pull --ff-only
+if [ -d ~/.config/omarchy/themes/marvin/.git ]; then
+  git -C ~/.config/omarchy/themes/marvin pull --ff-only
 else
   omarchy theme install https://github.com/adamperlis/omarchy-marvin && omarchy theme set marvin
 fi
-"$D"/install/marvin
+~/.config/omarchy/themes/marvin/install/marvin
 omarchy-restart-shell
 ```
 
