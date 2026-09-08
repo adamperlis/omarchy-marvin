@@ -178,6 +178,16 @@ input[type=text]:focus, input[type=search]:focus, .prompt-input:focus {{ backgro
 /* Callouts are tinted surfaces with a hairline, never a coloured band. */
 .callout {{ border: 1px solid rgba({rgb(fg)}, .10); border-radius: 24px; padding: 24px; }}
 .callout .callout-title {{ font-family: var(--font-interface-theme); font-weight: 500; }}
+
+/* Frontmatter properties: a hairline surface, muted keys, and pill values — a
+   `status: draft` or a tag reads with the same shape as an inline tag. */
+.metadata-container {{ border: 1px solid rgba({rgb(fg)}, .10); border-radius: 16px; padding: 8px 16px; }}
+.metadata-property {{ border: none; }}
+.metadata-property-key-input {{ color: {muted}; font-weight: 400; }}
+.metadata-property-value .multi-select-pill {{ border-radius: 16px; background: rgba({rgb(accent)}, .12); color: {atext}; }}
+
+/* Unsaved changes: a soft accent mark on the tab, not a colour shift. */
+.workspace-tab-header.mod-dirty .workspace-tab-header-status-icon {{ color: {atext}; }}
 """
 
 PICKER = """@define-color foreground {fg};
