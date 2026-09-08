@@ -155,7 +155,9 @@ BarWidget {
           width: Style.spacing.huge * 2       // 96
           height: width
           radius: Style.spacing.md
-          color: Style.normalFillFor(root.bar.foreground, Color.accent)
+          // A neutral fill, not an accent-tinted one — the empty art tile should
+          // read as a quiet surface, never a coloured block.
+          color: Style.normalFillFor(root.bar.foreground, root.bar.foreground)
           clip: true
 
           Image {
