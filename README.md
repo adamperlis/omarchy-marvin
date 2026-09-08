@@ -24,9 +24,7 @@ palette, plus soft abstractions:
 
 ## Install
 
-**Everything, in one go** — copy-paste the lot. Same block whether it's a fresh
-install or an update: a new machine clones and activates; an existing checkout
-just pulls the latest and re-applies (keeping your appearance and wallpaper).
+One block — fresh install or update. Run it from your home directory:
 
 ```
 cd ~
@@ -39,24 +37,11 @@ fi
 omarchy-restart-shell
 ```
 
-> Run it from your home directory (that first `cd ~`). If your terminal is
-> sitting **inside** the theme folder while the installer replaces it, the
-> clone aborts with `Unable to read current working directory`.
+That's the whole install, no hand-edits: theme, fonts, GTK, all widgets placed
+on the bar, Obsidian, and auto-update. Weather auto-detects by IP; restart
+Obsidian once to pick up its theme.
 
-That installs **everything** — no hand-edits: the theme, the light sibling,
-Inter and the Libre Baskerville serif (registered and verified), the Hyprland
-geometry, all sixteen widgets *placed on the bar* (weather in the center, the
-light/dark control and to-dos on the right, every clone in its slot),
-auto-update, and Marvin's **Obsidian** theme installed and activated in every
-vault you've opened.
-
-The only thing left to you is your **weather location**, and even that's
-optional — it auto-detects from your IP. To pin a city, click the location
-label in the weather popup and type it. (Restart Obsidian once so it picks up
-the theme and the new font.)
-
-Prefer to go step by step, or want to know what each command does? The rest of
-this section breaks it down.
+Details and a step-by-step breakdown follow.
 
 **1. The theme** — two commands:
 
