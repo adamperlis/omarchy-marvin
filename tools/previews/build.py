@@ -293,7 +293,7 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 .mon{{padding:16px 20px;font-size:12px;line-height:20px}}.mon h4{{margin:0 0 8px;font:500 13px Inter}}.mon .sec{{margin-bottom:16px}}.mon .lab{{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px}}
 .pr{{display:grid;grid-template-columns:1fr 60px 70px;font-family:'JetBrains Mono';font-size:12px}}.pr .m{{color:var(--muted);text-align:right}}
 .obs{{display:grid;grid-template-columns:272px 1fr;height:100%}}.obs .sb{{background:var(--bg);padding:24px 16px;display:flex;flex-direction:column;gap:4px}}
-.obs .vault{{font-size:12px;color:var(--muted);padding:0 16px 12px}}.obs .sb .si{{height:40px;border-radius:20px;padding:0 16px;display:flex;align-items:center;gap:12px}}.obs .sb .si.on{{background:rgba(var(--fg-rgb),var(--a3));font-weight:500}}
+.obs .vault{{font-size:13px;font-weight:500;color:var(--fg);padding:0 16px 12px}}.obs .sb .si{{height:40px;border-radius:20px;padding:0 16px;display:flex;align-items:center;gap:12px}}.obs .sb .si.on{{background:rgba(var(--fg-rgb),var(--a3));font-weight:500}}
 .obs .ed{{background:var(--raised);position:relative;padding:0}}.obs .tabs{{height:48px;display:flex;align-items:center;gap:8px;padding:8px 16px}}.obs .tab{{height:32px;padding:0 16px;border-radius:16px;display:flex;align-items:center;color:var(--muted)}}.obs .tab.on{{background:rgba(var(--fg-rgb),var(--a3));color:var(--fg);font-weight:500}}
 .obs .doc{{padding:24px 32px;max-width:640px;font-size:15px;line-height:1.55;font-family:'Libre Baskerville','Noto Serif',serif}}.obs h1,.obs h2,.obs .tag,.obs .draft{{font-family:Inter,sans-serif}}.obs h1{{font-size:30px;font-weight:500;letter-spacing:-.02em;margin:0 0 16px;line-height:1.15}}.obs h2{{font-size:18px;font-weight:500;margin:24px 0 8px}}.obs p{{margin:0 0 12px}}.obs .draft{{align-self:flex-start;height:26px;padding:0 12px;border-radius:6px;display:inline-flex;align-items:center;font-size:12px;font-weight:500;background:var(--chip2-fill);color:var(--chip2-text);margin:0 0 16px}}.obs .tab.on .dot{{width:6px;height:6px;border-radius:3px;background:var(--fg);margin-left:8px;display:inline-block}}
 .obs .chk{{display:flex;align-items:center;gap:10px;margin:4px 0}}.obs .chk i{{width:16px;height:16px;border-radius:8px;border:1.5px solid var(--muted);display:inline-block}}.obs .chk i.d{{background:var(--accent);border-color:var(--accent)}}.obs .chk s{{color:var(--muted)}}
@@ -310,7 +310,7 @@ body{{background:url('file://{t["wall"]}') center/cover}}
 </style></head><body>
 {bar(t)}
 <div class="tile" style="left:24px;top:56px;width:720px;height:600px"><div class="win focus">
-  <div class="obs"><div class="sb"><div class="vault">Notes</div>{obs_side}</div>
+  <div class="obs"><div class="sb"><div class="vault">Obsidian</div>{obs_side}</div>
   <div class="ed"><div class="tabs"><div class="tab on">Principles<span class="dot"></span></div><div class="tab">Grid</div><div class="tab">Motion</div></div>
   <div class="doc"><div class="draft">Draft · unsaved</div><h1>Principles</h1>
   <p>Understand the grid, set a clean type scale, art-direct a few key widgets, then propagate. After that it gets rather easy.</p>
