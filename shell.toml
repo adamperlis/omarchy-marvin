@@ -226,8 +226,10 @@ unselected-border-alpha = 0.2
 # to sunset in the first and last hours of daylight and to night after dark
 # (Open-Meteo's is_day), each its own gradient. Text stays white.
 [marvin-weather]
-background     = "#a8cbe9"
-background-end = "#6ea5d8"
+# Day is a deep afternoon blue, not a powder blue: white text needs the
+# contrast (a light day sky read at ~2.6:1). Sunset and night are already dark.
+background     = "#4d7bb0"
+background-end = "#2b5687"
 text           = "#ffffff"
 muted          = "#eaf2fb"
 sunset         = "#f2b27a"

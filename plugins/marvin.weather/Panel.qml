@@ -544,10 +544,21 @@ Panel {
       radius: Style.cornerRadius
       visible: root.tinted
       z: -1
+      clip: true
       gradient: Gradient {
         orientation: Gradient.Vertical
         GradientStop { position: 0.0; color: root.tintBackground }
         GradientStop { position: 1.0; color: root.tintEnd }
+      }
+
+      // A whisper of film grain over the flat gradient, tiled from a 128px
+      // texture. Kept faint so it reads as texture, not noise.
+      Image {
+        anchors.fill: parent
+        source: Qt.resolvedUrl("grain.png")
+        fillMode: Image.Tile
+        opacity: 0.9
+        smooth: false
       }
     }
 
