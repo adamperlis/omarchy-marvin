@@ -74,7 +74,7 @@ Panel {
   readonly property color contentForeground: bar ? bar.foreground : Color.foreground
   readonly property string contentFontFamily: bar ? bar.fontFamily : Style.font.family
 
-  readonly property int cellWidth: Style.spacing.xxxl + Style.spacing.xs   // 36
+  readonly property int cellWidth: Style.spacing.xxxl + Style.spacing.lg   // ~46 — wide enough that all seven days fit without scrolling
   readonly property int cellHeight: Style.spacing.controlHeight             // 32
   readonly property int cellSpacing: 0
   readonly property int weekColumnWidth: Style.spacing.xxxl                  // 32
@@ -344,8 +344,11 @@ Panel {
             }
           }
 
-          // ---- Year progress. A 2px hairline; the year and the percent as captions.
+          // Year / life progress removed — a "2026 · NN%" bar reads as noise in
+          // a calendar. Hidden rather than deleted so the memento-mori feature
+          // and its bindings stay intact for anyone who wants to restore it.
           Column {
+            visible: false
             width: parent.width
             spacing: Style.spacing.sm
 
