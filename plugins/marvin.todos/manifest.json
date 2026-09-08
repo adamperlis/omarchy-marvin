@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.todos",
+  "name": "Marvin To-dos",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "A to-do list in the bar, stored in ~/todos.md so Obsidian and OmaWrite share the same checklist",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Marvin To-dos",
+    "description": "A to-do list for the bar",
+    "category": "Productivity",
+    "allowMultiple": false
+  }
+}

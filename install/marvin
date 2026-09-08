@@ -157,10 +157,12 @@ install_mode() {
   mkdir -p "$HOME/.local/bin"
   cp "$THEME_DIR/bin/marvin-mode" "$HOME/.local/bin/marvin-mode"
   cp "$THEME_DIR/bin/marvin-update" "$HOME/.local/bin/marvin-update"
-  chmod +x "$HOME/.local/bin/marvin-mode" "$HOME/.local/bin/marvin-update"
+  cp "$THEME_DIR/bin/marvin-todo" "$HOME/.local/bin/marvin-todo"
+  chmod +x "$HOME/.local/bin/marvin-mode" "$HOME/.local/bin/marvin-update" "$HOME/.local/bin/marvin-todo"
   note "→ ~/.local/bin/marvin-mode    (toggle · system · schedule)"
   note "→ ~/.local/bin/marvin-update  (pull + re-apply; --enable for a daily timer)"
-  note "the marvin.mode bar widget drives light/dark — add it to the bar, or run marvin-mode directly"
+  note "→ ~/.local/bin/marvin-todo    (backs the marvin.todos widget; ~/todos.md)"
+  note "the marvin.mode and marvin.todos widgets drive these — add them to the bar"
 }
 
 apply() {
@@ -231,8 +233,8 @@ revert() {
     "$HOME/.local/bin/marvin-mode" follow-off >/dev/null 2>&1 || true
   fi
   [[ -x "$HOME/.local/bin/marvin-update" ]] && "$HOME/.local/bin/marvin-update" --disable >/dev/null 2>&1 || true
-  rm -f "$HOME/.local/bin/marvin-mode" "$HOME/.local/bin/marvin-update"
-  note "removed  ~/.local/bin/marvin-mode, marvin-update, and any timers"
+  rm -f "$HOME/.local/bin/marvin-mode" "$HOME/.local/bin/marvin-update" "$HOME/.local/bin/marvin-todo"
+  note "removed  ~/.local/bin/marvin-mode, marvin-update, marvin-todo, and any timers"
 
   clean_shell_json
 

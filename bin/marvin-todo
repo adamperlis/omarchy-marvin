@@ -1,0 +1,40 @@
+#!/bin/bash
+# marvin-todo — a dead-simple to-do list in a Markdown file, so Obsidian and
+# OmaWrite read and edit the same checklist. Backs the marvin.todos bar widget.
+#
+#   marvin-todo list          print "state<TAB>line<TAB>text" per task (open|done)
+#   marvin-todo add "text"    append an open task
+#   marvin-todo toggle N      flip the task on file line N
+#   marvin-todo clear-done    drop completed tasks
+#
+# The file is ~/todos.md (override with MARVIN_TODO_FILE).
+set -euo pipefail
+
+FILE="${MARVIN_TODO_FILE:-$HOME/todos.md}"
+if [ ! -f "$FILE" ]; then
+  mkdir -p "$(dirname "$FILE")"
+  printf '# To-dos\n\n' >"$FILE"
+fi
+
+case "${1:-list}" in
+  list)
+    awk 'match($0, /^- \[[ xX]\] /) {
+           st = (substr($0,4,1)==" ") ? "open" : "done"
+           printf "%s\t%s\t%s\n", st, NR, substr($0, RLENGTH+1)
+         }' "$FILE" ;;
+  add)
+    shift
+    text="$*"
+    [ -n "$text" ] && printf -- '- [ ] %s\n' "$text" >>"$FILE" ;;
+  toggle)
+    n="${2:-}"
+    [ -n "$n" ] || exit 0
+    # Flip line n: open -> done, else done -> open. `t` skips the second sub
+    # when the first one fired.
+    sed -i "${n}s/^- \[ \]/- [x]/; t; ${n}s/^- \[[xX]\]/- [ ]/" "$FILE" ;;
+  clear-done)
+    sed -i '/^- \[[xX]\] /d' "$FILE" ;;
+  *)
+    echo "usage: marvin-todo list | add <text> | toggle <n> | clear-done" >&2
+    exit 1 ;;
+esac
