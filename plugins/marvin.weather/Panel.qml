@@ -551,10 +551,15 @@ Panel {
         GradientStop { position: 1.0; color: root.tintEnd }
       }
 
-      // A whisper of film grain over the flat gradient, tiled from a 128px
-      // texture. Kept faint so it reads as texture, not noise.
+      // Film grain over the flat gradient. Drawn at 2× and scaled to 0.5 so each
+      // speck lands near a single device pixel — a tight, fine texture rather
+      // than chunky dots (a 1:1 tile is 2 device px per speck on HiDPI).
       Image {
-        anchors.fill: parent
+        x: 0; y: 0
+        width: parent.width * 2
+        height: parent.height * 2
+        transformOrigin: Item.TopLeft
+        scale: 0.5
         source: Qt.resolvedUrl("grain.png")
         fillMode: Image.Tile
         opacity: 0.9
