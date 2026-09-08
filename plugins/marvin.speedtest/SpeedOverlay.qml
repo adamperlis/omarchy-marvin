@@ -1,19 +1,17 @@
 import QtQuick
-import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import qs.Commons
 import qs.Ui
 
-// Marvin's speed-test overlay: a centered card on a dim scrim, the two rates
-// rendered as the biggest things on it — the design system's hero-number rule,
-// the same one the weather temperature follows. Replaces the shell's shared
-// gauge-cluster overlay so the look matches the rest of Marvin. Esc or the
-// scrim dismiss it.
+// Marvin's speed-test overlay, in the battery panel's language: a card on a dim
+// scrim with two sixty-tick rings — download and upload — the rate lit in ink
+// and the rest at the normal fill, the value in the ring's centre. The live
+// phase glows in the accent and breathes. Esc or the scrim dismiss it.
 //
-// Drop-in for the old SpeedTestOverlay: same property and signal surface, so
-// the panels only change the component name. (An identical copy lives in each
-// speed-test plugin, since plugins can't share a file across directories.)
+// Drop-in for the shell's SpeedTestOverlay: same property and signal surface,
+// so the panels only change the component name. (An identical copy ships in
+// each speed-test plugin, since plugins can't share a file across directories.)
 Item {
   id: overlay
 
@@ -31,21 +29,112 @@ Item {
   property string error: ""
   property bool open: false
   property string runAgainTooltip: "Measure again"
-  property var scaleStops: []      // accepted for API parity; the card has no dial
+  // The thresholds that fill the ring. Disk passes its own; internet falls back
+  // to a sensible Mbps ramp. Each stop is an equal slice of the ring, so the
+  // scale is coarse at the top where the exact number matters less.
+  property var scaleStops: []
+  readonly property var stops: (scaleStops && scaleStops.length) ? scaleStops : [10, 25, 50, 100, 250, 500, 1000]
+
+  readonly property color ink: Color.popups.text
 
   signal closeRequested()
   signal runAgainRequested()
 
-  // Hero numbers: integer once big, one decimal while small, an em dash before
-  // the first reading.
   function fmt(v) {
     if (!isFinite(v) || v <= 0) return "—"
     return v >= 100 ? String(Math.round(v)) : v.toFixed(1)
   }
 
+  // Value → 0..1 across the stops, each stop an equal arc.
+  function fraction(v) {
+    var s = overlay.stops
+    if (!s.length || !isFinite(v) || v <= 0) return 0
+    if (v >= s[s.length - 1]) return 1
+    var prev = 0
+    for (var i = 0; i < s.length; i++) {
+      if (v < s[i]) return (i + (v - prev) / (s[i] - prev)) / s.length
+      prev = s[i]
+    }
+    return 1
+  }
+
   // The window is mapped only once open, so focus has to be re-acquired after
   // it appears or Escape lands nowhere.
   onOpenChanged: if (open) Qt.callLater(function() { keyCatcher.forceActiveFocus() })
+
+  // A sixty-tick ring with the value in its centre — the battery hero, reused.
+  component Gauge: Column {
+    id: g
+    property real value: 0
+    property string label: ""
+    property bool live: false
+    readonly property int dia: Style.spacing.huge * 2      // 96
+    readonly property int lit: Math.round(overlay.fraction(value) * 60)
+    spacing: Style.spacing.md
+
+    Item {
+      width: g.dia
+      height: g.dia
+      anchors.horizontalCenter: parent.horizontalCenter
+
+      Repeater {
+        model: 60
+        Rectangle {
+          required property int index
+          width: Style.spacing.xxs
+          height: Style.spacing.sm
+          radius: 1
+          x: g.dia / 2 - width / 2
+          y: 0
+          color: index < g.lit
+            ? (g.live ? Color.accent : overlay.ink)
+            : Util.alpha(overlay.ink, Style.normalFillAlpha)
+          transform: Rotation { origin.x: Style.spacing.xxs / 2; origin.y: g.dia / 2; angle: index * 6 }
+          Behavior on color { ColorAnimation { duration: 220 } }
+        }
+      }
+
+      // Breathe while this phase is being measured.
+      SequentialAnimation on opacity {
+        running: g.live
+        loops: Animation.Infinite
+        alwaysRunToEnd: true
+        NumberAnimation { from: 1.0; to: 0.6; duration: 900; easing.type: Easing.InOutSine }
+        NumberAnimation { from: 0.6; to: 1.0; duration: 900; easing.type: Easing.InOutSine }
+      }
+
+      Column {
+        anchors.centerIn: parent
+        spacing: 0
+        Text {
+          textFormat: Text.PlainText
+          anchors.horizontalCenter: parent.horizontalCenter
+          text: overlay.fmt(g.value)
+          color: overlay.ink
+          font.family: overlay.fontFamily
+          font.pixelSize: Style.font.title
+          font.weight: Font.Normal
+        }
+        Text {
+          textFormat: Text.PlainText
+          anchors.horizontalCenter: parent.horizontalCenter
+          text: overlay.unit
+          color: Color.muted
+          font.family: overlay.fontFamily
+          font.pixelSize: Style.font.caption
+        }
+      }
+    }
+
+    Text {
+      textFormat: Text.PlainText
+      anchors.horizontalCenter: parent.horizontalCenter
+      text: g.label
+      color: Color.muted
+      font.family: overlay.fontFamily
+      font.pixelSize: Style.font.caption
+    }
+  }
 
   PanelWindow {
     visible: overlay.open
@@ -56,7 +145,6 @@ Item {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
-    // Scrim: fixed dark so the card carries the contrast on any wallpaper.
     Rectangle {
       anchors.fill: parent
       color: Qt.rgba(0, 0, 0, 0.55)
@@ -69,90 +157,44 @@ Item {
       focus: true
       Keys.onEscapePressed: overlay.closeRequested()
 
+      // The card — the same raised surface and radius as every Marvin popup.
       Rectangle {
         anchors.centerIn: parent
-        width: Math.min(Style.space(520), keyCatcher.width - Style.space(48))
-        height: card.implicitHeight + Style.cornerRadius * 2
+        width: Math.min(Style.space(460), keyCatcher.width - Style.space(48))
+        height: cardCol.implicitHeight + Style.cornerRadius * 2
         radius: Style.cornerRadius
         color: Color.popups.background
 
-        // Swallow clicks so only the scrim outside the card dismisses.
         MouseArea { anchors.fill: parent; onClicked: {} }
 
-        ColumnLayout {
-          id: card
-          anchors.left: parent.left
-          anchors.right: parent.right
+        Column {
+          id: cardCol
+          anchors.horizontalCenter: parent.horizontalCenter
           anchors.verticalCenter: parent.verticalCenter
-          anchors.margins: Style.cornerRadius
+          width: parent.width - Style.cornerRadius * 2
           spacing: Style.spacing.xl
 
           Text {
             textFormat: Text.PlainText
+            anchors.horizontalCenter: parent.horizontalCenter
             text: overlay.title || "Speed test"
             color: Color.muted
             font.family: overlay.fontFamily
             font.pixelSize: Style.font.caption
             font.weight: Font.Medium
-            Layout.alignment: Qt.AlignHCenter
           }
 
-          // The two rates side by side, each a hero number with its unit as a
-          // caption and its label beneath — a live phase glows in the accent.
-          RowLayout {
-            Layout.alignment: Qt.AlignHCenter
+          Row {
+            anchors.horizontalCenter: parent.horizontalCenter
             spacing: Style.spacing.huge
-
-            Repeater {
-              model: [
-                { label: overlay.leftLabel,  value: overlay.leftValue,  live: overlay.leftLive },
-                { label: overlay.rightLabel, value: overlay.rightValue, live: overlay.rightLive }
-              ]
-
-              ColumnLayout {
-                required property var modelData
-                spacing: Style.spacing.xs
-
-                RowLayout {
-                  spacing: Style.spacing.xs
-                  Layout.alignment: Qt.AlignHCenter
-
-                  Text {
-                    textFormat: Text.PlainText
-                    text: overlay.fmt(modelData.value)
-                    color: modelData.live ? Color.accent : Color.popups.text
-                    font.family: overlay.fontFamily
-                    font.pixelSize: Style.font.displayLarge
-                    font.letterSpacing: -Style.font.displayLarge * 0.03
-                    font.weight: Font.Normal
-                    Behavior on color { ColorAnimation { duration: 200 } }
-                  }
-                  Text {
-                    textFormat: Text.PlainText
-                    text: overlay.unit
-                    color: Color.muted
-                    font.family: overlay.fontFamily
-                    font.pixelSize: Style.font.body
-                    Layout.alignment: Qt.AlignTop
-                  }
-                }
-
-                Text {
-                  textFormat: Text.PlainText
-                  text: modelData.label
-                  color: Color.muted
-                  font.family: overlay.fontFamily
-                  font.pixelSize: Style.font.caption
-                  Layout.alignment: Qt.AlignHCenter
-                }
-              }
-            }
+            Gauge { value: overlay.leftValue;  label: overlay.leftLabel;  live: overlay.leftLive }
+            Gauge { value: overlay.rightValue; label: overlay.rightLabel; live: overlay.rightLive }
           }
 
-          // Status: the error, the live phase, or a quiet "done".
           Text {
             textFormat: Text.PlainText
-            Layout.fillWidth: true
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.width
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
             text: overlay.error !== "" ? overlay.error
@@ -163,22 +205,22 @@ Item {
             font.pixelSize: Style.font.caption
           }
 
-          // Run again — a filled pill, hidden while a run is in flight.
           Rectangle {
             visible: !overlay.running
-            Layout.alignment: Qt.AlignHCenter
+            anchors.horizontalCenter: parent.horizontalCenter
             implicitWidth: againText.implicitWidth + Style.spacing.xl * 2
-            implicitHeight: Style.spacing.controlHeight
+            width: implicitWidth
+            height: Style.spacing.controlHeight
             radius: Style.cornerRadius
             color: againArea.containsMouse
-              ? Style.hoverFillFor(Color.popups.text, Color.accent)
-              : Style.normalFillFor(Color.popups.text, Color.popups.text)
+              ? Style.hoverFillFor(overlay.ink, Color.accent)
+              : Style.normalFillFor(overlay.ink, overlay.ink)
 
             Text {
               id: againText
               anchors.centerIn: parent
               text: "Run again"
-              color: Color.popups.text
+              color: overlay.ink
               font.family: overlay.fontFamily
               font.pixelSize: Style.font.body
             }
