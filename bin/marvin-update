@@ -1,0 +1,83 @@
+#!/bin/bash
+# marvin-update — pull the latest Marvin and re-apply it, keeping your wallpaper.
+#
+# Marvin is a git checkout under ~/.config/omarchy/themes/marvin, so an update
+# is a fast-forward pull plus a re-apply. Omarchy has no auto-update for
+# third-party themes; this is the config layer's own, opt-in.
+#
+#   marvin-update                 pull and re-apply now
+#   marvin-update --enable [when] run it on a timer (systemd OnCalendar; default daily)
+#   marvin-update --disable       stop the timer
+#   marvin-update --status        is the timer on?
+set -euo pipefail
+
+THEMES="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/themes"
+THEME_DIR="$THEMES/marvin"
+UNITS="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
+BG_LINK="$HOME/.local/state/omarchy/current/background"
+
+current_theme() { cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null || true; }
+
+run() {
+  [ -d "$THEME_DIR/.git" ] || { echo "marvin-update: $THEME_DIR is not a git checkout"; exit 1; }
+  local before after
+  before=$(git -C "$THEME_DIR" rev-parse HEAD 2>/dev/null || true)
+  git -C "$THEME_DIR" pull --ff-only >/dev/null 2>&1 || { echo "marvin-update: pull failed (local changes?)"; exit 1; }
+  after=$(git -C "$THEME_DIR" rev-parse HEAD 2>/dev/null || true)
+  if [ "$before" = "$after" ]; then echo "marvin-update: already up to date"; return 0; fi
+  echo "marvin-update: ${before:0:7} → ${after:0:7}"
+
+  # Config layer (plugins, marvin.lua, fonts, marvin-mode, marvin-update). Its
+  # apply() leaves the theme and wallpaper alone when already on Marvin.
+  bash "$THEME_DIR/install/marvin" >/dev/null 2>&1 || true
+
+  # Re-stage the theme so new colours, app theme files and backgrounds take
+  # effect — then put the wallpaper back exactly where it was, since theme-set
+  # would otherwise advance it.
+  local cur; cur=$(current_theme)
+  if [[ "$cur" == marvin || "$cur" == marvin-light ]] && command -v omarchy-theme-set >/dev/null; then
+    local bg; bg=$(readlink "$BG_LINK" 2>/dev/null || true)
+    omarchy-theme-set "$cur" >/dev/null 2>&1 || true
+    [ -n "$bg" ] && command -v omarchy-theme-bg-set >/dev/null && omarchy-theme-bg-set "$bg" >/dev/null 2>&1 || true
+  fi
+
+  command -v omarchy-notification-send >/dev/null 2>&1 \
+    && omarchy-notification-send "Marvin updated" "$(git -C "$THEME_DIR" log --oneline -1)" >/dev/null 2>&1 || true
+  echo "marvin-update: done"
+}
+
+case "${1:-run}" in
+  run|"") run ;;
+  --enable|enable)
+    when="${2:-daily}"
+    mkdir -p "$UNITS"
+    cat >"$UNITS/marvin-update.service" <<EOF
+[Unit]
+Description=Update the Marvin theme
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/marvin-update run
+EOF
+    cat >"$UNITS/marvin-update.timer" <<EOF
+[Unit]
+Description=Update Marvin on a schedule
+[Timer]
+OnCalendar=$when
+Persistent=true
+[Install]
+WantedBy=timers.target
+EOF
+    systemctl --user daemon-reload
+    systemctl --user enable --now marvin-update.timer >/dev/null 2>&1
+    echo "marvin-update: auto-update on ($when)" ;;
+  --disable|disable)
+    systemctl --user disable --now marvin-update.timer >/dev/null 2>&1 || true
+    rm -f "$UNITS/marvin-update.timer" "$UNITS/marvin-update.service"
+    systemctl --user daemon-reload
+    echo "marvin-update: auto-update off" ;;
+  --status|status)
+    systemctl --user is-enabled marvin-update.timer >/dev/null 2>&1 && echo "auto-update: on" || echo "auto-update: off" ;;
+  *)
+    echo "usage: marvin-update [run] | --enable [daily|weekly|HH:MM] | --disable | --status" >&2
+    exit 1 ;;
+esac

@@ -90,7 +90,9 @@ popup-padding               = 24
 dropdown-width              = 240
 searchable-dropdown-width   = 260
 number-field-width          = 120
-searchable-popup-min-height = 224
+# Tall enough that the "no matches" empty state clears Marvin's 40px rows and
+# 24px popup padding — upstream's 224 was tuned for 28px rows and clipped it.
+searchable-popup-min-height = 288
 
 [font]
 # Pinned. 12 / 14 / 16 / 18 / 24 / 56. Minimum step 2px. display-large is the

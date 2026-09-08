@@ -20,12 +20,25 @@ set -euo pipefail
 DARK=marvin
 LIGHT=marvin-light
 UNITS="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
+BG_LINK="$HOME/.local/state/omarchy/current/background"
 
+# Switch tone, keeping the wallpaper: theme-set advances the background one file
+# per run, so remember the current one and re-select the same-named wallpaper in
+# the new tone (0-marvin ↔ 0-marvin, 5-citrus ↔ 5-citrus). If there is no match,
+# leave Omarchy's choice.
 set_theme() {
+  local target="$1" base=""
+  [ -L "$BG_LINK" ] && base=$(basename "$(readlink "$BG_LINK")")
   if command -v omarchy-theme-set >/dev/null 2>&1; then
-    omarchy-theme-set "$1" >/dev/null 2>&1
+    omarchy-theme-set "$target" >/dev/null 2>&1
   else
-    omarchy theme set "$1"
+    omarchy theme set "$target"
+  fi
+  if [ -n "$base" ] && command -v omarchy-theme-bg-set >/dev/null 2>&1; then
+    local d
+    for d in "$HOME/.config/omarchy/backgrounds/$target" "$HOME/.config/omarchy/themes/$target/backgrounds"; do
+      [ -f "$d/$base" ] && { omarchy-theme-bg-set "$d/$base" >/dev/null 2>&1; break; }
+    done
   fi
 }
 

@@ -150,14 +150,17 @@ install_plugins() {
 }
 
 install_mode() {
-  say "Light/dark control"
-  # marvin-mode is an executable, so it cannot ship in the theme (a git-installed
-  # theme drops anything that can run code). It lives in the config layer instead.
+  say "Light/dark control and updates"
+  # marvin-mode and marvin-update are executables, so they cannot ship in the
+  # theme (a git-installed theme drops anything that can run code). They live in
+  # the config layer instead.
   mkdir -p "$HOME/.local/bin"
   cp "$THEME_DIR/bin/marvin-mode" "$HOME/.local/bin/marvin-mode"
-  chmod +x "$HOME/.local/bin/marvin-mode"
-  note "→ ~/.local/bin/marvin-mode  (toggle · system · schedule)"
-  note "the marvin.mode bar widget drives it — add it to the bar, or run marvin-mode directly"
+  cp "$THEME_DIR/bin/marvin-update" "$HOME/.local/bin/marvin-update"
+  chmod +x "$HOME/.local/bin/marvin-mode" "$HOME/.local/bin/marvin-update"
+  note "→ ~/.local/bin/marvin-mode    (toggle · system · schedule)"
+  note "→ ~/.local/bin/marvin-update  (pull + re-apply; --enable for a daily timer)"
+  note "the marvin.mode bar widget drives light/dark — add it to the bar, or run marvin-mode directly"
 }
 
 apply() {
@@ -227,8 +230,9 @@ revert() {
     "$HOME/.local/bin/marvin-mode" unschedule >/dev/null 2>&1 || true
     "$HOME/.local/bin/marvin-mode" follow-off >/dev/null 2>&1 || true
   fi
-  rm -f "$HOME/.local/bin/marvin-mode"
-  note "removed  ~/.local/bin/marvin-mode and any schedule"
+  [[ -x "$HOME/.local/bin/marvin-update" ]] && "$HOME/.local/bin/marvin-update" --disable >/dev/null 2>&1 || true
+  rm -f "$HOME/.local/bin/marvin-mode" "$HOME/.local/bin/marvin-update"
+  note "removed  ~/.local/bin/marvin-mode, marvin-update, and any timers"
 
   clean_shell_json
 
@@ -281,6 +285,7 @@ status() {
   done
   local id; for id in $(plugin_ids); do [[ -e "$PLUGINS/$id" ]] && note "present  plugins/$id"; done
   [[ -x "$HOME/.local/bin/marvin-mode" ]] && note "present  ~/.local/bin/marvin-mode" && "$HOME/.local/bin/marvin-mode" status 2>/dev/null | sed 's/^/    /'
+  [[ -x "$HOME/.local/bin/marvin-update" ]] && note "present  ~/.local/bin/marvin-update" && "$HOME/.local/bin/marvin-update" --status 2>/dev/null | sed 's/^/    /'
   if [[ -f "$HYPR/hyprland.lua" ]] && grep -qF -- "$MARKER" "$HYPR/hyprland.lua"; then note "hyprland.lua requires hypr.marvin"; fi
   note "active theme: $(current_theme)"
   if [[ -f "$SNAP/state" ]]; then
