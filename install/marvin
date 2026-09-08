@@ -157,7 +157,7 @@ install_mode() {
   cp "$THEME_DIR/bin/marvin-mode" "$HOME/.local/bin/marvin-mode"
   chmod +x "$HOME/.local/bin/marvin-mode"
   note "→ ~/.local/bin/marvin-mode  (toggle · system · schedule)"
-  note "bind it: in ~/.config/hypr/bindings.lua — hl.bind(\"SUPER + SHIFT + M\", \"exec\", \"marvin-mode toggle\")"
+  note "the marvin.mode bar widget drives it — add it to the bar, or run marvin-mode directly"
 }
 
 apply() {

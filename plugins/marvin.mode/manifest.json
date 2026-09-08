@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.mode",
+  "name": "Marvin Mode",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "A bar toggle for Marvin light/dark — or match the system colour-scheme, or a daily schedule",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Marvin Mode",
+    "description": "Light/dark toggle for the bar",
+    "category": "Style",
+    "allowMultiple": false
+  }
+}

@@ -57,9 +57,12 @@ Adds, in order:
   theme-coloured focus border, a shadow in place of surface outlines, and the
   motion scale. Written to `~/.config/hypr/marvin.lua`, required from your
   `hyprland.lua` by one marked line; nothing else of yours is edited.
-- **Widgets** — all fourteen plugins, enabled if the shell is running.
-- **`marvin-mode`** — a light/dark control installed to `~/.local/bin`. Switch
-  by hand, on a daily schedule, or in step with the system colour-scheme:
+- **Widgets** — fifteen plugins (fourteen restyled clones plus the mode
+  toggle), enabled if the shell is running.
+- **`marvin-mode`** — a light/dark control installed to `~/.local/bin`, driven
+  from the bar by the **`marvin.mode`** widget (a sun in light, a moon in dark:
+  left click toggles, right click matches the system, middle click schedules).
+  Add it to the bar once enabled — or drive it from the command line:
 
   ```
   marvin-mode toggle              # flip light ↔ dark
@@ -68,9 +71,6 @@ Adds, in order:
   marvin-mode schedule 07:00 19:00  # light at 07:00, dark at 19:00, daily
   marvin-mode unschedule
   ```
-
-  Bind the toggle in `~/.config/hypr/bindings.lua`:
-  `hl.bind("SUPER + SHIFT + M", "exec", "marvin-mode toggle")`.
 
 It snapshots every file it touches (and the active theme) first, so
 `install/marvin --revert` restores everything byte-for-byte (and removes any

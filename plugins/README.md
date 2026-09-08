@@ -1,9 +1,11 @@
 # Plugins
 
-Restyled clones of Omarchy's built-in widgets. Each is a `clonedFrom` plugin:
-the built-in's data, networking and IPC code verbatim, the layout rewritten to
-the Marvin rules. Enabling one replaces the built-in in its bar slot, and the
-built-in's IPC targets keep routing to it.
+Restyled clones of Omarchy's built-in widgets, plus one new widget. Each clone
+is a `clonedFrom` plugin: the built-in's data, networking and IPC code verbatim,
+the layout rewritten to the Marvin rules. Enabling one replaces the built-in in
+its bar slot, and the built-in's IPC targets keep routing to it. The one
+exception is `marvin.mode`, which clones nothing — a light/dark toggle you add
+to the bar yourself.
 
 Plugins are unsandboxed QML — they are not part of the theme and are never
 installed by `omarchy theme install`. They land disabled so you can read them
@@ -16,6 +18,7 @@ first.
 | `marvin.media` | `omarchy.media` | Art at a nested radius, title and artist in two tones, play as the card's one inverted element, a 2px scrub hairline with times as captions, sources as 32px rows. |
 | `marvin.audio`, `marvin.bluetooth`, `marvin.monitor`, `marvin.network`, `marvin.tailscale`, `marvin.agents`, `marvin.dropbox`, `marvin.wifiqr`, `marvin.speedtest`, `marvin.disk-speedtest` | the built-in of the same name | Mechanical pass by `tools/restyle.py`: separators out, section headers to muted sentence-case captions, `Qt.darker` collapsed to `muted`, bold to weight, uppercase and letter-spacing off, spacing snapped to the grid, sliders and meters as 2px hairlines, card width 352 (content 304). Logic untouched. |
 | `marvin.power` | `omarchy.power` | Charge percentage at `display-large`, charge as a 2px hairline, stats as value over label in two columns, profiles as a caption and a row of pills with no divider before them. |
+| `marvin.mode` | — (new) | Not a clone: a bar toggle for light/dark. A sun in light, a moon in dark; left click flips, right click matches the system colour-scheme, middle click sets a daily schedule. Calls `marvin-mode` from the config layer. |
 
 ## Install by hand
 
