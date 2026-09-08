@@ -35,6 +35,7 @@ BarWidget {
 
   function refreshMode() { if (!modeProc.running) modeProc.running = true }
   function refreshAuto() { if (!autoProc.running) autoProc.running = true }
+  function refreshStatus() { if (!statusProc.running) statusProc.running = true }
   function refreshBg() { if (!bgProc.running) bgProc.running = true }
   function close() { popupOpen = false }
 
@@ -48,9 +49,16 @@ BarWidget {
     root.reduceMotion = !root.reduceMotion
     Quickshell.execDetached(["hyprctl", "keyword", "animations:enabled", root.reduceMotion ? "0" : "1"])
   }
-  function toggleSchedule() {
-    root.scheduled = !root.scheduled
-    Quickshell.execDetached([root.modeBin, root.scheduled ? "schedule" : "unschedule"])
+  // Appearance is one exclusive choice: Light, Dark, or Auto. Picking a manual
+  // tone turns the daily schedule off (if it was on); picking Auto turns it on.
+  function setManual(m) {
+    if (root.scheduled) { root.scheduled = false; Quickshell.execDetached([root.modeBin, "unschedule"]) }
+    root.applyMode(m)
+  }
+  function setAuto() {
+    root.scheduled = true
+    Quickshell.execDetached([root.modeBin, "schedule"])
+    settle.restart()
   }
   function toggleAutoUpdate() {
     root.autoUpdate = !root.autoUpdate
@@ -75,7 +83,7 @@ BarWidget {
 
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
-  Component.onCompleted: { refreshMode(); refreshAuto(); refreshBg() }
+  Component.onCompleted: { refreshMode(); refreshAuto(); refreshStatus(); refreshBg() }
 
   // The live theme, so the glyph is a sun or a moon.
   Process {
@@ -96,6 +104,21 @@ BarWidget {
     stdout: StdioCollector {
       waitForEnd: true
       onStreamFinished: root.autoUpdate = String(text || "").indexOf("on") !== -1
+    }
+  }
+
+  // Whether the daily light/dark schedule is on, so the Auto segment reflects
+  // reality. `marvin-mode status` prints "schedule: off" or the two times.
+  Process {
+    id: statusProc
+    running: false
+    command: [root.modeBin, "status"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        var t = String(text || "")
+        root.scheduled = t.indexOf("schedule:") !== -1 && t.indexOf("schedule: off") === -1
+      }
     }
   }
 
@@ -154,7 +177,7 @@ BarWidget {
         settle.restart()
       } else {
         root.popupOpen = !root.popupOpen
-        if (root.popupOpen) { root.refreshMode(); root.refreshAuto(); root.refreshBg() }
+        if (root.popupOpen) { root.refreshMode(); root.refreshAuto(); root.refreshStatus(); root.refreshBg() }
       }
     }
   }
@@ -192,8 +215,8 @@ BarWidget {
           horizontalPadding: Style.spacing.controlPaddingX
           verticalPadding: Style.spacing.controlPaddingY
           bordered: true
-          active: root.isLight
-          onClicked: root.applyMode("light")
+          active: root.isLight && !root.scheduled
+          onClicked: root.setManual("light")
         }
         Button {
           text: "Dark"
@@ -203,19 +226,31 @@ BarWidget {
           horizontalPadding: Style.spacing.controlPaddingX
           verticalPadding: Style.spacing.controlPaddingY
           bordered: true
-          active: !root.isLight
-          onClicked: root.applyMode("dark")
+          active: !root.isLight && !root.scheduled
+          onClicked: root.setManual("dark")
         }
         Button {
-          text: "System"
+          text: "Auto"
           fontSize: Style.font.body
           foreground: root.bar.foreground
           fontFamily: root.bar.fontFamily
           horizontalPadding: Style.spacing.controlPaddingX
           verticalPadding: Style.spacing.controlPaddingY
           bordered: true
-          onClicked: root.applyMode("system")
+          active: root.scheduled
+          onClicked: root.setAuto()
         }
+      }
+
+      // When Auto is on, say what it does — no tooltip needed.
+      Text {
+        visible: root.scheduled
+        width: parent.width
+        wrapMode: Text.WordWrap
+        text: "Light in the morning, dark in the evening — every day."
+        color: Color.muted
+        font.family: root.bar.fontFamily
+        font.pixelSize: Style.font.caption
       }
 
       // ---- Wallpaper: a preview of the current one; click to choose another.
@@ -238,7 +273,7 @@ BarWidget {
             id: bgThumb
             width: Style.space(72)
             height: Style.space(44)
-            radius: Style.cornerRadius
+            radius: Style.spacing.sm
             clip: true
             color: "transparent"
             border.width: 1
@@ -293,7 +328,7 @@ BarWidget {
               required property var modelData
               width: Style.space(84)
               height: Style.space(52)
-              radius: Style.cornerRadius
+              radius: Style.spacing.sm
               clip: true
               color: "transparent"
               border.width: modelData === root.currentBg ? 2 : 1
@@ -301,7 +336,6 @@ BarWidget {
 
               Image {
                 anchors.fill: parent
-                anchors.margins: modelData === root.currentBg ? 2 : 1
                 source: "file://" + modelData
                 fillMode: Image.PreserveAspectCrop
                 sourceSize.width: Style.space(180)
@@ -345,60 +379,6 @@ BarWidget {
           bordered: true
           active: root.reduceMotion
           onClicked: root.toggleReduceMotion()
-        }
-      }
-
-      // ---- Auto light/dark: a daily timer, distinct from System (which matches
-      //      the desktop scheme). An info glyph carries the explanation.
-      Item {
-        width: parent.width
-        height: schedButton.implicitHeight
-
-        Row {
-          anchors.left: parent.left
-          anchors.verticalCenter: parent.verticalCenter
-          spacing: Style.spacing.xs
-
-          Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: "Auto light/dark"
-            color: root.bar.foreground
-            font.family: root.bar.fontFamily
-            font.pixelSize: Style.font.body
-          }
-          Item {
-            width: Style.font.body
-            height: Style.font.body
-            anchors.verticalCenter: parent.verticalCenter
-            Text {
-              anchors.centerIn: parent
-              text: ""   // Nerd Font: information
-              color: Color.muted
-              font.family: root.bar.fontFamily
-              font.pixelSize: Style.font.caption
-            }
-            MouseArea { id: schedInfo; anchors.fill: parent; hoverEnabled: true }
-            PanelToolTip {
-              visible: schedInfo.containsMouse
-              text: "Light in the morning, dark in the evening, every day (07:00 / 19:00). Adjust with: marvin-mode schedule HH:MM HH:MM"
-              fontFamily: root.bar.fontFamily
-            }
-          }
-        }
-
-        Button {
-          id: schedButton
-          anchors.right: parent.right
-          anchors.verticalCenter: parent.verticalCenter
-          text: root.scheduled ? "On" : "Off"
-          fontSize: Style.font.body
-          foreground: root.bar.foreground
-          fontFamily: root.bar.fontFamily
-          horizontalPadding: Style.spacing.controlPaddingX
-          verticalPadding: Style.spacing.controlPaddingY
-          bordered: true
-          active: root.scheduled
-          onClicked: root.toggleSchedule()
         }
       }
 
