@@ -62,7 +62,7 @@ Adds, in order:
 - **`marvin-mode`** — a light/dark control installed to `~/.local/bin`, driven
   from the bar by the **`marvin.mode`** widget (a sun in light, a moon in dark:
   left click toggles, right click matches the system, middle click schedules).
-  Add it to the bar once enabled — or drive it from the command line:
+  Drive it from the command line:
 
   ```
   marvin-mode toggle              # flip light ↔ dark
@@ -71,6 +71,11 @@ Adds, in order:
   marvin-mode schedule 07:00 19:00  # light at 07:00, dark at 19:00, daily
   marvin-mode unschedule
   ```
+
+  The widget lands enabled but **unplaced** — it clones no built-in, so it has
+  no slot to take over. Put it on the bar by adding `{"id": "marvin.mode"}` to
+  a `bar.layout` array (usually `right`) in `~/.config/omarchy/shell.json`,
+  then `omarchy-restart-shell`.
 
 It snapshots every file it touches (and the active theme) first, so
 `install/marvin --revert` restores everything byte-for-byte (and removes any
@@ -292,9 +297,12 @@ chosen: saturation pushed up a little so the field stays rich, mixed lightly
 toward the theme ground, luminance clamped into a band the bar stays
 readable over, grain added against banding.
 
-Sixty-five backgrounds ship. The default — `0-marvin.jpg`, the wallpaper in
-the composed-desktop shots above — sorts first, so a fresh `omarchy theme set
-marvin` lands on it rather than a plain ground. After it comes that plain
+Sixty-five backgrounds ship. The default — `0-marvin.jpg`, the blue wallpaper
+in the composed-desktop shots above — sorts first, so a fresh `omarchy theme
+set marvin` lands on it rather than a plain ground. Pick another with **SUPER +
+CTRL + SPACE** and it sticks: re-running the config layer leaves the theme (and
+your wallpaper) untouched when you are already on Marvin, so an update never
+resets it. After it comes that plain
 ground: no image at all, white falling to the base grey (and a light
 `8-mist.jpg` grey-white gradient in the same key), so an empty desktop reads
 exactly like the widget sheet. Then six lit rooms, drawn by

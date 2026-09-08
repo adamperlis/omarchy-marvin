@@ -162,7 +162,18 @@ install_mode() {
 
 apply() {
   say "Applying"
-  command -v omarchy-theme-set >/dev/null && omarchy-theme-set marvin >/dev/null 2>&1 || true
+  # Set the theme only on a first install (coming from another theme). Omarchy's
+  # theme-set advances the wallpaper one file per run when the current one is
+  # already in the theme's set, so re-setting on a reinstall would change a
+  # background the user chose. When already on Marvin, leave the theme — and the
+  # wallpaper — alone; the geometry and shell still reload below. A first install
+  # lands on the blue default (0-marvin.jpg, sorted first).
+  local cur; cur=$(current_theme)
+  if [[ "$cur" != marvin && "$cur" != marvin-light ]]; then
+    command -v omarchy-theme-set >/dev/null && omarchy-theme-set marvin >/dev/null 2>&1 && note "theme set to marvin (wallpaper: the blue default)" || true
+  else
+    note "already on $cur; theme and wallpaper left as they are"
+  fi
   command -v hyprctl >/dev/null && hyprctl reload >/dev/null 2>&1 || true
   shell_running && omarchy-restart-shell >/dev/null 2>&1 || true
   note "done. Light: omarchy theme set marvin-light. Undo everything: install/marvin --revert"
