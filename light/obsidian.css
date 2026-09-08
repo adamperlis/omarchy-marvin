@@ -124,7 +124,11 @@ body {
 /* The interface stays Inter even where a pane inherits the text font. */
 .workspace-tab-header, .nav-file-title, .nav-folder-title, .status-bar, .view-header-title, .prompt, .modal, .menu, .suggestion-container { font-family: var(--font-interface-theme); }
 
-/* Headings are hierarchy by size and weight, not colour. h1 is tracked in. */
+/* Headings share the serif of the body — hierarchy is size and weight, not a
+   change of voice or colour. h1 and h2 are tracked in slightly. */
+.markdown-rendered h1, .markdown-rendered h2, .markdown-rendered h3,
+.markdown-rendered h4, .markdown-rendered h5, .markdown-rendered h6,
+.HyperMD-header, .cm-header { font-family: var(--font-text-theme); }
 .markdown-rendered h1, .cm-header-1 { letter-spacing: -0.02em; }
 .markdown-rendered h2, .cm-header-2 { letter-spacing: -0.01em; }
 
