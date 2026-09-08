@@ -41,6 +41,11 @@ run() {
     [ -n "$bg" ] && command -v omarchy-theme-bg-set >/dev/null && omarchy-theme-bg-set "$bg" >/dev/null 2>&1 || true
   fi
 
+  # Restore the appearance the user chose (auto / light / dark). This runs from
+  # the systemd user session, so it can reach `systemctl --user` to re-arm the
+  # daily schedule even if the panel's detached call couldn't when Auto was set.
+  [ -x "$HOME/.local/bin/marvin-mode" ] && "$HOME/.local/bin/marvin-mode" reassert >/dev/null 2>&1 || true
+
   command -v omarchy-notification-send >/dev/null 2>&1 \
     && omarchy-notification-send "Marvin updated" "$(git -C "$THEME_DIR" log --oneline -1)" >/dev/null 2>&1 || true
   echo "marvin-update: done"

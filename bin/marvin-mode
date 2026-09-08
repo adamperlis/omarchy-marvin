@@ -21,6 +21,10 @@ DARK=marvin
 LIGHT=marvin-light
 UNITS="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 BG_LINK="$HOME/.local/state/omarchy/current/background"
+# The appearance the user chose — "auto [L D]", "light" or "dark" — recorded so
+# it survives updates and shell restarts (the systemd timers alone did not).
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/marvin"
+APPEARANCE="$STATE/appearance"
 
 # Switch tone, keeping the wallpaper: theme-set advances the background one file
 # per run, so remember the current one and re-select the same-named wallpaper in
@@ -59,6 +63,10 @@ set_theme() {
 
 current() { cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null || true; }
 
+# Record the appearance intent. The schedule's own flips use `apply-scheduled`,
+# which does NOT record, so a scheduled light/dark change never overwrites "auto".
+record() { mkdir -p "$STATE"; printf '%s\n' "$*" >"$APPEARANCE"; }
+
 # dark unless the system explicitly asks for light
 sys_is_dark() {
   local s
@@ -76,7 +84,7 @@ svc() { # write a oneshot service that flips to a mode
 Description=Marvin $1 mode
 [Service]
 Type=oneshot
-ExecStart=%h/.local/bin/marvin-mode $1
+ExecStart=%h/.local/bin/marvin-mode apply-scheduled $1
 EOF
 }
 
@@ -93,10 +101,14 @@ EOF
 }
 
 case "${1:-status}" in
-  dark)   set_theme "$DARK" ;;
-  light)  set_theme "$LIGHT" ;;
-  toggle) [ "$(current)" = "$LIGHT" ] && set_theme "$DARK" || set_theme "$LIGHT" ;;
-  system) sys_is_dark && set_theme "$DARK" || set_theme "$LIGHT" ;;
+  dark)   set_theme "$DARK";  record dark ;;
+  light)  set_theme "$LIGHT"; record light ;;
+  toggle) if [ "$(current)" = "$LIGHT" ]; then set_theme "$DARK"; record dark; else set_theme "$LIGHT"; record light; fi ;;
+  system) if sys_is_dark; then set_theme "$DARK"; record dark; else set_theme "$LIGHT"; record light; fi ;;
+  # Internal: the schedule's timers flip tone through this, which does not record,
+  # so a scheduled change never clobbers the recorded "auto" intent.
+  apply-scheduled)
+    case "${2:-dark}" in light) set_theme "$LIGHT" ;; *) set_theme "$DARK" ;; esac ;;
   follow)
     "$0" system
     # re-run on every colour-scheme change; blocks, so run under follow-on
@@ -127,15 +139,29 @@ EOF
     svc light; svc dark; timer light "$L"; timer dark "$D"
     systemctl --user daemon-reload
     systemctl --user enable --now marvin-light.timer marvin-dark.timer >/dev/null 2>&1
+    record "auto $L $D"
     echo "Marvin: light at $L, dark at $D, every day"
-    # set the correct mode for right now
+    # set the correct mode for right now (without recording — this is a flip)
     now=$(date +%H:%M)
-    if [[ "$now" > "$L" && "$now" < "$D" ]]; then "$0" light; else "$0" dark; fi ;;
+    if [[ "$now" > "$L" && "$now" < "$D" ]]; then "$0" apply-scheduled light; else "$0" apply-scheduled dark; fi ;;
   unschedule)
     systemctl --user disable --now marvin-light.timer marvin-dark.timer >/dev/null 2>&1 || true
     rm -f "$UNITS"/marvin-light.timer "$UNITS"/marvin-dark.timer "$UNITS"/marvin-light.service "$UNITS"/marvin-dark.service
     systemctl --user daemon-reload
+    # No longer auto — the current tone becomes the recorded intent.
+    [ "$(current)" = "$LIGHT" ] && record light || record dark
     echo "Marvin: schedule removed" ;;
+  reassert)
+    # Restore the recorded appearance after an update or restart, from a context
+    # (systemd timer, login shell) that can actually reach `systemctl --user`.
+    want=""; a=""; b=""
+    [ -f "$APPEARANCE" ] && read -r want a b <"$APPEARANCE" || true
+    case "$want" in
+      auto)  systemctl --user is-enabled marvin-light.timer >/dev/null 2>&1 \
+               || "$0" schedule "${a:-07:00}" "${b:-19:00}" ;;
+      light) [ "$(current)" != "$LIGHT" ] && set_theme "$LIGHT" || true ;;
+      dark)  [ "$(current)" != "$DARK" ]  && set_theme "$DARK"  || true ;;
+    esac ;;
   status)
     echo "mode:     $(current)"
     if systemctl --user is-enabled marvin-light.timer >/dev/null 2>&1; then
@@ -145,6 +171,6 @@ EOF
     fi
     systemctl --user is-active marvin-follow.service >/dev/null 2>&1 && echo "follow:   on" || echo "follow:   off" ;;
   *)
-    echo "usage: marvin-mode dark|light|toggle|system|follow|follow-on|follow-off|schedule [HH:MM HH:MM]|unschedule|status" >&2
+    echo "usage: marvin-mode dark|light|toggle|system|follow|follow-on|follow-off|schedule [HH:MM HH:MM]|unschedule|reassert|status" >&2
     exit 1 ;;
 esac
