@@ -140,6 +140,18 @@ BarWidget {
     contentWidth: popup.fittedContentWidth(Style.space(304))
     contentHeight: popup.fittedContentHeight(column.implicitHeight)
 
+    // Drop a file or URL to play it: xdg-open hands it to the default player,
+    // which then broadcasts over MPRIS and appears here. DropArea only handles
+    // drags, so it never intercepts the transport's clicks.
+    DropArea {
+      anchors.fill: parent
+      onDropped: function(drop) {
+        var urls = drop.hasUrls ? drop.urls : (drop.hasText ? [drop.text] : [])
+        for (var i = 0; i < urls.length; i++) Quickshell.execDetached(["xdg-open", String(urls[i])])
+        drop.accept()
+      }
+    }
+
     Column {
       id: column
       anchors.fill: parent
@@ -265,9 +277,21 @@ BarWidget {
         }
       }
 
+      // ---- Empty state: nothing playing, so the card still shows the whole
+      //      shape — transport, an empty bar — and invites a file or URL.
+      Text {
+        visible: !root.hasMedia
+        width: parent.width
+        text: "Drop a file or URL here to play"
+        color: Color.muted
+        font.family: root.bar.fontFamily
+        font.pixelSize: Style.font.caption
+        wrapMode: Text.WordWrap
+      }
+
       // ---- Progress. A hairline; elapsed on the left, remaining on the right.
       Column {
-        visible: root.scrubVisible
+        visible: true
         width: parent.width
         spacing: Style.spacing.sm
 
@@ -291,14 +315,14 @@ BarWidget {
           height: Style.font.caption + Style.spacing.xxs
           Text {
             anchors.left: parent.left
-            text: root.scrubVisible ? root.clockText(root.activePlayer.position) : ""
+            text: root.scrubVisible ? root.clockText(root.activePlayer.position) : "0:00"
             color: Color.muted
             font.family: root.bar.fontFamily
             font.pixelSize: Style.font.caption
           }
           Text {
             anchors.right: parent.right
-            text: root.scrubVisible ? "-" + root.clockText(root.activePlayer.length - root.activePlayer.position) : ""
+            text: root.scrubVisible ? "-" + root.clockText(root.activePlayer.length - root.activePlayer.position) : "0:00"
             color: Color.muted
             font.family: root.bar.fontFamily
             font.pixelSize: Style.font.caption
