@@ -9,6 +9,11 @@ import qs.Ui
 // Obsidian and OmaWrite read and edit the same list. All file work is in
 // marvin-todo (installed to ~/.local/bin by the config layer); this widget
 // shows the list and calls it.
+//
+// The pop-out is a KeyboardPanel, not a plain PopupCard: a PopupCard does not
+// grab layer-shell keyboard focus, so the "Add a task" field never received
+// typing or Enter. KeyboardPanel takes focus the way every other text-input
+// Marvin popup does; the field is focused on open and commits on Enter.
 BarWidget {
   id: root
   moduleName: "marvin.todos"
@@ -17,6 +22,14 @@ BarWidget {
   readonly property string bin: root.home + "/.local/bin/marvin-todo"
   property var items: []
   property bool popupOpen: false
+
+  // Shims for the bar's popout coordinator, which reaches these off the panel
+  // owner. Harmless for a standalone widget; present so KeyboardPanel's
+  // handoff logic never touches an undefined member.
+  readonly property bool opened: popupOpen
+  readonly property bool popoutSwitchClosing: false
+  function close() { popupOpen = false }
+  function closeForPopoutSwitch() { popupOpen = false }
 
   readonly property int openCount: {
     var n = 0
@@ -43,6 +56,9 @@ BarWidget {
   implicitHeight: button.implicitHeight
   Component.onCompleted: refresh()
 
+  // Focus the field whenever the panel opens, so you can type straight away.
+  onPopupOpenChanged: if (popupOpen) Qt.callLater(function() { if (input) input.forceActiveFocus() })
+
   Process {
     id: listProc
     running: false
@@ -65,7 +81,7 @@ BarWidget {
     anchors.fill: parent
     bar: root.bar
     slotSize: Style.bar.statusSlot
-    text: "\uf0ae"   // Nerd Font: checklist
+    text: ""   // Nerd Font: checklist
     tooltipText: root.openCount + " to do"
     onPressed: function(b) {
       root.popupOpen = !root.popupOpen
@@ -73,114 +89,133 @@ BarWidget {
     }
   }
 
-  PopupCard {
-    id: popup
+  KeyboardPanel {
+    id: panel
     anchorItem: button
-    bar: root.bar
     owner: root
+    bar: root.bar
     open: root.popupOpen
-    contentWidth: popup.fittedContentWidth(Style.space(320))
-    contentHeight: popup.fittedContentHeight(column.implicitHeight)
+    focusTarget: input
+    contentWidth: panel.fittedContentWidth(Style.space(320))
+    contentHeight: panel.fittedContentHeight(column.implicitHeight, Style.space(480))
 
-    Column {
-      id: column
+    Flickable {
+      id: scroll
       anchors.fill: parent
-      spacing: Style.spacing.lg
+      contentWidth: width
+      contentHeight: column.implicitHeight
+      clip: true
+      boundsBehavior: Flickable.StopAtBounds
+      interactive: contentHeight > height
 
-      // ---- Header: the name, and the open count as a caption.
-      Item {
-        width: parent.width
-        height: heading.implicitHeight
-        Text {
-          id: heading
-          anchors.left: parent.left
-          anchors.verticalCenter: parent.verticalCenter
-          text: "To-dos"
-          color: root.bar.foreground
-          font.family: root.bar.fontFamily
-          font.pixelSize: Style.font.title
-          font.weight: Font.Medium
-        }
-        Text {
-          anchors.right: parent.right
-          anchors.verticalCenter: parent.verticalCenter
-          text: root.openCount + " open"
-          color: Color.muted
-          font.family: root.bar.fontFamily
-          font.pixelSize: Style.font.caption
-        }
-      }
-
-      // ---- Add a task. Enter commits and clears the field.
-      TextField {
-        id: input
-        width: parent.width
-        placeholderText: "Add a task…"
-        foreground: root.bar.foreground
-        font.family: root.bar.fontFamily
-        onAccepted: { root.add(text); text = "" }
-      }
-
-      // ---- The list. A filled square is done; the text is struck and muted.
       Column {
-        width: parent.width
-        spacing: Style.spacing.sm
+        id: column
+        width: scroll.width
+        spacing: Style.spacing.lg
 
-        Repeater {
-          model: root.items
+        // ---- Header: the name, and the open count as a caption.
+        Item {
+          width: parent.width
+          height: heading.implicitHeight
+          Text {
+            id: heading
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            text: "To-dos"
+            color: root.bar.foreground
+            font.family: root.bar.fontFamily
+            font.pixelSize: Style.font.title
+            font.weight: Font.Medium
+          }
+          Text {
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            text: root.openCount + " open"
+            color: Color.muted
+            font.family: root.bar.fontFamily
+            font.pixelSize: Style.font.caption
+          }
+        }
 
-          Item {
-            required property var modelData
-            width: column.width
-            height: Style.spacing.controlHeight
+        // ---- Add a task. Enter commits and clears the field; Esc closes.
+        TextField {
+          id: input
+          width: parent.width
+          placeholderText: "Add a task…"
+          foreground: root.bar.foreground
+          font.family: root.bar.fontFamily
+          Keys.onPressed: function(event) {
+            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+              root.add(text); text = ""
+              event.accepted = true
+            } else if (event.key === Qt.Key_Escape) {
+              root.close()
+              event.accepted = true
+            }
+          }
+        }
 
-            Row {
-              anchors.left: parent.left
-              anchors.verticalCenter: parent.verticalCenter
-              spacing: Style.spacing.md
+        // ---- The list. A filled square is done; the text is struck and muted.
+        Column {
+          width: parent.width
+          spacing: Style.spacing.sm
 
-              Rectangle {
+          Repeater {
+            model: root.items
+
+            Item {
+              required property var modelData
+              width: column.width
+              height: Style.spacing.controlHeight
+
+              Row {
+                anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                width: Style.space(18)
-                height: Style.space(18)
-                radius: Style.space(6)
-                color: modelData.state === "done" ? Color.accent : "transparent"
-                border.width: modelData.state === "done" ? 0 : 1
-                border.color: Color.muted
+                spacing: Style.spacing.md
 
-                MouseArea {
-                  anchors.fill: parent
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: root.toggle(modelData.line)
+                Rectangle {
+                  anchors.verticalCenter: parent.verticalCenter
+                  width: Style.space(18)
+                  height: Style.space(18)
+                  radius: Style.space(6)
+                  color: modelData.state === "done" ? Color.accent : "transparent"
+                  border.width: modelData.state === "done" ? 0 : 1
+                  border.color: Color.muted
+
+                  MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.toggle(modelData.line)
+                  }
                 }
-              }
 
-              Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: modelData.text
-                color: modelData.state === "done" ? Color.muted : root.bar.foreground
-                font.family: root.bar.fontFamily
-                font.pixelSize: Style.font.body
-                font.strikeout: modelData.state === "done"
-                elide: Text.ElideRight
-                width: column.width - Style.space(18) - Style.spacing.md
+                Text {
+                  anchors.verticalCenter: parent.verticalCenter
+                  text: modelData.text
+                  color: modelData.state === "done" ? Color.muted : root.bar.foreground
+                  font.family: root.bar.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.strikeout: modelData.state === "done"
+                  elide: Text.ElideRight
+                  width: column.width - Style.space(18) - Style.spacing.md
+                }
               }
             }
           }
         }
-      }
 
-      // ---- Clear the completed tasks.
-      Button {
-        visible: root.items.length > root.openCount
-        text: "Clear done"
-        fontSize: Style.font.body
-        foreground: root.bar.foreground
-        fontFamily: root.bar.fontFamily
-        horizontalPadding: Style.spacing.controlPaddingX
-        verticalPadding: Style.spacing.controlPaddingY
-        bordered: false
-        onClicked: root.clearDone()
+        // ---- Clear the completed tasks.
+        Button {
+          visible: root.items.length > root.openCount
+          text: "Clear done"
+          fontSize: Style.font.body
+          foreground: root.bar.foreground
+          fontFamily: root.bar.fontFamily
+          horizontalPadding: Style.spacing.controlPaddingX
+          verticalPadding: Style.spacing.controlPaddingY
+          bordered: true
+          onClicked: root.clearDone()
+        }
       }
     }
   }

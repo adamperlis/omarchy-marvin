@@ -17,6 +17,7 @@ BarWidget {
   readonly property string home: Quickshell.env("HOME") || ""
   readonly property string modeBin: root.home + "/.local/bin/marvin-mode"
   readonly property string updateBin: root.home + "/.local/bin/marvin-update"
+  readonly property string bgLink: root.home + "/.local/state/omarchy/current/background"
   property string themeName: ""
   readonly property bool isLight: themeName.indexOf("light") !== -1
 
@@ -25,8 +26,16 @@ BarWidget {
   property bool scheduled: false
   property bool autoUpdate: false
 
+  // Wallpaper picker state. currentBg is the resolved file the symlink points
+  // at (resolved, so it changes when the wallpaper changes and the preview
+  // reloads); wallpapers is every image alongside it.
+  property bool pickerOpen: false
+  property string currentBg: ""
+  property var wallpapers: []
+
   function refreshMode() { if (!modeProc.running) modeProc.running = true }
   function refreshAuto() { if (!autoProc.running) autoProc.running = true }
+  function refreshBg() { if (!bgProc.running) bgProc.running = true }
   function close() { popupOpen = false }
 
   function applyMode(m) {
@@ -35,7 +44,6 @@ BarWidget {
     Quickshell.execDetached([root.modeBin, m])
     settle.restart()
   }
-  function nextWallpaper() { Quickshell.execDetached(["omarchy-theme-bg-next"]) }
   function toggleReduceMotion() {
     root.reduceMotion = !root.reduceMotion
     Quickshell.execDetached(["hyprctl", "keyword", "animations:enabled", root.reduceMotion ? "0" : "1"])
@@ -49,9 +57,25 @@ BarWidget {
     Quickshell.execDetached([root.updateBin, root.autoUpdate ? "--enable" : "--disable"])
   }
 
+  // ---- Wallpaper. The symlink's directory holds the theme's whole set; list
+  //      it so the picker can offer every one.
+  function listWallpapers() {
+    var d = root.currentBg.substring(0, root.currentBg.lastIndexOf("/"))
+    if (!d.length) return
+    listProc.command = ["find", d, "-maxdepth", "1", "-type", "f",
+      "(", "-iname", "*.jpg", "-o", "-iname", "*.jpeg", "-o", "-iname", "*.png", ")"]
+    if (!listProc.running) listProc.running = true
+  }
+  function pickWallpaper(path) {
+    Quickshell.execDetached(["omarchy-theme-bg-set", path])
+    root.currentBg = path
+    root.pickerOpen = false
+    bgSettle.restart()
+  }
+
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
-  Component.onCompleted: { refreshMode(); refreshAuto() }
+  Component.onCompleted: { refreshMode(); refreshAuto(); refreshBg() }
 
   // The live theme, so the glyph is a sun or a moon.
   Process {
@@ -75,11 +99,44 @@ BarWidget {
     }
   }
 
+  // Resolve the current wallpaper (following the symlink) and then list the set.
+  Process {
+    id: bgProc
+    running: false
+    command: ["readlink", "-f", root.bgLink]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        var p = String(text || "").trim()
+        if (p.length) { root.currentBg = p; root.listWallpapers() }
+      }
+    }
+  }
+
+  Process {
+    id: listProc
+    running: false
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        var lines = String(text || "").split("\n").filter(function(x) { return x.trim().length })
+        lines.sort()
+        root.wallpapers = lines
+      }
+    }
+  }
+
   // omarchy-theme-set is asynchronous; re-read once it has had time to land.
   Timer {
     id: settle
     interval: 900
     onTriggered: root.refreshMode()
+  }
+  // A wallpaper set lands quickly; re-resolve so the preview updates.
+  Timer {
+    id: bgSettle
+    interval: 700
+    onTriggered: root.refreshBg()
   }
 
   BarIconButton {
@@ -87,7 +144,7 @@ BarWidget {
     anchors.fill: parent
     bar: root.bar
     slotSize: Style.bar.statusSlot
-    text: root.isLight ? "\uf185" : "\uf186"   // Nerd Font: sun / moon
+    text: root.isLight ? "" : ""   // Nerd Font: sun / moon
     tooltipText: "Marvin — left: panel · right: quick toggle"
 
     onPressed: function(b) {
@@ -97,7 +154,7 @@ BarWidget {
         settle.restart()
       } else {
         root.popupOpen = !root.popupOpen
-        if (root.popupOpen) { root.refreshMode(); root.refreshAuto() }
+        if (root.popupOpen) { root.refreshMode(); root.refreshAuto(); root.refreshBg() }
       }
     }
   }
@@ -134,7 +191,7 @@ BarWidget {
           fontFamily: root.bar.fontFamily
           horizontalPadding: Style.spacing.controlPaddingX
           verticalPadding: Style.spacing.controlPaddingY
-          bordered: false
+          bordered: true
           active: root.isLight
           onClicked: root.applyMode("light")
         }
@@ -145,7 +202,7 @@ BarWidget {
           fontFamily: root.bar.fontFamily
           horizontalPadding: Style.spacing.controlPaddingX
           verticalPadding: Style.spacing.controlPaddingY
-          bordered: false
+          bordered: true
           active: !root.isLight
           onClicked: root.applyMode("dark")
         }
@@ -156,27 +213,110 @@ BarWidget {
           fontFamily: root.bar.fontFamily
           horizontalPadding: Style.spacing.controlPaddingX
           verticalPadding: Style.spacing.controlPaddingY
-          bordered: false
+          bordered: true
           onClicked: root.applyMode("system")
         }
       }
 
-      // ---- Wallpaper: step to the next one in the theme's set.
+      // ---- Wallpaper: a preview of the current one; click to choose another.
       Text {
         text: "Wallpaper"
         color: Color.muted
         font.family: root.bar.fontFamily
         font.pixelSize: Style.font.caption
       }
-      Button {
-        text: "Next wallpaper"
-        fontSize: Style.font.body
-        foreground: root.bar.foreground
-        fontFamily: root.bar.fontFamily
-        horizontalPadding: Style.spacing.controlPaddingX
-        verticalPadding: Style.spacing.controlPaddingY
-        bordered: false
-        onClicked: root.nextWallpaper()
+      Item {
+        width: parent.width
+        height: Style.space(44)
+
+        Row {
+          anchors.left: parent.left
+          anchors.verticalCenter: parent.verticalCenter
+          spacing: Style.spacing.md
+
+          Rectangle {
+            id: bgThumb
+            width: Style.space(72)
+            height: Style.space(44)
+            radius: Style.cornerRadius
+            clip: true
+            color: "transparent"
+            border.width: 1
+            border.color: Color.muted
+
+            Image {
+              anchors.fill: parent
+              source: root.currentBg.length ? ("file://" + root.currentBg) : ""
+              fillMode: Image.PreserveAspectCrop
+              sourceSize.width: Style.space(240)
+              asynchronous: true
+              cache: false
+            }
+          }
+
+          Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: root.pickerOpen ? "Close" : "Select wallpaper"
+            color: root.bar.foreground
+            font.family: root.bar.fontFamily
+            font.pixelSize: Style.font.body
+          }
+        }
+
+        MouseArea {
+          anchors.fill: parent
+          cursorShape: Qt.PointingHandCursor
+          onClicked: { root.pickerOpen = !root.pickerOpen; if (root.pickerOpen) root.refreshBg() }
+        }
+      }
+
+      // The picker: every wallpaper in the set, scrollable, current one ringed.
+      Flickable {
+        visible: root.pickerOpen
+        width: parent.width
+        height: root.pickerOpen ? Math.min(grid.implicitHeight, Style.space(216)) : 0
+        contentWidth: width
+        contentHeight: grid.implicitHeight
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        interactive: contentHeight > height
+
+        Flow {
+          id: grid
+          width: parent.width
+          spacing: Style.spacing.sm
+
+          Repeater {
+            model: root.wallpapers
+
+            Rectangle {
+              required property var modelData
+              width: Style.space(84)
+              height: Style.space(52)
+              radius: Style.cornerRadius
+              clip: true
+              color: "transparent"
+              border.width: modelData === root.currentBg ? 2 : 1
+              border.color: modelData === root.currentBg ? Color.accent : Color.muted
+
+              Image {
+                anchors.fill: parent
+                anchors.margins: modelData === root.currentBg ? 2 : 1
+                source: "file://" + modelData
+                fillMode: Image.PreserveAspectCrop
+                sourceSize.width: Style.space(180)
+                asynchronous: true
+                cache: false
+              }
+
+              MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.pickWallpaper(modelData)
+              }
+            }
+          }
+        }
       }
 
       // ---- Reduce motion: turn compositor animations off (shell motion is
@@ -202,24 +342,50 @@ BarWidget {
           fontFamily: root.bar.fontFamily
           horizontalPadding: Style.spacing.controlPaddingX
           verticalPadding: Style.spacing.controlPaddingY
-          bordered: false
+          bordered: true
           active: root.reduceMotion
           onClicked: root.toggleReduceMotion()
         }
       }
 
-      // ---- Daily schedule: light in the morning, dark in the evening.
+      // ---- Auto light/dark: a daily timer, distinct from System (which matches
+      //      the desktop scheme). An info glyph carries the explanation.
       Item {
         width: parent.width
         height: schedButton.implicitHeight
-        Text {
+
+        Row {
           anchors.left: parent.left
           anchors.verticalCenter: parent.verticalCenter
-          text: "Daily light/dark"
-          color: root.bar.foreground
-          font.family: root.bar.fontFamily
-          font.pixelSize: Style.font.body
+          spacing: Style.spacing.xs
+
+          Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: "Auto light/dark"
+            color: root.bar.foreground
+            font.family: root.bar.fontFamily
+            font.pixelSize: Style.font.body
+          }
+          Item {
+            width: Style.font.body
+            height: Style.font.body
+            anchors.verticalCenter: parent.verticalCenter
+            Text {
+              anchors.centerIn: parent
+              text: ""   // Nerd Font: information
+              color: Color.muted
+              font.family: root.bar.fontFamily
+              font.pixelSize: Style.font.caption
+            }
+            MouseArea { id: schedInfo; anchors.fill: parent; hoverEnabled: true }
+            PanelToolTip {
+              visible: schedInfo.containsMouse
+              text: "Light in the morning, dark in the evening, every day (07:00 / 19:00). Adjust with: marvin-mode schedule HH:MM HH:MM"
+              fontFamily: root.bar.fontFamily
+            }
+          }
         }
+
         Button {
           id: schedButton
           anchors.right: parent.right
@@ -230,7 +396,7 @@ BarWidget {
           fontFamily: root.bar.fontFamily
           horizontalPadding: Style.spacing.controlPaddingX
           verticalPadding: Style.spacing.controlPaddingY
-          bordered: false
+          bordered: true
           active: root.scheduled
           onClicked: root.toggleSchedule()
         }
@@ -258,7 +424,7 @@ BarWidget {
           fontFamily: root.bar.fontFamily
           horizontalPadding: Style.spacing.controlPaddingX
           verticalPadding: Style.spacing.controlPaddingY
-          bordered: false
+          bordered: true
           active: root.autoUpdate
           onClicked: root.toggleAutoUpdate()
         }

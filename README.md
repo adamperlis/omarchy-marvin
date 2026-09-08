@@ -27,12 +27,20 @@ palette, plus soft abstractions:
 **Everything, in one go** — copy-paste the lot:
 
 ```
+cd ~
 omarchy theme install https://github.com/adamperlis/omarchy-marvin
 omarchy theme set marvin
 ~/.config/omarchy/themes/marvin/install/marvin
-omarchy plugin enable omarchy.weather --section center
+omarchy plugin enable marvin.weather --section center
 omarchy-restart-shell
 ```
+
+> Run it from your home directory (that first `cd ~`). If your terminal is
+> sitting **inside** the theme folder while the installer replaces it, the
+> clone aborts with `Unable to read current working directory`.
+
+`marvin.weather` is Marvin's restyled build of the weather widget — enable that
+one, not the stock `omarchy.weather`, or you get Omarchy's unstyled version.
 
 That installs the theme, the light sibling, Inter, the Hyprland geometry, all
 sixteen widgets, the light/dark control panel, and auto-update. Two finishing
@@ -115,16 +123,18 @@ built-in back. Plugins are unsandboxed QML and land disabled so you can read
 them first — see [`plugins/README.md`](plugins/README.md).
 
 **Weather** doesn't show until you turn it on — Omarchy ships the widget, but
-it isn't always on the bar, and it needs a location. Enable it and set the
-unit; `marvin.weather` re-skins this same widget:
+it isn't always on the bar, and it needs a location. Enable **Marvin's** build
+of it (the styled clone, not stock `omarchy.weather`), placed in the center:
 
 ```
-omarchy plugin enable omarchy.weather --section center
+omarchy plugin enable marvin.weather --section center
 ```
 
-Then set your city and unit in `~/.config/omarchy/shell.json` — the
-`omarchy.weather` entry, e.g. `{ "id": "omarchy.weather", "unit": "fahrenheit" }`
-— and `omarchy-restart-shell`.
+Then set your city right in the popup: click the location label at the top of
+the weather card and type a city. To pin the unit, add it to the widget's entry
+in `~/.config/omarchy/shell.json`, e.g. `{ "id": "marvin.weather", "unit":
+"fahrenheit" }`, then `omarchy-restart-shell`. (Left off, it follows your
+locale.)
 
 **Staying up to date.** The config layer turns on **auto-update by default** —
 a daily user timer that pulls the latest and re-applies it without disturbing

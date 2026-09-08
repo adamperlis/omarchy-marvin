@@ -74,11 +74,15 @@ Panel {
   readonly property color contentForeground: bar ? bar.foreground : Color.foreground
   readonly property string contentFontFamily: bar ? bar.fontFamily : Style.font.family
 
-  readonly property int cellWidth: Style.spacing.xxxl + Style.spacing.lg   // ~46 — wide enough that all seven days fit without scrolling
+  // Sized so the whole grid — week gutter + seven day columns — lands inside
+  // the 304 card content width, the same as every other Marvin popup. At the
+  // old 48px cell the grid was 388 wide, so Saturday and the right chevron
+  // overflowed the card and were clipped. 32 + 12 + 7×36 = 296 fits with air.
+  readonly property int cellWidth: Style.spacing.xxxl + Style.spacing.xs     // 36
   readonly property int cellHeight: Style.spacing.controlHeight             // 32
   readonly property int cellSpacing: 0
   readonly property int weekColumnWidth: Style.spacing.xxxl                  // 32
-  readonly property int gutterWidth: Style.spacing.xl                       // 20
+  readonly property int gutterWidth: Style.spacing.md                       // 12
 
   function open() {
     refresh()
