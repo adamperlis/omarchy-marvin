@@ -231,6 +231,24 @@ Panel {
     return String(labelLocale.dayName(weekday, Locale.ShortFormat))
   }
 
+  // IPC lives here, not on the bar widget: the Panel is the declared owner of
+  // "omarchy.clock" (ipcTarget + manageIpc:false). cycleFormat writes the format
+  // back through the bar, so it belongs to the host widget — reach it via
+  // hostWidget. (The old bar-widget handler also called a nonexistent
+  // `broadcast`; refresh now calls the real one.)
+  IpcHandler {
+    target: root.ipcTarget
+
+    function refresh(): void { root.refresh() }
+    function cycleFormat(): void { if (root.hostWidget && root.hostWidget.cycleFormat) root.hostWidget.cycleFormat() }
+    function toggleWeekStart(): void { root.toggleWeekStart() }
+    function open(): void { root.open() }
+    function close(): void { root.close() }
+    function show(): void { root.open() }
+    function hide(): void { root.close() }
+    function toggle(): void { root.toggle() }
+  }
+
   SystemClock {
     id: clock
     precision: SystemClock.Minutes

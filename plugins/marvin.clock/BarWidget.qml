@@ -130,18 +130,10 @@ BarWidget {
     }
   }
 
-  IpcHandler {
-    target: "omarchy.clock"
-
-    function refresh(): void { root.broadcast("refresh") }
-    function cycleFormat(): void { root.cycleFormat() }
-    function toggleWeekStart(): void { root.toggleWeekStart() }
-    function open(): void { root.open() }
-    function close(): void { root.close() }
-    function show(): void { root.open() }
-    function hide(): void { root.close() }
-    function toggle(): void { root.togglePanel() }
-  }
+  // No IpcHandler here: the Panel declares ipcTarget "omarchy.clock" with
+  // manageIpc:false, so the Panel is the target's owner (its "buddy"). A second
+  // registration on this bar widget is what the shell flagged as "registered
+  // but unused" — the handler now lives in Panel.qml, like every other clone.
 
   WidgetButton {
     id: button
