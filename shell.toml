@@ -140,7 +140,7 @@ border           = "#d6d6d6"
 border-alpha     = 0.10
 border-width     = 1
 # Progress is a hairline; its fill is accent because time left means something.
-countdown        = "#7aa6ff"
+countdown        = "#6db8ee"
 
 [launcher]
 background                = "#1e1e1e"
@@ -188,7 +188,7 @@ border-error-width = 2
 border-alpha       = 1.0
 scrim              = "#0a0a0a"
 scrim-alpha        = 0.5
-accent             = "#7aa6ff"
+accent             = "#6db8ee"
 
 [lock]
 background          = "#1e1e1e"
@@ -204,14 +204,14 @@ border-active-width = 1
 border-error        = "#e38484"
 border-error-width  = 2
 border-alpha        = 0.24
-selection           = "#7aa6ff"
+selection           = "#6db8ee"
 selection-alpha     = 0.35
 
 [image-picker]
 scrim                   = "#0a0a0a"
 scrim-alpha             = 0.6
 text                    = "#d6d6d6"
-selected-border         = "#7aa6ff"
+selected-border         = "#6db8ee"
 selected-border-alpha   = 1.0
 unselected-border       = "#d6d6d6"
 unselected-border-alpha = 0.2
