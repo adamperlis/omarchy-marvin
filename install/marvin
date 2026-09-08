@@ -344,6 +344,16 @@ apply() {
   else
     note "already on $cur; theme and wallpaper left as they are"
   fi
+  # Never leave a black desktop: if the wallpaper doesn't resolve to a real file,
+  # set the blue default (0-*).
+  local bg_link="$HOME/.local/state/omarchy/current/background" d def
+  if command -v omarchy-theme-bg-set >/dev/null 2>&1 \
+     && { [[ ! -e "$bg_link" ]] || [[ ! -f "$(readlink -f "$bg_link" 2>/dev/null)" ]]; }; then
+    for d in "$CFG/omarchy/backgrounds/marvin" "$THEME_DIR/backgrounds"; do
+      def=$(ls "$d"/0-*.jpg 2>/dev/null | head -1)
+      [[ -n "$def" ]] && { omarchy-theme-bg-set "$def" >/dev/null 2>&1 && note "wallpaper set (blue default)"; break; }
+    done
+  fi
   # Restore the appearance the user chose (light / dark / auto). A reinstall runs
   # `omarchy theme set marvin` first, which forces dark; this puts their choice
   # back. Recorded by marvin-mode, so it survives every reinstall and update.

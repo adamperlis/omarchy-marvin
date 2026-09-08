@@ -163,13 +163,13 @@ BarWidget {
   // recreated fresh, which is fine — applying starts false.)
   Timer {
     id: settle
-    interval: 1400
+    interval: 3500
     onTriggered: { root.applying = false; root.refreshMode(); root.refreshStatus() }
   }
   // A wallpaper set lands quickly; re-resolve so the preview updates.
   Timer {
     id: bgSettle
-    interval: 900
+    interval: 1500
     onTriggered: { root.applying = false; root.refreshBg() }
   }
 

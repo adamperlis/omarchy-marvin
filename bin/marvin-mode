@@ -31,24 +31,40 @@ APPEARANCE="$STATE/appearance"
 # the new tone (0-marvin ↔ 0-marvin, 5-citrus ↔ 5-citrus). If there is no match,
 # leave Omarchy's choice.
 set_theme() {
-  local target="$1" base=""
-  [ -L "$BG_LINK" ] && base=$(basename "$(readlink "$BG_LINK")")
+  local target="$1" base="" cur=""
+  # Remember the current wallpaper ONLY if it resolves to a real file. A fresh
+  # or broken symlink (a black desktop) must never be "preserved" onto the new
+  # tone — that was re-applying black right after theme-set placed a good one.
+  cur=$(readlink -f "$BG_LINK" 2>/dev/null || true)
+  [ -n "$cur" ] && [ -f "$cur" ] && base=$(basename "$cur")
+
   if command -v omarchy-theme-set >/dev/null 2>&1; then
     omarchy-theme-set "$target" >/dev/null 2>&1
   else
     omarchy theme set "$target"
   fi
+
+  local now="" d
   if [ -n "$base" ] && command -v omarchy-theme-bg-set >/dev/null 2>&1; then
-    # theme-set already set a wallpaper; only swap again if it didn't land on
-    # the one we're preserving. Skipping the redundant swap avoids a visible
-    # flash to the default and back on every tone change.
-    local now="" d
-    [ -L "$BG_LINK" ] && now=$(basename "$(readlink "$BG_LINK")")
+    # Re-select the same-named wallpaper in the new tone, but only if theme-set
+    # didn't already land on it (avoids a needless flash).
+    now=$(readlink -f "$BG_LINK" 2>/dev/null || true); now=$(basename "$now" 2>/dev/null || true)
     if [ "$now" != "$base" ]; then
       for d in "$HOME/.config/omarchy/backgrounds/$target" "$HOME/.config/omarchy/themes/$target/backgrounds"; do
         [ -f "$d/$base" ] && { omarchy-theme-bg-set "$d/$base" >/dev/null 2>&1; break; }
       done
     fi
+  fi
+
+  # Never leave a black desktop: if the wallpaper doesn't resolve to a real file
+  # now, fall back to the tone's default (0-*).
+  if command -v omarchy-theme-bg-set >/dev/null 2>&1 \
+     && { [ ! -e "$BG_LINK" ] || [ ! -f "$(readlink -f "$BG_LINK" 2>/dev/null)" ]; }; then
+    local def
+    for d in "$HOME/.config/omarchy/backgrounds/$target" "$HOME/.config/omarchy/themes/$target/backgrounds"; do
+      def=$(ls "$d"/0-*.jpg "$d"/0-*.png 2>/dev/null | head -1)
+      [ -n "$def" ] && { omarchy-theme-bg-set "$def" >/dev/null 2>&1; break; }
+    done
   fi
   # Apps that follow the system dark/light scheme — OmaWrite (Qt), GNOME apps —
   # can't read a theme file, so point the freedesktop colour-scheme at Marvin's
