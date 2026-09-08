@@ -43,14 +43,22 @@ shell_running() { pgrep -x quickshell >/dev/null 2>&1; }
 plugin_ids() { local p; for p in "$THEME_DIR"/plugins/marvin.*/; do basename "$p"; done; }
 current_theme() { cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null || true; }
 
+# 1 on the very first install, 0 on every re-run (including auto-update). Set by
+# snapshot(). Guards the one-time choices — which widgets to enable, the GTK
+# font and accent — so an update refreshes code and colours without undoing
+# anything the user has since changed.
+FIRST_INSTALL=1
+
 # ------------------------------------------------------------------ snapshot
 # Taken once, before anything is changed. A re-run keeps the original
 # snapshot, because a snapshot taken after install would only capture Marvin.
 snapshot() {
   if [[ -f "$SNAP/state" ]]; then
-    note "snapshot from $(sed -n 's/^taken=//p' "$SNAP/state") kept"
+    FIRST_INSTALL=0
+    note "snapshot from $(sed -n 's/^taken=//p' "$SNAP/state") kept — this is an update"
     return
   fi
+  FIRST_INSTALL=1
   say "Snapshot"
   mkdir -p "$SNAP/config"
   local rel
@@ -105,6 +113,12 @@ install_font() {
 install_gtk() {
   say "GTK apps"
   command -v gsettings >/dev/null || { note "no gsettings; skipped"; return; }
+  # First install only: these are user-visible preferences, so an update must
+  # not stomp a font or accent the user has since chosen for themselves.
+  if [[ "$FIRST_INSTALL" != 1 ]]; then
+    note "left your GTK font and accent as they are"
+    return
+  fi
   # Omarchy never sets a GTK font, so Files and every GTK app run on the
   # sans-serif fallback. Inter at 10pt is 13px at 96 dpi: the body size.
   gsettings set org.gnome.desktop.interface font-name "Inter 10" 2>/dev/null && note "font-name → Inter 10" || true
@@ -140,10 +154,17 @@ install_plugins() {
     note "→ $PLUGINS/$id"
   done
   if shell_running; then
+    # Rescan always, so the shell picks up updated QML for widgets already on
+    # the bar. But only auto-enable on the first install — on an update the
+    # user's choice of which widgets are on, and where, is theirs to keep.
     omarchy-shell shell rescanPlugins >/dev/null 2>&1 || true
-    for id in $(plugin_ids); do
-      omarchy-plugin-enable "$id" >/dev/null 2>&1 && note "enabled $id" || note "enable $id yourself: omarchy plugin enable $id"
-    done
+    if [[ "$FIRST_INSTALL" == 1 ]]; then
+      for id in $(plugin_ids); do
+        omarchy-plugin-enable "$id" >/dev/null 2>&1 && note "enabled $id" || note "enable $id yourself: omarchy plugin enable $id"
+      done
+    else
+      note "kept your widget layout (refreshed their code only)"
+    fi
   else
     note "shell not running; enable later with: omarchy plugin enable marvin.<name>"
   fi
@@ -163,11 +184,15 @@ install_mode() {
   note "→ ~/.local/bin/marvin-update  (pull + re-apply; --enable for a daily timer)"
   note "→ ~/.local/bin/marvin-todo    (backs the marvin.todos widget; ~/todos.md)"
   note "the marvin.mode and marvin.todos widgets drive these — add them to the bar"
-  # Auto-update on by default: a daily user timer that pulls and re-applies,
-  # keeping the wallpaper. Toggle it in the marvin.mode panel, or turn it off
-  # with `marvin-update --disable`.
-  "$HOME/.local/bin/marvin-update" --enable >/dev/null 2>&1 || true
-  note "auto-update: on (daily) — turn off in the marvin.mode panel or with marvin-update --disable"
+  # Auto-update on by default — but only turn it on at first install. On an
+  # update, whatever the user set (they may have turned it off in the panel) is
+  # left alone; re-enabling here would override their choice.
+  if [[ "$FIRST_INSTALL" == 1 ]]; then
+    "$HOME/.local/bin/marvin-update" --enable >/dev/null 2>&1 || true
+    note "auto-update: on (daily) — turn off in the marvin.mode panel or with marvin-update --disable"
+  else
+    note "auto-update left as you set it"
+  fi
 }
 
 apply() {

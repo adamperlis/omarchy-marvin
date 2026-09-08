@@ -124,6 +124,16 @@ body {
 /* The interface stays Inter even where a pane inherits the text font. */
 .workspace-tab-header, .nav-file-title, .nav-folder-title, .status-bar, .view-header-title, .prompt, .modal, .menu, .suggestion-container { font-family: var(--font-interface-theme); }
 
+/* Force the serif on the note itself — reading view and both editors — so it
+   applies even when a "Text font" is set in Appearance (which otherwise wins
+   over --font-text-theme via --font-text). Point --font-text at the serif too,
+   for anything that reads the variable directly. */
+body { --font-text: var(--font-text-theme); }
+.markdown-rendered, .markdown-preview-view,
+.markdown-source-view.mod-cm6 .cm-content, .cm-line, .cm-editor {
+  font-family: var(--font-text-theme) !important;
+}
+
 /* Headings share the serif of the body — hierarchy is size and weight, not a
    change of voice or colour. h1 and h2 are tracked in slightly. */
 .markdown-rendered h1, .markdown-rendered h2, .markdown-rendered h3,

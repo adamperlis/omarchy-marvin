@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import qs.Commons
@@ -163,6 +164,41 @@ BarWidget {
     onTriggered: root.refreshBg()
   }
 
+  // A wallpaper thumbnail masked to rounded corners. A rounded Rectangle with
+  // clip:true does NOT clip children to its corners, so a full-bleed image
+  // spills past them and looks like it's sitting on top of the frame;
+  // MultiEffect masks the image to the rounded shape properly.
+  component RoundedShot: Item {
+    id: shot
+    property string path: ""
+    property real corner: Style.spacing.sm
+
+    Image {
+      id: shotImg
+      anchors.fill: parent
+      source: shot.path.length ? ("file://" + shot.path) : ""
+      fillMode: Image.PreserveAspectCrop
+      sourceSize.width: Style.space(200)
+      asynchronous: true
+      cache: false
+      visible: false
+    }
+    MultiEffect {
+      anchors.fill: parent
+      source: shotImg
+      maskEnabled: true
+      maskSource: shotMask
+    }
+    Item {
+      id: shotMask
+      anchors.fill: parent
+      layer.enabled: true
+      layer.smooth: true
+      visible: false
+      Rectangle { anchors.fill: parent; radius: shot.corner }
+    }
+  }
+
   BarIconButton {
     id: button
     anchors.fill: parent
@@ -197,49 +233,60 @@ BarWidget {
       anchors.fill: parent
       spacing: Style.spacing.lg
 
-      // ---- Appearance: light, dark, or follow the system scheme.
+      // ---- Appearance: one exclusive segmented control — Light, Dark or Auto.
+      //      A filled track groups the three; the selected segment sits in a
+      //      stronger fill so the grouping and selection read at a glance.
       Text {
         text: "Appearance"
         color: Color.muted
         font.family: root.bar.fontFamily
         font.pixelSize: Style.font.caption
       }
-      Row {
+      Rectangle {
+        id: apprTrack
         width: parent.width
-        spacing: Style.spacing.sm
+        height: Style.space(34)
+        radius: Style.space(9)
+        color: Style.normalFillFor(root.bar.foreground, root.bar.foreground)
 
-        Button {
-          text: "Light"
-          fontSize: Style.font.body
-          foreground: root.bar.foreground
-          fontFamily: root.bar.fontFamily
-          horizontalPadding: Style.spacing.controlPaddingX
-          verticalPadding: Style.spacing.controlPaddingY
-          bordered: true
-          active: root.isLight && !root.scheduled
-          onClicked: root.setManual("light")
-        }
-        Button {
-          text: "Dark"
-          fontSize: Style.font.body
-          foreground: root.bar.foreground
-          fontFamily: root.bar.fontFamily
-          horizontalPadding: Style.spacing.controlPaddingX
-          verticalPadding: Style.spacing.controlPaddingY
-          bordered: true
-          active: !root.isLight && !root.scheduled
-          onClicked: root.setManual("dark")
-        }
-        Button {
-          text: "Auto"
-          fontSize: Style.font.body
-          foreground: root.bar.foreground
-          fontFamily: root.bar.fontFamily
-          horizontalPadding: Style.spacing.controlPaddingX
-          verticalPadding: Style.spacing.controlPaddingY
-          bordered: true
-          active: root.scheduled
-          onClicked: root.setAuto()
+        Row {
+          anchors.fill: parent
+          anchors.margins: Style.space(3)
+          spacing: Style.space(3)
+
+          Repeater {
+            model: [
+              { label: "Light", mode: "light" },
+              { label: "Dark",  mode: "dark"  },
+              { label: "Auto",  mode: "auto"  }
+            ]
+
+            Rectangle {
+              required property var modelData
+              width: (apprTrack.width - Style.space(12)) / 3
+              height: parent.height
+              radius: Style.space(7)
+              readonly property bool selected: modelData.mode === "auto"
+                ? root.scheduled
+                : (modelData.mode === "light" ? (root.isLight && !root.scheduled)
+                                              : (!root.isLight && !root.scheduled))
+              color: selected ? Style.selectedFillFor(root.bar.foreground, Color.accent) : "transparent"
+
+              Text {
+                anchors.centerIn: parent
+                text: modelData.label
+                color: root.bar.foreground
+                font.family: root.bar.fontFamily
+                font.pixelSize: Style.font.body
+              }
+
+              MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: modelData.mode === "auto" ? root.setAuto() : root.setManual(modelData.mode)
+              }
+            }
+          }
         }
       }
 
@@ -270,24 +317,12 @@ BarWidget {
           anchors.verticalCenter: parent.verticalCenter
           spacing: Style.spacing.md
 
-          Rectangle {
+          RoundedShot {
             id: bgThumb
             width: Style.space(72)
             height: Style.space(44)
-            radius: Style.spacing.sm
-            clip: true
-            color: "transparent"
-            border.width: 1
-            border.color: Color.muted
-
-            Image {
-              anchors.fill: parent
-              source: root.currentBg.length ? ("file://" + root.currentBg) : ""
-              fillMode: Image.PreserveAspectCrop
-              sourceSize.width: Style.space(240)
-              asynchronous: true
-              cache: false
-            }
+            corner: Style.spacing.sm
+            path: root.currentBg
           }
 
           Text {
@@ -319,16 +354,28 @@ BarWidget {
         flickDeceleration: 6000
         interactive: contentHeight > height
 
-        // A visible bar so it's clear there's more, and draggable.
-        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+        // A styled bar, visible in both tones and draggable. The default bar is
+        // nearly invisible on a light surface, so paint the handle ourselves.
+        ScrollBar.vertical: ScrollBar {
+          id: bgBar
+          policy: bgFlick.contentHeight > bgFlick.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+          width: Style.space(10)
+          contentItem: Rectangle {
+            implicitWidth: Style.space(5)
+            radius: width / 2
+            color: bgBar.pressed ? root.bar.foreground : Color.muted
+            opacity: bgBar.pressed ? 0.9 : 0.55
+          }
+        }
 
-        // Smooth the mouse wheel: animate contentY a notch at a time. Touchpads
-        // already scroll smoothly through the Flickable, so leave them alone.
+        // Smooth the wheel: animate contentY rather than jumping a notch. Handles
+        // mouse and touchpad alike (angleDelta, or pixelDelta when that's what
+        // the device sends).
         WheelHandler {
-          acceptedDevices: PointerDevice.Mouse
           onWheel: function(ev) {
+            var d = ev.angleDelta.y !== 0 ? ev.angleDelta.y : ev.pixelDelta.y
             var maxY = Math.max(0, bgFlick.contentHeight - bgFlick.height)
-            bgScroll.to = Math.max(0, Math.min(maxY, bgFlick.contentY - ev.angleDelta.y))
+            bgScroll.to = Math.max(0, Math.min(maxY, bgFlick.contentY - d))
             bgScroll.restart()
           }
         }
@@ -342,29 +389,31 @@ BarWidget {
 
         Flow {
           id: grid
-          width: parent.width
+          width: bgFlick.width - Style.space(14)   // room for the scrollbar
           spacing: Style.spacing.sm
 
           Repeater {
             model: root.wallpapers
 
-            Rectangle {
+            Item {
               required property var modelData
               width: Style.space(84)
               height: Style.space(52)
-              radius: Style.spacing.sm
-              clip: true
-              color: "transparent"
-              border.width: modelData === root.currentBg ? 2 : 1
-              border.color: modelData === root.currentBg ? Color.accent : Color.muted
 
-              Image {
+              RoundedShot {
                 anchors.fill: parent
-                source: "file://" + modelData
-                fillMode: Image.PreserveAspectCrop
-                sourceSize.width: Style.space(180)
-                asynchronous: true
-                cache: false
+                path: modelData
+                corner: Style.spacing.sm
+              }
+
+              // Selection ring, on top of the masked image.
+              Rectangle {
+                anchors.fill: parent
+                radius: Style.spacing.sm
+                color: "transparent"
+                visible: modelData === root.currentBg
+                border.width: 2
+                border.color: Color.accent
               }
 
               MouseArea {

@@ -46,7 +46,11 @@ BarWidget {
     if (panelLoader.item) panelLoader.item.closeForPopoutSwitch()
   }
 
-  visible: panelLoader.item && panelLoader.item.label !== ""
+  // Always visible once the panel loads. It shows a placeholder glyph until the
+  // first reading arrives (location auto-detects from your IP, so it fills in on
+  // its own). Gating visibility on data made an enabled widget invisible while
+  // it fetched, which read as "weather won't turn on".
+  visible: panelLoader.item !== null
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
 
@@ -68,10 +72,11 @@ BarWidget {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: panelLoader.item ? panelLoader.item.label : ""
+    // The condition glyph once we have one; a cloud placeholder until then so
+    // the widget is visibly present the moment it's enabled.
+    text: (panelLoader.item && panelLoader.item.label !== "") ? panelLoader.item.label : "\uf0c2"
     slotSize: Style.bar.statusSlot
-    // Tooltip suppressed because the panel is the detail view.
-    tooltipText: ""
+    tooltipText: (panelLoader.item && panelLoader.item.label !== "") ? "" : "Weather — fetching your location…"
 
     onPressed: function(b) {
       if (!root.bar) return
