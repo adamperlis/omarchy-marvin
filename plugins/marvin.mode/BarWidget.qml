@@ -27,6 +27,10 @@ BarWidget {
   property bool reduceMotion: false
   property bool scheduled: false
   property bool autoUpdate: false
+  // True from the click until the switch has had time to land — an appearance or
+  // wallpaper change re-themes every app (and reloads the shell), which is slow,
+  // so the panel shows an "Applying…" spinner meanwhile.
+  property bool applying: false
 
   // Wallpaper picker state. currentBg is the resolved file the symlink points
   // at (resolved, so it changes when the wallpaper changes and the preview
@@ -44,6 +48,7 @@ BarWidget {
   function applyMode(m) {
     if (m === "light") root.themeName = "marvin-light"
     else if (m === "dark") root.themeName = "marvin"
+    root.applying = true
     Quickshell.execDetached([root.modeBin, m])
     settle.restart()
   }
@@ -59,6 +64,7 @@ BarWidget {
   }
   function setAuto() {
     root.scheduled = true
+    root.applying = true
     Quickshell.execDetached([root.modeBin, "schedule"])
     settle.restart()
   }
@@ -80,6 +86,7 @@ BarWidget {
     Quickshell.execDetached(["omarchy-theme-bg-set", path])
     root.currentBg = path
     root.pickerOpen = false
+    root.applying = true
     bgSettle.restart()
   }
 
@@ -151,17 +158,19 @@ BarWidget {
     }
   }
 
-  // omarchy-theme-set is asynchronous; re-read once it has had time to land.
+  // omarchy-theme-set is asynchronous; re-read once it has had time to land,
+  // and end the "Applying…" state. (If the shell reloads first, this widget is
+  // recreated fresh, which is fine — applying starts false.)
   Timer {
     id: settle
-    interval: 900
-    onTriggered: root.refreshMode()
+    interval: 1400
+    onTriggered: { root.applying = false; root.refreshMode(); root.refreshStatus() }
   }
   // A wallpaper set lands quickly; re-resolve so the preview updates.
   Timer {
     id: bgSettle
-    interval: 700
-    onTriggered: root.refreshBg()
+    interval: 900
+    onTriggered: { root.applying = false; root.refreshBg() }
   }
 
   // A wallpaper thumbnail masked to rounded corners. A rounded Rectangle with
@@ -210,6 +219,7 @@ BarWidget {
     onPressed: function(b) {
       if (b === Qt.RightButton) {
         root.themeName = root.isLight ? "marvin" : "marvin-light"
+        root.applying = true
         Quickshell.execDetached([root.modeBin, "toggle"])
         settle.restart()
       } else {
@@ -292,13 +302,40 @@ BarWidget {
 
       // When Auto is on, say what it does — no tooltip needed.
       Text {
-        visible: root.scheduled
+        visible: root.scheduled && !root.applying
         width: parent.width
         wrapMode: Text.WordWrap
         text: "Light in the morning, dark in the evening — every day."
         color: Color.muted
         font.family: root.bar.fontFamily
         font.pixelSize: Style.font.caption
+      }
+
+      // Immediate feedback that a slow change (re-theme + shell reload) is under
+      // way — the click registers even before anything on screen moves.
+      Row {
+        visible: root.applying
+        spacing: Style.spacing.sm
+
+        Text {
+          text: "\uf1ce"   // Nerd Font: circle-notch (spinner)
+          color: Color.accent
+          font.family: root.bar.fontFamily
+          font.pixelSize: Style.font.caption
+          anchors.verticalCenter: parent.verticalCenter
+          RotationAnimator on rotation {
+            running: root.applying
+            loops: Animation.Infinite
+            from: 0; to: 360; duration: 900
+          }
+        }
+        Text {
+          text: "Applying…"
+          color: Color.muted
+          font.family: root.bar.fontFamily
+          font.pixelSize: Style.font.caption
+          anchors.verticalCenter: parent.verticalCenter
+        }
       }
 
       // ---- Wallpaper: a preview of the current one; click to choose another.
