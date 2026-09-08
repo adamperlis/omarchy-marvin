@@ -100,11 +100,31 @@ install_light() {
 install_font() {
   say "Fonts"
   # Vendored, OFL. Installed per user so nothing needs a package manager or
-  # sudo, and so revert can take them out again.
+  # sudo, and so revert can take them out again. Runs on every install, not
+  # just the first — the font has to be present for Obsidian's serif to work.
   mkdir -p "$USERFONTS"
   cp "$THEME_DIR"/fonts/*.ttf "$USERFONTS/"
-  command -v fc-cache >/dev/null && fc-cache -f "$USERFONTS" >/dev/null 2>&1 || true
-  note "→ $USERFONTS (Inter, Libre Baskerville)"
+  # Register with fontconfig so every app can resolve them. Rebuild the user
+  # cache; if the serif still isn't listed, force a full rebuild.
+  if command -v fc-cache >/dev/null; then
+    fc-cache -f "$USERFONTS" >/dev/null 2>&1 || true
+    if command -v fc-list >/dev/null && ! fc-list 2>/dev/null | grep -qi "libre baskerville"; then
+      fc-cache -f >/dev/null 2>&1 || true
+    fi
+  fi
+  # Verify, so a bad install is loud rather than a silent fall back to sans.
+  if command -v fc-list >/dev/null; then
+    if fc-list 2>/dev/null | grep -qi "libre baskerville"; then
+      note "→ $USERFONTS — verified: Inter + Libre Baskerville registered"
+    else
+      note "! Libre Baskerville did not register — run:  fc-cache -f"
+    fi
+  else
+    note "→ $USERFONTS (Inter, Libre Baskerville) — no fc-list to verify"
+  fi
+  # Electron apps (Obsidian) read the font list once at launch, so a running
+  # instance won't see a just-installed font until it is restarted.
+  note "restart Obsidian to pick up a newly installed font"
   mkdir -p "$FONTCONF"
   cp "$THEME_DIR/config/fontconfig/60-marvin-shell.conf" "$FONTCONF/60-marvin-shell.conf"
   note "→ $FONTCONF/60-marvin-shell.conf (Inter for quickshell only; terminals unchanged)"
