@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
 import qs.Commons
@@ -307,6 +308,7 @@ BarWidget {
 
       // The picker: every wallpaper in the set, scrollable, current one ringed.
       Flickable {
+        id: bgFlick
         visible: root.pickerOpen
         width: parent.width
         height: root.pickerOpen ? Math.min(grid.implicitHeight, Style.space(216)) : 0
@@ -314,7 +316,29 @@ BarWidget {
         contentHeight: grid.implicitHeight
         clip: true
         boundsBehavior: Flickable.StopAtBounds
+        flickDeceleration: 6000
         interactive: contentHeight > height
+
+        // A visible bar so it's clear there's more, and draggable.
+        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+
+        // Smooth the mouse wheel: animate contentY a notch at a time. Touchpads
+        // already scroll smoothly through the Flickable, so leave them alone.
+        WheelHandler {
+          acceptedDevices: PointerDevice.Mouse
+          onWheel: function(ev) {
+            var maxY = Math.max(0, bgFlick.contentHeight - bgFlick.height)
+            bgScroll.to = Math.max(0, Math.min(maxY, bgFlick.contentY - ev.angleDelta.y))
+            bgScroll.restart()
+          }
+        }
+        NumberAnimation {
+          id: bgScroll
+          target: bgFlick
+          property: "contentY"
+          duration: 160
+          easing.type: Easing.OutCubic
+        }
 
         Flow {
           id: grid

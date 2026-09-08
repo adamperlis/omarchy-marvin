@@ -74,15 +74,17 @@ Panel {
   readonly property color contentForeground: bar ? bar.foreground : Color.foreground
   readonly property string contentFontFamily: bar ? bar.fontFamily : Style.font.family
 
-  // Sized so the whole grid — week gutter + seven day columns — lands inside
-  // the 304 card content width, the same as every other Marvin popup. At the
-  // old 48px cell the grid was 388 wide, so Saturday and the right chevron
-  // overflowed the card and were clipped. 32 + 12 + 7×36 = 296 fits with air.
-  readonly property int cellWidth: Style.spacing.xxxl + Style.spacing.xs     // 36
+  // The day columns FLEX to whatever width the panel actually gets, so the
+  // grid can never overflow the card and clip Saturday or the right chevron —
+  // the bug a fixed cell width kept reproducing (the true panel width isn't
+  // knowable ahead of layout). cellWidth is derived from the live viewport:
+  // (viewport − week gutter) / 7. calendarScroll is the Flickable below.
+  readonly property int weekColumnWidth: Style.spacing.xxl                    // 24
+  readonly property int gutterWidth: Style.spacing.sm                        // 8
+  readonly property int cellWidth: Math.max(Style.space(24),
+    Math.floor((calendarScroll.width - weekColumnWidth - gutterWidth) / 7))
   readonly property int cellHeight: Style.spacing.controlHeight             // 32
   readonly property int cellSpacing: 0
-  readonly property int weekColumnWidth: Style.spacing.xxxl                  // 32
-  readonly property int gutterWidth: Style.spacing.md                       // 12
 
   function open() {
     refresh()
@@ -248,7 +250,9 @@ Panel {
     open: root.opened
     centerOnBar: true
     focusTarget: keyCatcher
-    contentWidth: panel.fittedContentWidth(root.weekColumnWidth + root.gutterWidth + root.cellWidth * 7)
+    // A standard card width, like every other Marvin popup; the grid flexes to
+    // fit it (see cellWidth). Requesting it off the grid width would be a loop.
+    contentWidth: panel.fittedContentWidth(Style.space(304))
     contentHeight: panel.fittedContentHeight(calendarColumn.implicitHeight)
 
     PanelKeyCatcher {
@@ -282,7 +286,9 @@ Panel {
 
         Column {
           id: calendarColumn
-          width: Math.max(calendarScroll.width, gridColumn.width)
+          // Never wider than the viewport, so nothing can overflow to the right.
+          // The grid flexes to this width, so it always fits inside it.
+          width: calendarScroll.width
           spacing: Style.spacing.xxl
 
           // ---- Hero: the day number, with the month and weekday as its caption.

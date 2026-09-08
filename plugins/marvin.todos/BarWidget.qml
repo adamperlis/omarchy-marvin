@@ -81,7 +81,7 @@ BarWidget {
     anchors.fill: parent
     bar: root.bar
     slotSize: Style.bar.statusSlot
-    text: ""   // Nerd Font: checklist
+    text: "\uf0ae"   // Nerd Font: checklist
     tooltipText: root.openCount + " to do"
     onPressed: function(b) {
       root.popupOpen = !root.popupOpen
@@ -181,6 +181,18 @@ BarWidget {
                   color: modelData.state === "done" ? Color.accent : "transparent"
                   border.width: modelData.state === "done" ? 0 : 1
                   border.color: Color.muted
+
+                  // A check knocked out of the fill, so a done item reads as
+                  // done and not just a coloured box. The surface colour keeps
+                  // it legible on the accent in either tone.
+                  Text {
+                    anchors.centerIn: parent
+                    visible: modelData.state === "done"
+                    text: "\uf00c"   // Nerd Font: check
+                    color: Color.popups.background
+                    font.family: root.bar.fontFamily
+                    font.pixelSize: Style.font.caption
+                  }
 
                   MouseArea {
                     anchors.fill: parent
