@@ -69,7 +69,10 @@ hl.config({
 --
 -- Three curves. Enter settles (ease-out). Leave accelerates away (ease-in);
 -- linear exits read as mechanical. Move is the standard in-out.
-hl.curve("marvinEnter", { type = "bezier", points = { { 0.16, 1 }, { 0.30, 1 } } })
+-- A gentler settle than upstream's easeOutQuint: the same fast start, but the
+-- last third eases in more gradually so entrances read as smooth, not snapped.
+-- Durations are unchanged — the 120/200/320 scale stays; only the shape softens.
+hl.curve("marvinEnter", { type = "bezier", points = { { 0.22, 1 }, { 0.44, 1 } } })
 hl.curve("marvinLeave", { type = "bezier", points = { { 0.70, 0 }, { 0.84, 0 } } })
 hl.curve("marvinMove",  { type = "bezier", points = { { 0.40, 0 }, { 0.20, 1 } } })
 
