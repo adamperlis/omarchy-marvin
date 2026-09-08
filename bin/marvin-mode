@@ -59,6 +59,19 @@ set_theme() {
       *)      gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'  2>/dev/null || true ;;
     esac
   fi
+  # GTK apps take Marvin's palette per tone — re-copy the matching gtk.css so a
+  # tone switch recolours file choosers and GTK apps too (picked up on their
+  # next launch).
+  local gsrc gd
+  case "$target" in
+    *light) gsrc="$HOME/.config/omarchy/themes/marvin/light/gtk.css" ;;
+    *)      gsrc="$HOME/.config/omarchy/themes/marvin/gtk.css" ;;
+  esac
+  if [ -f "$gsrc" ]; then
+    for gd in "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"; do
+      mkdir -p "$gd"; cp "$gsrc" "$gd/gtk.css" 2>/dev/null || true
+    done
+  fi
 }
 
 current() { cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null || true; }

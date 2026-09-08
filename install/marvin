@@ -33,6 +33,8 @@ TOUCHED=(
   "hypr/hyprland.lua"
   "hypr/marvin.lua"
   "fontconfig/conf.d/60-marvin-shell.conf"
+  "gtk-3.0/gtk.css"
+  "gtk-4.0/gtk.css"
   "omarchy/shell.json"
   "omarchy/themes/marvin-light"
 )
@@ -132,9 +134,19 @@ install_font() {
 
 install_gtk() {
   say "GTK apps"
-  command -v gsettings >/dev/null || { note "no gsettings; skipped"; return; }
-  # First install only: these are user-visible preferences, so an update must
-  # not stomp a font or accent the user has since chosen for themselves.
+  # Marvin's named-colour overrides for GTK 3 and 4, so file choosers, save
+  # dialogs and GTK apps take the palette. This is theme content, not a user
+  # preference, so it's (re)written on every run — matching the current tone.
+  local css="$THEME_DIR/gtk.css" d
+  [[ "$(current_theme)" == *light ]] && css="$THEME_DIR/light/gtk.css"
+  for d in "$CFG/gtk-3.0" "$CFG/gtk-4.0"; do
+    mkdir -p "$d"; cp "$css" "$d/gtk.css"
+  done
+  note "→ ~/.config/gtk-3.0/gtk.css, gtk-4.0/gtk.css (save dialogs and GTK apps)"
+
+  command -v gsettings >/dev/null || { note "no gsettings; font and accent skipped"; return; }
+  # First install only: the font and accent are user-visible preferences, so an
+  # update must not stomp ones the user has since chosen for themselves.
   if [[ "$FIRST_INSTALL" != 1 ]]; then
     note "left your GTK font and accent as they are"
     return
