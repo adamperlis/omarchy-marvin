@@ -425,8 +425,10 @@ Panel {
               text: root.batteryInfo.percentage || "—"
               color: root.ink
               font.family: root.bar.fontFamily
-              font.pixelSize: Style.font.displayLarge
-              font.letterSpacing: -Style.font.displayLarge * 0.03
+              // display, not display-large: three digits ("100%") clear the
+              // ring at the smaller size where the display-large size touched it.
+              font.pixelSize: Style.font.display
+              font.letterSpacing: -Style.font.display * 0.03
               font.weight: Font.Normal
             }
           }

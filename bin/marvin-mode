@@ -40,6 +40,15 @@ set_theme() {
       [ -f "$d/$base" ] && { omarchy-theme-bg-set "$d/$base" >/dev/null 2>&1; break; }
     done
   fi
+  # Apps that follow the system dark/light scheme — OmaWrite (Qt), GNOME apps —
+  # can't read a theme file, so point the freedesktop colour-scheme at Marvin's
+  # tone and they track it.
+  if command -v gsettings >/dev/null 2>&1; then
+    case "$target" in
+      *light) gsettings set org.gnome.desktop.interface color-scheme 'prefer-light' 2>/dev/null || true ;;
+      *)      gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'  2>/dev/null || true ;;
+    esac
+  fi
 }
 
 current() { cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null || true; }

@@ -1044,7 +1044,9 @@ Panel {
     bar: root.bar
     open: root.opened
     focusTarget: keyCatcher
-    contentWidth: panel.fittedContentWidth(Style.space(304))
+    // Wider than the standard 304 card: the network list packs SSIDs, signal
+    // and controls into a row, and 304 scrunched them.
+    contentWidth: panel.fittedContentWidth(Style.space(368))
     contentHeight: panel.fittedContentHeight(column.implicitHeight)
 
     // Catches all unhandled keys for keyboard navigation. AfterItem priority
