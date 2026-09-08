@@ -42,6 +42,23 @@ TOUCHED=(
 say()  { printf '\e[1m%s\e[0m\n' "$*"; }
 note() { printf '  %s\n' "$*"; }
 shell_running() { pgrep -x quickshell >/dev/null 2>&1; }
+
+# Run a slow command with a spinner on a terminal (and plainly when the output
+# is redirected, e.g. the auto-update timer). Keeps the long shell reload from
+# looking frozen.
+with_spinner() {
+  local msg="$1"; shift
+  if [[ -t 1 ]]; then
+    "$@" & local p=$! s='|/-\' i=0
+    while kill -0 "$p" 2>/dev/null; do
+      printf '\r  %s %s' "${s:i%4:1}" "$msg"; i=$((i + 1)); sleep 0.15
+    done
+    wait "$p"; local rc=$?
+    printf '\r\033[K'
+    return $rc
+  fi
+  "$@"
+}
 plugin_ids() { local p; for p in "$THEME_DIR"/plugins/marvin.*/; do basename "$p"; done; }
 current_theme() { cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null || true; }
 
@@ -334,7 +351,12 @@ apply() {
     "$HOME/.local/bin/marvin-mode" reassert >/dev/null 2>&1 && note "restored your appearance choice" || true
   fi
   command -v hyprctl >/dev/null && hyprctl reload >/dev/null 2>&1 || true
-  shell_running && omarchy-restart-shell >/dev/null 2>&1 || true
+  if shell_running; then
+    say "Restarting the shell"
+    note "the bar disappears and comes back — this takes a few seconds"
+    with_spinner "reloading the shell…" bash -c 'omarchy-restart-shell >/dev/null 2>&1 || true'
+    note "if the bar isn't back yet, give it a moment (a 'shell not ready' notice is harmless)"
+  fi
   note "done. Light: omarchy theme set marvin-light. Undo everything: install/marvin --revert"
 }
 

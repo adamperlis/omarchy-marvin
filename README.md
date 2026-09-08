@@ -24,22 +24,18 @@ palette, plus soft abstractions:
 
 ## Install
 
-One block — fresh install or update. Run it from your home directory:
+Copy-paste the lot:
 
 ```
-cd ~
-if [ -d ~/.config/omarchy/themes/marvin/.git ]; then
-  git -C ~/.config/omarchy/themes/marvin pull --ff-only
-else
-  omarchy theme install https://github.com/adamperlis/omarchy-marvin && omarchy theme set marvin
-fi
+omarchy theme install https://github.com/adamperlis/omarchy-marvin
+omarchy theme set marvin
 ~/.config/omarchy/themes/marvin/install/marvin
-omarchy-restart-shell
 ```
 
 That's the whole install, no hand-edits: theme, fonts, GTK, all widgets placed
-on the bar, Obsidian, and auto-update. Weather auto-detects by IP; restart
-Obsidian once to pick up its theme.
+on the bar, Obsidian, and auto-update. The installer restarts the shell itself
+at the end (the bar vanishes and returns — a few seconds). Weather auto-detects
+by IP; restart Obsidian once to pick up its theme.
 
 Details and a step-by-step breakdown follow.
 

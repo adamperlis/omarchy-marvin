@@ -107,7 +107,11 @@ timer() { # $1 mode, $2 HH:MM
 Description=Marvin $1 at $2
 [Timer]
 OnCalendar=*-*-* $2:00
-Persistent=true
+# Not Persistent: a persistent timer catches up a missed daily trigger on
+# enable, so turning Auto on in the evening fired BOTH the 07:00 light run and
+# the 19:00 dark run at once — a light→dark→restart flash. Future triggers
+# only; the caller sets the correct tone for right now.
+Persistent=false
 [Install]
 WantedBy=timers.target
 EOF
@@ -170,10 +174,21 @@ EOF
     want=""; a=""; b=""
     [ -f "$APPEARANCE" ] && read -r want a b <"$APPEARANCE" || true
     case "$want" in
-      # Re-run schedule outright: it re-arms the timers (idempotent) and sets the
-      # tone for right now — so a reinstall that forced a tone is put back, not
-      # just the timers restored.
-      auto)  "$0" schedule "${a:-07:00}" "${b:-19:00}" >/dev/null ;;
+      auto)
+        # Re-arm the timers only if they went missing, and set the tone for now
+        # only if it's actually wrong — so a normal update doesn't trigger a
+        # needless theme-set and shell restart.
+        if ! systemctl --user is-enabled marvin-light.timer >/dev/null 2>&1; then
+          svc light; svc dark; timer light "${a:-07:00}"; timer dark "${b:-19:00}"
+          systemctl --user daemon-reload
+          systemctl --user enable --now marvin-light.timer marvin-dark.timer >/dev/null 2>&1
+        fi
+        rn=$(date +%H:%M)
+        if [[ "$rn" > "${a:-07:00}" && "$rn" < "${b:-19:00}" ]]; then
+          [ "$(current)" != "$LIGHT" ] && set_theme "$LIGHT" || true
+        else
+          [ "$(current)" != "$DARK" ] && set_theme "$DARK" || true
+        fi ;;
       light) [ "$(current)" != "$LIGHT" ] && set_theme "$LIGHT" || true ;;
       dark)  [ "$(current)" != "$DARK" ]  && set_theme "$DARK"  || true ;;
     esac ;;
