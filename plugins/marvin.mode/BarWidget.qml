@@ -27,6 +27,12 @@ BarWidget {
   property bool reduceMotion: false
   property bool scheduled: false
   property bool autoUpdate: false
+  // Update availability, surfaced only when auto-update is off — with it on the
+  // daily timer self-heals, so a badge would be noise. behind>0 lights the bar
+  // dot and the "Update now" row.
+  property int behind: 0
+  property string updateLog: ""
+  readonly property bool updateAvailable: root.behind > 0
   // True from the click until the switch has had time to land — an appearance or
   // wallpaper change re-themes every app (and reloads the shell), which is slow,
   // so the panel shows an "Applying…" spinner meanwhile.
@@ -43,6 +49,11 @@ BarWidget {
   function refreshAuto() { if (!autoProc.running) autoProc.running = true }
   function refreshStatus() { if (!statusProc.running) statusProc.running = true }
   function refreshBg() { if (!bgProc.running) bgProc.running = true }
+  // Only fetch when auto-update is off; otherwise there is nothing to prompt.
+  function refreshUpdate() {
+    if (root.autoUpdate) { root.behind = 0; root.updateLog = ""; return }
+    if (!checkProc.running) checkProc.running = true
+  }
   function close() { popupOpen = false }
 
   function applyMode(m) {
@@ -71,6 +82,16 @@ BarWidget {
   function toggleAutoUpdate() {
     root.autoUpdate = !root.autoUpdate
     Quickshell.execDetached([root.updateBin, root.autoUpdate ? "--enable" : "--disable"])
+    if (root.autoUpdate) { root.behind = 0; root.updateLog = "" }
+    else root.refreshUpdate()
+  }
+  // Pull and re-apply in place — the same detached call the CLI makes. The
+  // re-apply restarts the shell, so this widget is recreated fresh (applying
+  // starts false and a new check runs); updateSettle covers the no-op case.
+  function updateNow() {
+    root.applying = true
+    Quickshell.execDetached([root.updateBin, "run"])
+    updateSettle.restart()
   }
 
   // ---- Wallpaper. The symlink's directory holds the theme's whole set; list
@@ -113,7 +134,33 @@ BarWidget {
     command: [root.updateBin, "--status"]
     stdout: StdioCollector {
       waitForEnd: true
-      onStreamFinished: root.autoUpdate = String(text || "").indexOf("on") !== -1
+      onStreamFinished: {
+        root.autoUpdate = String(text || "").indexOf("on") !== -1
+        root.refreshUpdate()
+      }
+    }
+  }
+
+  // Is the checkout behind upstream? Fetch-only (never touches the working
+  // tree), parsed for the badge and the "Update now" row. Chained off the
+  // auto-update status so it only runs when auto-update is off.
+  Process {
+    id: checkProc
+    running: false
+    command: [root.updateBin, "--check"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        var lines = String(text || "").trim().split("\n")
+        var head = (lines[0] || "").trim()
+        if (head.indexOf("behind") === 0) {
+          root.behind = parseInt(head.split(/\s+/)[1] || "0", 10) || 0
+          root.updateLog = lines.slice(1).join("\n").trim()
+        } else {
+          root.behind = 0
+          root.updateLog = ""
+        }
+      }
     }
   }
 
@@ -174,6 +221,24 @@ BarWidget {
     onTriggered: { root.applying = false; root.refreshBg() }
   }
 
+  // After an in-place update, drop the applying state and re-check. If the
+  // re-apply restarted the shell this never fires — the widget is already gone.
+  Timer {
+    id: updateSettle
+    interval: 4000
+    onTriggered: { root.applying = false; root.refreshAuto() }
+  }
+
+  // Keep the bar dot honest in a long session without opening the panel — but
+  // only while auto-update is off (a quiet fetch every few hours, never on).
+  Timer {
+    id: updatePoll
+    interval: 6 * 60 * 60 * 1000
+    repeat: true
+    running: !root.autoUpdate
+    onTriggered: root.refreshUpdate()
+  }
+
   // A wallpaper thumbnail masked to rounded corners. A rounded Rectangle with
   // clip:true does NOT clip children to its corners, so a full-bleed image
   // spills past them and looks like it's sitting on top of the frame;
@@ -230,6 +295,22 @@ BarWidget {
     }
   }
 
+  // The reserved attention mark: a 6px accent dot (the reference's accent is a
+  // 6px dot) when an update is waiting and auto-update is off.
+  Rectangle {
+    id: updateDot
+    visible: root.updateAvailable && !root.autoUpdate
+    width: Style.space(6)
+    height: width
+    radius: width / 2
+    color: Color.accent
+    anchors.right: button.right
+    anchors.top: button.top
+    anchors.rightMargin: Style.space(2)
+    anchors.topMargin: Style.space(2)
+    z: 2
+  }
+
   PopupCard {
     id: popup
     anchorItem: button
@@ -243,6 +324,53 @@ BarWidget {
       id: column
       anchors.fill: parent
       spacing: Style.spacing.lg
+
+      // ---- Update available. Only ever shown when auto-update is off (the
+      //      check doesn't run otherwise), so this is the manual path: one
+      //      button that pulls and re-applies in place.
+      Column {
+        visible: root.updateAvailable
+        width: parent.width
+        spacing: Style.spacing.sm
+
+        Item {
+          width: parent.width
+          height: updateBtn.implicitHeight
+          Text {
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            text: root.behind === 1 ? "Update available" : "Update available (" + root.behind + ")"
+            color: root.bar.foreground
+            font.family: root.bar.fontFamily
+            font.pixelSize: Style.font.body
+          }
+          Button {
+            id: updateBtn
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            text: "Update now"
+            fontSize: Style.font.body
+            foreground: root.bar.foreground
+            fontFamily: root.bar.fontFamily
+            horizontalPadding: Style.spacing.controlPaddingX
+            verticalPadding: Style.spacing.controlPaddingY
+            bordered: true
+            active: true
+            onClicked: root.updateNow()
+          }
+        }
+
+        // The incoming commits, muted — state is text, not chrome.
+        Text {
+          visible: root.updateLog.length > 0
+          width: parent.width
+          wrapMode: Text.WordWrap
+          text: root.updateLog
+          color: Color.muted
+          font.family: root.bar.fontFamily
+          font.pixelSize: Style.font.caption
+        }
+      }
 
       // ---- Appearance: one exclusive segmented control — Light, Dark or Auto.
       //      A filled track groups the three; the selected segment sits in a

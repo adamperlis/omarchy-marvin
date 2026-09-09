@@ -32,13 +32,30 @@ run() {
   bash "$THEME_DIR/install/marvin" >/dev/null 2>&1 || true
 
   # Re-stage the theme so new colours, app theme files and backgrounds take
-  # effect — then put the wallpaper back exactly where it was, since theme-set
-  # would otherwise advance it.
+  # effect — then put the wallpaper back, since theme-set advances it one file
+  # per run. Restore by NAME from the theme's own backgrounds dir, not by the
+  # old symlink path: theme-set atomically replaces current/theme, so a path
+  # captured before re-staging can dangle and the wallpaper resets. Same logic
+  # marvin-mode uses across a tone switch.
   local cur; cur=$(current_theme)
   if [[ "$cur" == marvin || "$cur" == marvin-light ]] && command -v omarchy-theme-set >/dev/null; then
-    local bg; bg=$(readlink "$BG_LINK" 2>/dev/null || true)
+    local before_bg base=""
+    before_bg=$(readlink -f "$BG_LINK" 2>/dev/null || true)
+    [ -n "$before_bg" ] && [ -f "$before_bg" ] && base=$(basename "$before_bg")
+
     omarchy-theme-set "$cur" >/dev/null 2>&1 || true
-    [ -n "$bg" ] && command -v omarchy-theme-bg-set >/dev/null && omarchy-theme-bg-set "$bg" >/dev/null 2>&1 || true
+
+    if [ -n "$base" ] && command -v omarchy-theme-bg-set >/dev/null 2>&1; then
+      local now d
+      now=$(basename "$(readlink -f "$BG_LINK" 2>/dev/null || true)" 2>/dev/null || true)
+      # Only re-select if theme-set didn't already land on the same wallpaper,
+      # and only from the stable dirs (user overlay first, then the theme's own).
+      if [ "$now" != "$base" ]; then
+        for d in "$HOME/.config/omarchy/backgrounds/$cur" "$HOME/.config/omarchy/themes/$cur/backgrounds"; do
+          [ -f "$d/$base" ] && { omarchy-theme-bg-set "$d/$base" >/dev/null 2>&1; break; }
+        done
+      fi
+    fi
   fi
 
   # Restore the appearance the user chose (auto / light / dark). This runs from
@@ -51,8 +68,28 @@ run() {
   echo "marvin-update: done"
 }
 
+# Is the checkout behind upstream? Fetch-only — never touches the working tree,
+# so it is safe to run from the bar on a timer. Prints "behind N" then the
+# incoming log, or "up to date", or "unknown" (no checkout / offline).
+check() {
+  [ -d "$THEME_DIR/.git" ] || { echo "unknown"; return 0; }
+  GIT_TERMINAL_PROMPT=0 timeout 15 git -C "$THEME_DIR" fetch --quiet 2>/dev/null \
+    || { echo "unknown"; return 0; }
+  local upstream count
+  upstream=$(git -C "$THEME_DIR" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)
+  [ -n "$upstream" ] || { echo "up to date"; return 0; }
+  count=$(git -C "$THEME_DIR" rev-list --count "HEAD..$upstream" 2>/dev/null || echo 0)
+  if [ "${count:-0}" -gt 0 ]; then
+    echo "behind $count"
+    git -C "$THEME_DIR" log --oneline "HEAD..$upstream" 2>/dev/null | head -5 || true
+  else
+    echo "up to date"
+  fi
+}
+
 case "${1:-run}" in
   run|"") run ;;
+  --check|check) check ;;
   --enable|enable)
     when="${2:-daily}"
     mkdir -p "$UNITS"
@@ -83,6 +120,6 @@ EOF
   --status|status)
     systemctl --user is-enabled marvin-update.timer >/dev/null 2>&1 && echo "auto-update: on" || echo "auto-update: off" ;;
   *)
-    echo "usage: marvin-update [run] | --enable [daily|weekly|HH:MM] | --disable | --status" >&2
+    echo "usage: marvin-update [run] | --check | --enable [daily|weekly|HH:MM] | --disable | --status" >&2
     exit 1 ;;
 esac

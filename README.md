@@ -144,10 +144,14 @@ locale.)
 
 **Staying up to date.** The config layer turns on **auto-update by default** —
 a daily user timer that pulls the latest and re-applies it without disturbing
-your wallpaper. Toggle it in the `marvin.mode` panel, or by hand:
+your wallpaper. Turn it off and the gear grows a small blue dot when the
+checkout falls behind, with an **Update now** button in the panel that pulls
+and re-applies in place. Toggle auto-update in the `marvin.mode` panel, or by
+hand:
 
 ```
 marvin-update                  # pull + re-apply right now
+marvin-update --check          # is a newer version waiting? (no changes)
 marvin-update --enable         # daily timer (on by default)
 marvin-update --disable        # turn auto-update off
 marvin-update --status
