@@ -256,16 +256,28 @@ install_plugins() {
   fi
 }
 
+# Write via a temp file and rename, never straight over the target. marvin-update
+# runs this installer from inside itself, and bash reads a running script lazily
+# from an open fd, by byte offset. `cp` truncates that same inode, so bash
+# resumed at the old offset inside the new, longer text, landed mid-token and
+# reported a phantom "syntax error on line 128" *after* a fully successful
+# update. A rename swaps the directory entry and leaves the running script's
+# inode intact, so bash reads the file it started with, through to its real end.
+install_bin() {
+  local src="$1" dst="$2" tmp
+  tmp=$(mktemp "$(dirname "$dst")/.$(basename "$dst").XXXXXX")
+  cat "$src" >"$tmp" && chmod 755 "$tmp" && mv -f "$tmp" "$dst" || { rm -f "$tmp"; return 1; }
+}
+
 install_mode() {
   say "Light/dark control and updates"
   # marvin-mode and marvin-update are executables, so they cannot ship in the
   # theme (a git-installed theme drops anything that can run code). They live in
   # the config layer instead.
   mkdir -p "$HOME/.local/bin"
-  cp "$THEME_DIR/bin/marvin-mode" "$HOME/.local/bin/marvin-mode"
-  cp "$THEME_DIR/bin/marvin-update" "$HOME/.local/bin/marvin-update"
-  cp "$THEME_DIR/bin/marvin-todo" "$HOME/.local/bin/marvin-todo"
-  chmod +x "$HOME/.local/bin/marvin-mode" "$HOME/.local/bin/marvin-update" "$HOME/.local/bin/marvin-todo"
+  install_bin "$THEME_DIR/bin/marvin-mode" "$HOME/.local/bin/marvin-mode"
+  install_bin "$THEME_DIR/bin/marvin-update" "$HOME/.local/bin/marvin-update"
+  install_bin "$THEME_DIR/bin/marvin-todo" "$HOME/.local/bin/marvin-todo"
   note "→ ~/.local/bin/marvin-mode    (toggle · system · schedule)"
   note "→ ~/.local/bin/marvin-update  (pull + re-apply; --enable for a daily timer)"
   note "→ ~/.local/bin/marvin-todo    (backs the marvin.todos widget; ~/todos.md)"
