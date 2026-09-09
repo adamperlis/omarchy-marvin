@@ -176,10 +176,14 @@ BorderSurface {
       Layout.bottomMargin: root.singleLineToast ? Style.spacing.lg : Style.spacing.popupPadding
       spacing: root.collapseRedundantIcon ? 0 : (root.compactGlyph ? Style.spacing.controlGap : Style.spacing.md)
 
-      Item {
+      Rectangle {
         id: smallIconSlot
-        Layout.preferredWidth: visible ? Style.space(40) : 0
-        Layout.preferredHeight: visible ? Style.space(40) : 0
+        Layout.preferredWidth: visible ? Style.spacing.xxxl : 0
+        Layout.preferredHeight: visible ? Style.spacing.xxxl : 0
+        radius: width / 2
+        // A plate only behind the glyph. A real app icon or avatar is its own
+        // mark and does not want a disc under it.
+        color: root.hasSmallIcon ? "transparent" : Util.alpha(Color.notifications.text, 0.25)
         Layout.alignment: Qt.AlignVCenter
         // Hide the slot when the icon failed to resolve (themed-icon name
         // not in the user's icon theme) AND we don't have a glyph fallback
@@ -207,7 +211,7 @@ BorderSurface {
           text: root.effectiveGlyph
           color: Color.notifications.text
           font.family: root.fontFamily
-          font.pixelSize: Style.font.displayLarge
+          font.pixelSize: Style.font.icon
         }
       }
 
