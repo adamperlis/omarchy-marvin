@@ -28,6 +28,11 @@ Panel {
   property bool internalEnabled: false
   property bool mirrorEnabled: false
   property string monitorScale: ""
+  // The scale asked for but not yet in force. omarchy-hyprland-monitor-scaling
+  // plus the omarchy-monitor-state re-read behind it means the pills would
+  // otherwise sit on the old value for the whole round trip; pin the choice so
+  // they move on click. Same optimistic pin marvin.network makes for the band.
+  property string pendingScale: ""
   property var displays: []
   property int enabledDisplayCount: 0
 
@@ -273,7 +278,9 @@ Panel {
     for (var i = 0; i < displays.length; i++) {
       var display = displays[i]
       if (display && display.focused)
-        return Model.matchingScaleIndex(scaleValues, monitorScale, display.width, display.height)
+        return Model.matchingScaleIndex(scaleValues,
+          root.pendingScale !== "" ? root.pendingScale : monitorScale,
+          display.width, display.height)
     }
     return -1
   }
@@ -309,8 +316,10 @@ Panel {
   }
 
   function setScale(scale) {
+    if (actionProc.running) return
+    root.pendingScale = root.normalizeScale(scale)
     actionProc.command = ["bash", "-c", "omarchy-hyprland-monitor-scaling " + scale]
-    if (!actionProc.running) actionProc.running = true
+    actionProc.running = true
   }
 
   // ---- Text size (shell base font + GTK text-scaling, via one CLI) ----
@@ -436,7 +445,14 @@ Panel {
   Process {
     id: actionProc
     stdout: StdioCollector { waitForEnd: true }
-    onRunningChanged: if (!running) root.refresh()
+    // Commit the pin before clearing it so the pills never flick back to the
+    // old scale for the length of the state re-read. A refused change leaves
+    // monitorScale alone, so they fall back to what is actually in force.
+    onExited: function(exitCode) {
+      if (root.pendingScale !== "" && exitCode === 0) root.monitorScale = root.pendingScale
+      root.pendingScale = ""
+      root.refresh()
+    }
   }
 
   // Applies text size via the CLI, which rewrites the shell override file;
