@@ -132,14 +132,18 @@ border-alpha     = 0
 border-width     = 0
 
 [notifications]
-background       = "#ffffff"
+# Marvin's signature card, the same navy the battery panel wears — a
+# notification is the one thing that floats over whatever you are doing, so it
+# reads as the theme rather than as the app that sent it. White ink, and the
+# hairline is white too: a dark border would disappear into the tint.
+background       = "#33405b"
 background-alpha = 1.0
-text             = "#1a1a1a"
-border           = "#1a1a1a"
-border-alpha     = 0.10
+text             = "#ffffff"
+border           = "#ffffff"
+border-alpha     = 0.14
 border-width     = 1
 # Progress is a hairline; its fill is accent because time left means something.
-countdown        = "#2f93d3"
+countdown        = "#6db8ee"
 
 [launcher]
 background                = "#ffffff"
