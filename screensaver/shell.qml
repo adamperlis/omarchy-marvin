@@ -21,8 +21,8 @@ import Quickshell.Wayland
 ShellRoot {
   id: root
 
-  property color base: "#eef0f7"
-  property color ink: "#2b3350"
+  property color base: "#968b76"
+  property color ink: "#3a3527"
 
   Variants {
     model: Quickshell.screens
@@ -148,49 +148,49 @@ ShellRoot {
             }
           }
 
+          // Sampled off the current wallpaper, but few and large rather than
+          // many and small: eight overlapping semi-opaque warm fields averaged
+          // into flat cream and took the hue variety with them. The wallpaper
+          // is alive because warm gold sits against cool periwinkle, so the
+          // set is kept to five with real hue separation and enough weight to
+          // survive the blur.
           Field {
-            width: plate.width * 0.52; height: width
-            color: "#8fa3ec"; opacity: 0.55
-            ax: plate.width * 0.02;  ay: plate.height * 0.05
-            bx: plate.width * 0.42;  by: plate.height * 0.46
+            width: plate.width * 0.46; height: width
+            color: "#b38d41"; opacity: 0.72
+            ax: plate.width * 0.02;  ay: plate.height * 0.06
+            bx: plate.width * 0.30;  by: plate.height * 0.40
             spin: 19000
             driftX: 9000; driftY: 11000; breathe: 7000
           }
-
           Field {
-            width: plate.width * 0.34; height: width
-            color: "#e9b463"; opacity: 0.50
-            ax: plate.width * 0.58;  ay: plate.height * 0.04
-            bx: plate.width * 0.18;  by: plate.height * 0.44
+            width: plate.width * 0.38; height: width
+            color: "#7881ae"; opacity: 0.80
+            ax: plate.width * 0.54;  ay: plate.height * 0.04
+            bx: plate.width * 0.18;  by: plate.height * 0.36
             spin: 23000
             driftX: 13000; driftY: 8000; breathe: 6000
-            minScale: 0.8; maxScale: 1.25
           }
-
           Field {
-            width: plate.width * 0.40; height: width
-            color: "#cfa4de"; opacity: 0.45
-            ax: plate.width * 0.34;  ay: plate.height * 0.52
-            bx: plate.width * 0.66;  by: plate.height * 0.18
+            width: plate.width * 0.42; height: width
+            color: "#c8bc9e"; opacity: 0.55
+            ax: plate.width * 0.28;  ay: plate.height * 0.46
+            bx: plate.width * 0.58;  by: plate.height * 0.16
             spin: 17000
             driftX: 10000; driftY: 14000; breathe: 9000
           }
-
           Field {
-            width: plate.width * 0.30; height: width
-            color: "#f0a9b8"; opacity: 0.32
-            ax: plate.width * 0.08;  ay: plate.height * 0.56
-            bx: plate.width * 0.44;  by: plate.height * 0.28
+            width: plate.width * 0.34; height: width
+            color: "#8d714b"; opacity: 0.62
+            ax: plate.width * 0.14;  ay: plate.height * 0.50
+            bx: plate.width * 0.46;  by: plate.height * 0.24
             spin: 27000
             driftX: 12000; driftY: 9000; breathe: 5000
-            minScale: 0.9; maxScale: 1.3
           }
-
           Field {
-            width: plate.width * 0.26; height: width
-            color: "#9fd8d2"; opacity: 0.28
-            ax: plate.width * 0.62;  ay: plate.height * 0.58
-            bx: plate.width * 0.26;  by: plate.height * 0.40
+            width: plate.width * 0.36; height: width
+            color: "#968b97"; opacity: 0.66
+            ax: plate.width * 0.56;  ay: plate.height * 0.50
+            bx: plate.width * 0.26;  by: plate.height * 0.32
             spin: 21000
             driftX: 15000; driftY: 12000; breathe: 8000
           }
@@ -222,7 +222,7 @@ ShellRoot {
             height: parent.height * 2.2
             y: -parent.height * 0.6
             rotation: 18
-            opacity: 0.22
+            opacity: 0.12
             gradient: Gradient {
               orientation: Gradient.Horizontal
               GradientStop { position: 0.0; color: "#00ffffff" }
@@ -266,6 +266,24 @@ ShellRoot {
               NumberAnimation { to: 0.70; duration: 7000; easing.type: Easing.InOutSine }
             }
           }
+        }
+
+        // Film grain, the same tile and the same trick the weather panel uses:
+        // drawn at 2x and scaled to 0.5 so each speck lands near a single
+        // device pixel rather than a chunky 2px dot on HiDPI. Over everything,
+        // mark included, so the frame reads as one exposure instead of a logo
+        // sitting on a gradient. It also breaks up the last of the banding the
+        // blur leaves behind.
+        Image {
+          x: 0; y: 0
+          width: parent.width * 2
+          height: parent.height * 2
+          transformOrigin: Item.TopLeft
+          scale: 0.5
+          source: Qt.resolvedUrl("grain.png")
+          fillMode: Image.Tile
+          opacity: 0.55
+          smooth: false
         }
       }
 
