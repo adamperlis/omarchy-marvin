@@ -184,6 +184,15 @@ Panel {
 
   function setProfile(profile) {
     if (!profile || actionProc.running) return
+    // Paint the choice now, don't wait for the daemon. The round trip is two
+    // subprocess spawns — omarchy-powerprofiles-set alone takes about 1.2s —
+    // and until both returned nothing moved, so a click sat visibly unselected
+    // for over a second. Switch optimistically and let updateProfiles confirm
+    // it (or correct it, if the set failed); the same optimistic switch
+    // marvin.mode makes for light/dark.
+    activeProfile = profile
+    var idx = profiles.indexOf(profile)
+    if (idx >= 0) profileIndex = idx
     actionProc.command = ["omarchy-powerprofiles-set", root.discharging ? "battery" : "ac", profile]
     actionProc.running = true
   }
@@ -485,32 +494,70 @@ Panel {
 
             Repeater {
               model: root.profiles
-              Button {
+
+              // Not a kit Button. Every fill it can paint resolves from the
+              // global [controls] tokens, which are tuned for the page surface
+              // — in marvin-light that is #1a1a1a at 0.07, near-black on this
+              // navy card, so both hover and selected were invisible. (Its
+              // border states are no help either: every control border width
+              // in both Marvin themes is 0.) The card already carries its own
+              // ink, so the pill washes itself in that instead.
+              Rectangle {
+                id: pill
                 required property var modelData
                 required property int index
-                iconText: root.profileIcon(String(modelData))
-                iconSize: Style.font.iconSmall
-                text: String(modelData).charAt(0).toUpperCase() + String(modelData).slice(1)
-                fontSize: Style.font.body
-                foreground: root.ink
-                fontFamily: root.bar.fontFamily
-                horizontalPadding: Style.spacing.controlPaddingX
-                verticalPadding: Style.spacing.controlPaddingY
-                // Every other single-select toggle group in the theme (network
-                // band, DNS, monitor scale) is bordered; the profiles were the
-                // one exception, and on the inverted power card the borderless
-                // selected fill — grey control ink at 0.14 on navy — is
-                // invisible and indistinguishable from hover. Bordered routes
-                // the active pill through the prominent path so "which profile
-                // is on" reads on the tinted surface.
-                bordered: true
-                active: root.activeProfile === modelData
-                hasCursor: root.cursorActive && root.profileIndex === index
-                onClicked: root.setProfile(modelData)
-                onHovered: function(h) {
-                  if (h) {
+                readonly property bool isActive: root.activeProfile === modelData
+                readonly property bool hot: pillMouse.containsMouse
+                  || (root.cursorActive && root.profileIndex === index)
+
+                implicitWidth: pillRow.implicitWidth + Style.spacing.controlPaddingX * 2
+                implicitHeight: pillRow.implicitHeight + Style.spacing.controlPaddingY * 2
+                width: implicitWidth
+                height: implicitHeight
+                radius: Style.cornerRadius
+
+                // Selected is the card ink at a quarter — a clear white wash
+                // that reads at a glance on the tint. Hover is a light lift
+                // well under it, so "where the pointer is" never competes
+                // with "which profile is on"; the selected pill still brightens
+                // under the pointer so it does not look inert.
+                color: Util.alpha(root.ink, pill.isActive ? (pill.hot ? 0.32 : 0.25)
+                                                          : (pill.hot ? 0.10 : 0.0))
+                Behavior on color { ColorAnimation { duration: 120 } }
+
+                Row {
+                  id: pillRow
+                  anchors.centerIn: parent
+                  spacing: Style.spacing.controlGap
+
+                  Text {
+                    textFormat: Text.PlainText
+                    text: root.profileIcon(String(pill.modelData))
+                    color: root.ink
+                    font.family: root.bar.fontFamily
+                    font.pixelSize: Style.font.iconSmall
+                    anchors.verticalCenter: parent.verticalCenter
+                  }
+                  Text {
+                    textFormat: Text.PlainText
+                    text: String(pill.modelData).charAt(0).toUpperCase()
+                      + String(pill.modelData).slice(1)
+                    color: root.ink
+                    font.family: root.bar.fontFamily
+                    font.pixelSize: Style.font.body
+                    anchors.verticalCenter: parent.verticalCenter
+                  }
+                }
+
+                MouseArea {
+                  id: pillMouse
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: root.setProfile(pill.modelData)
+                  onEntered: {
                     root.cursorActive = true
-                    root.profileIndex = index
+                    root.profileIndex = pill.index
                   }
                 }
               }
