@@ -52,12 +52,6 @@ BorderSurface {
   // theirs; the rest fall back to a glyph picked by urgency, so a toast is
   // never a bare block of text. Same Nerd Font family the omarchy-notification-*
   // senders already use for their own toasts.
-  // Critical marks itself in the card's own urgent yellow. Read through
-  // shellValues like marvin.power reads its tone, so it is a theme value
-  // and not a colour buried in QML.
-  readonly property color urgentInk: Color.shellValues["marvin-notifications.urgent"]
-    ? Color.flatColor(Color.shellValues["marvin-notifications.urgent"], Color.notifications.text)
-    : Color.notifications.text
   readonly property string fallbackGlyph: urgency === 2 ? "󰀪" : (urgency === 0 ? "󰋼" : "󰂚")
   readonly property string effectiveGlyph: glyph.length > 0 ? glyph
     : (hasSmallIcon ? "" : fallbackGlyph)
@@ -190,7 +184,11 @@ BorderSurface {
         // A plate only behind the glyph. A real app icon or avatar is its own
         // mark and does not want a disc under it.
         color: root.hasSmallIcon ? "transparent" : Util.alpha(Color.notifications.text, 0.25)
-        Layout.alignment: Qt.AlignVCenter
+        // Top, not centred. On a two- or three-line body a centred mark drifts
+        // down beside the text and stops reading as the notification's badge;
+        // pinned to the top it lines up with the summary, which is what it
+        // labels.
+        Layout.alignment: Qt.AlignTop
         // Hide the slot when the icon failed to resolve (themed-icon name
         // not in the user's icon theme) AND we don't have a glyph fallback
         // — prevents rendering Qt's pink broken-image placeholder.
@@ -215,7 +213,7 @@ BorderSurface {
           anchors.centerIn: parent
           visible: root.hasGlyph && smallIconImage.status !== Image.Ready
           text: root.effectiveGlyph
-          color: root.urgency === 2 ? root.urgentInk : Color.notifications.text
+          color: Color.notifications.text
           font.family: root.fontFamily
           font.pixelSize: Style.font.iconSmall
         }
@@ -223,7 +221,7 @@ BorderSurface {
 
       Text {
         textFormat: Text.PlainText
-        Layout.alignment: Qt.AlignVCenter
+        Layout.alignment: Qt.AlignTop
         visible: root.compactGlyph
         text: root.effectiveGlyph
         color: Color.notifications.text
@@ -275,13 +273,20 @@ BorderSurface {
     // ordinary toast keeps its shape. The first is the primary — it carries the
     // accent fill, the rest are ink washes — which is the same weighting the
     // profile pills use, so a button means the same thing across the theme.
-    Flow {
+    RowLayout {
       visible: root.actions.length > 0
       Layout.fillWidth: true
       Layout.leftMargin: Style.spacing.popupPadding
       Layout.rightMargin: Style.spacing.popupPadding
       Layout.bottomMargin: Style.spacing.popupPadding
       spacing: Style.spacing.controlGap
+
+      // Pushes the group to the trailing edge. A RowLayout rather than a Flow
+      // because Flow can only right-align by reversing its direction, which
+      // would put the primary action last; notifications carry one to three
+      // actions, so the wrapping a Flow gave us is not worth losing the
+      // reading order for.
+      Item { Layout.fillWidth: true }
 
       Repeater {
         model: root.actions

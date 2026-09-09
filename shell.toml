@@ -245,13 +245,6 @@ night-muted    = "#b8c1d3"
 
 # The reference's dark card, on both tones. The chip is a soft fill of the
 # attention hue with lighter text of the same hue.
-[marvin-notifications]
-# The card is navy in both themes, so this cannot come from the palette: in
-# marvin-light `yellow` is #8f6a00, an olive tuned for the light page surface
-# that disappears on the tint. This is the warm yellow from the dark palette,
-# which is what "our yellow" looks like against navy.
-urgent = "#dfbf72"
-
 [marvin-power]
 background     = "#33405b"
 background-end = "#1b2436"
