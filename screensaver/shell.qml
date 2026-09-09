@@ -69,7 +69,7 @@ ShellRoot {
             blur: 1.0
             blurMax: 64
             autoPaddingEnabled: false
-            saturation: 0.45
+            saturation: 0.62
             contrast: 0.12
           }
 
