@@ -69,7 +69,7 @@ ShellRoot {
             blur: 1.0
             blurMax: 64
             autoPaddingEnabled: false
-            saturation: 0.62
+            saturation: 1.45
             contrast: 0.12
           }
 
@@ -170,7 +170,7 @@ ShellRoot {
           }
           Field {
             width: plate.width * 0.38; height: width
-            color: "#7881ae"; opacity: 0.80
+            color: "#7881ae"; opacity: 0.88
             ax: plate.width * 0.54;  ay: plate.height * 0.04
             bx: plate.width * 0.18;  by: plate.height * 0.36
             spin: 23000
@@ -178,7 +178,7 @@ ShellRoot {
           }
           Field {
             width: plate.width * 0.42; height: width
-            color: "#c8bc9e"; opacity: 0.55
+            color: "#c8bc9e"; opacity: 0.34
             ax: plate.width * 0.28;  ay: plate.height * 0.46
             bx: plate.width * 0.58;  by: plate.height * 0.16
             spin: 17000
@@ -329,16 +329,34 @@ ShellRoot {
         // mark included, so the frame reads as one exposure instead of a logo
         // sitting on a gradient. It also breaks up the last of the banding the
         // blur leaves behind.
-        Image {
-          x: 0; y: 0
-          width: parent.width * 2
-          height: parent.height * 2
-          transformOrigin: Item.TopLeft
-          scale: 0.5
-          source: Qt.resolvedUrl("grain.png")
-          fillMode: Image.Tile
-          opacity: 0.55
-          smooth: false
+        // Two continuous-tone tiles, one lightening and one darkening, because
+        // real grain moves both ways — a white-only overlay just fogs the frame.
+        // The weather panel's tile is bilevel: specks are hard on or off with no
+        // midtone, which is what read as pixelated once it was scaled.
+        //
+        // Drawn at 3x and scaled to a third. This display runs at
+        // devicePixelRatio 1.5, so a texel at 1 logical px lands on 1.5 device
+        // px and reads as a dot; at a third it sits under a single device pixel,
+        // and smoothing is on because at that size hard texel edges are the
+        // pixelation rather than the cure for it.
+        Repeater {
+          model: [
+            { src: "grain-light.png", weight: 0.85 },
+            { src: "grain-dark.png", weight: 0.70 }
+          ]
+          Image {
+            required property var modelData
+            x: 0
+            y: 0
+            width: stage.width * 3
+            height: stage.height * 3
+            transformOrigin: Item.TopLeft
+            scale: 1 / 3
+            source: Qt.resolvedUrl(modelData.src)
+            fillMode: Image.Tile
+            opacity: modelData.weight
+            smooth: true
+          }
         }
       }
 
