@@ -52,6 +52,12 @@ BorderSurface {
   // theirs; the rest fall back to a glyph picked by urgency, so a toast is
   // never a bare block of text. Same Nerd Font family the omarchy-notification-*
   // senders already use for their own toasts.
+  // Critical marks itself in the card's own urgent yellow. Read through
+  // shellValues like marvin.power reads its tone, so it is a theme value
+  // and not a colour buried in QML.
+  readonly property color urgentInk: Color.shellValues["marvin-notifications.urgent"]
+    ? Color.flatColor(Color.shellValues["marvin-notifications.urgent"], Color.notifications.text)
+    : Color.notifications.text
   readonly property string fallbackGlyph: urgency === 2 ? "󰀪" : (urgency === 0 ? "󰋼" : "󰂚")
   readonly property string effectiveGlyph: glyph.length > 0 ? glyph
     : (hasSmallIcon ? "" : fallbackGlyph)
@@ -209,9 +215,9 @@ BorderSurface {
           anchors.centerIn: parent
           visible: root.hasGlyph && smallIconImage.status !== Image.Ready
           text: root.effectiveGlyph
-          color: Color.notifications.text
+          color: root.urgency === 2 ? root.urgentInk : Color.notifications.text
           font.family: root.fontFamily
-          font.pixelSize: Style.font.icon
+          font.pixelSize: Style.font.iconSmall
         }
       }
 
@@ -292,9 +298,13 @@ BorderSurface {
           width: implicitWidth
           height: implicitHeight
           radius: Style.cornerRadius
-          color: actionPill.primary
-            ? Util.alpha(Color.notifications.countdown, actionPill.hot ? 1.0 : 0.85)
-            : Util.alpha(Color.notifications.text, actionPill.hot ? 0.24 : 0.14)
+          // Ink washes, not the accent. The theme's controls on a tinted card
+          // are the card's own ink at a weight — the battery profile pills are
+          // the same ladder — and the accent is reserved for meaning (the
+          // countdown hairline), never for a button fill.
+          color: Util.alpha(Color.notifications.text,
+            actionPill.primary ? (actionPill.hot ? 0.32 : 0.25)
+                               : (actionPill.hot ? 0.18 : 0.10))
           Behavior on color { ColorAnimation { duration: 120 } }
 
           Text {
