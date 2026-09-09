@@ -491,7 +491,14 @@ Panel {
                 fontFamily: root.bar.fontFamily
                 horizontalPadding: Style.spacing.controlPaddingX
                 verticalPadding: Style.spacing.controlPaddingY
-                bordered: false
+                // Every other single-select toggle group in the theme (network
+                // band, DNS, monitor scale) is bordered; the profiles were the
+                // one exception, and on the inverted power card the borderless
+                // selected fill — grey control ink at 0.14 on navy — is
+                // invisible and indistinguishable from hover. Bordered routes
+                // the active pill through the prominent path so "which profile
+                // is on" reads on the tinted surface.
+                bordered: true
                 active: root.activeProfile === modelData
                 hasCursor: root.cursorActive && root.profileIndex === index
                 onClicked: root.setProfile(modelData)
