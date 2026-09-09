@@ -24,6 +24,11 @@ Panel {
   readonly property color tintEnd: (tinted && toneValues["marvin-power.background-end"]) ? Color.flatColor(toneValues["marvin-power.background-end"], tintBackground) : tintBackground
   readonly property color ink: (tinted && toneValues["marvin-power.text"]) ? Color.flatColor(toneValues["marvin-power.text"], Color.popups.text) : Color.popups.text
   readonly property color inkMuted: (tinted && toneValues["marvin-power.muted"]) ? Color.flatColor(toneValues["marvin-power.muted"], Color.muted) : Color.muted
+  // Unlit ring ticks are the ink at low alpha. The global normal fill (0.06) is
+  // tuned for the base surface; on the navy inverted power card it sinks into
+  // the background, so the empty track runs a heavier alpha to stay a visible
+  // "not yet" tick against the tint, while staying well below the solid lit ones.
+  readonly property real trackAlpha: 0.18
   // manageIpc: false so this panel can own the single IpcHandler the target
   // permits — needed for the togglePercentage method below.
   manageIpc: false
@@ -404,7 +409,7 @@ Panel {
                 radius: 1
                 x: ring.width / 2 - width / 2
                 y: 0
-                color: index < ring.lit ? root.ink : Util.alpha(root.ink, Style.normalFillAlpha)
+                color: index < ring.lit ? root.ink : Util.alpha(root.ink, root.trackAlpha)
                 transform: Rotation { origin.x: Style.spacing.xxs / 2; origin.y: ring.height / 2; angle: index * 6 }
                 Behavior on color { ColorAnimation { duration: 220 } }
               }
