@@ -357,6 +357,49 @@ Item {
   // which the persistence files preserve, so restored toasts stay clickable.
   // Third-party clients register a libnotify action under the canonical
   // identifier "default" instead; that one only works while the sender is live.
+  // Actions as plain {identifier, text} rows. The live NotificationAction
+  // objects stay in liveRefs for the same reason the Notification does (see
+  // above): held anywhere the model can read them back, they are a dangling
+  // pointer the moment the server tears the notification down. "default" is
+  // excluded — clicking the card body already invokes it.
+  function popupActions(index) {
+    if (index < 0 || index >= popupModel.count) return []
+    var entry = popupModel.get(index)
+    if (!entry || isRestoredRow(entry)) return []
+    var ref = liveRefs[entry.originalId]
+    var out = []
+    try {
+      if (ref && ref.actions) {
+        for (var i = 0; i < ref.actions.length; i++) {
+          var a = ref.actions[i]
+          if (!a || String(a.identifier) === "default") continue
+          out.push({ identifier: String(a.identifier || ""), text: String(a.text || "") })
+        }
+      }
+    } catch (e) {
+      return []
+    }
+    return out
+  }
+
+  function invokePopupAction(index, identifier) {
+    if (index < 0 || index >= popupModel.count) return
+    var entry = popupModel.get(index)
+    if (!entry || isRestoredRow(entry)) return
+    var ref = liveRefs[entry.originalId]
+    try {
+      if (ref && ref.actions) {
+        for (var i = 0; i < ref.actions.length; i++) {
+          var a = ref.actions[i]
+          if (a && String(a.identifier) === String(identifier)) { a.invoke(); break }
+        }
+      }
+    } catch (e) {
+      console.warn("invoke action failed:", e)
+    }
+    dismissPopup(index)
+  }
+
   function invokePopupDefault(index) {
     if (index < 0 || index >= popupModel.count) return
     var entry = popupModel.get(index)
@@ -1051,6 +1094,10 @@ Item {
               cornerRadius: service.cornerRadius
               fontFamily: service.shell && service.shell.bar ? service.shell.bar.fontFamily : ""
               glyph: cardSlot.glyph
+              actions: service.popupActions(cardSlot.index)
+              onActionInvoked: function(identifier) { service.invokePopupAction(cardSlot.index, identifier) }
+              // Popups float; the history list does not.
+              elevated: true
 
               onCloseRequested: service.dismissPopup(cardSlot.index)
               onCardClicked: service.invokePopupDefault(cardSlot.index)

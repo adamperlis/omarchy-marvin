@@ -4,6 +4,7 @@
 
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Effects
 import Quickshell
 import qs.Commons
 import qs.Ui
@@ -32,13 +33,30 @@ BorderSurface {
 
   readonly property bool hovered: hoverTracker.hovered
 
+  // Plain {identifier, text} rows, never live NotificationAction objects —
+
+  // see the liveRefs note in Service.qml: a QObject held here is a dangling
+
+  // pointer once the server tears the notification down.
+
+  property var actions: []
+
+  signal actionInvoked(string identifier)
+
   signal closeRequested()
   signal cardClicked()
   // Prefer per-notification media/avatar data, then fall back to the app icon.
   // The `check` flag avoids Qt's missing-texture placeholder for unknown names.
   readonly property string smallIconSource: image.length > 0 ? image : iconSource(appIcon)
-  readonly property bool hasGlyph: glyph.length > 0
-  readonly property bool compactGlyph: NotificationLogic.shouldRenderCompactGlyph(glyph, smallIconSource, singleLineToast)
+  // Every notification gets a mark. Apps that set an icon or an image keep
+  // theirs; the rest fall back to a glyph picked by urgency, so a toast is
+  // never a bare block of text. Same Nerd Font family the omarchy-notification-*
+  // senders already use for their own toasts.
+  readonly property string fallbackGlyph: urgency === 2 ? "󰀪" : (urgency === 0 ? "󰋼" : "󰂚")
+  readonly property string effectiveGlyph: glyph.length > 0 ? glyph
+    : (hasSmallIcon ? "" : fallbackGlyph)
+  readonly property bool hasGlyph: effectiveGlyph.length > 0
+  readonly property bool compactGlyph: NotificationLogic.shouldRenderCompactGlyph(effectiveGlyph, smallIconSource, singleLineToast)
   readonly property bool hasSmallIcon: smallIconSource.length > 0
   readonly property bool summaryStartsWithGlyph: NotificationLogic.summaryStartsWithGlyph(summary)
   readonly property bool singleLineToast: sanitizedBody.length === 0
@@ -49,7 +67,40 @@ BorderSurface {
   readonly property color dimColor: Qt.darker(Color.notifications.text, 1.4)
   readonly property color bodyColor: Qt.darker(Color.notifications.text, 1.15)
   readonly property color accentColor: urgency === 2 ? Color.urgent : (urgency === 0 ? dimColor : Color.notifications.countdown)
-  readonly property var cardBorderSpec: Border.surfaceSpec("notifications", "border", Color.notifications.border, Math.max(1, Style.space(2)))
+  // Toast-only treatment. A popup floats over whatever you are doing and has to
+  // lift off it; the same card in the history list sits on a panel surface,
+  // where a shadow and a moving edge would just be noise.
+  property bool elevated: false
+
+  // A slow sweep around the edge. BorderSurface already routes gradient specs
+  // through BorderOverlay, so this is the kit's own path, not a second border
+  // painted on top: rotating the gradient angle walks the bright stop around
+  // the card. Only while elevated, so the history list pays nothing for it.
+  property real borderAngle: 0
+  NumberAnimation on borderAngle {
+    running: root.elevated
+    loops: Animation.Infinite
+    from: 0
+    to: 360
+    duration: 6000
+  }
+
+  readonly property real borderWidthPx: Math.max(1, Style.space(2))
+  readonly property var cardBorderSpec: root.elevated
+    ? ({
+        color: Color.notifications.border,
+        widths: { top: borderWidthPx, right: borderWidthPx, bottom: borderWidthPx, left: borderWidthPx },
+        gradient: {
+          colors: [
+            Util.alpha(Color.notifications.text, 0.08),
+            Util.alpha(Color.notifications.countdown, 0.85),
+            Util.alpha(Color.notifications.text, 0.08)
+          ],
+          angle: root.borderAngle,
+          enabled: true
+        }
+      })
+    : Border.surfaceSpec("notifications", "border", Color.notifications.border, borderWidthPx)
 
   function sanitizeBody(s) {
     return NotificationLogic.sanitizeBody(s, app, appIcon)
@@ -70,6 +121,17 @@ BorderSurface {
   radius: cornerRadius
   color: Color.notifications.background
   borderSpec: cardBorderSpec
+
+  // MultiEffect is the shell's shadow (Tray, LockView, ImagePicker all use it).
+  // autoPadding keeps the blur from being clipped to the card's own bounds.
+  layer.enabled: root.elevated
+  layer.effect: MultiEffect {
+    shadowEnabled: true
+    autoPaddingEnabled: true
+    shadowColor: Qt.rgba(0, 0, 0, 0.38)
+    shadowBlur: 0.7
+    shadowVerticalOffset: Style.space(6)
+  }
   clip: true
 
   HoverHandler { id: hoverTracker }
@@ -142,7 +204,7 @@ BorderSurface {
           textFormat: Text.PlainText
           anchors.centerIn: parent
           visible: root.hasGlyph && smallIconImage.status !== Image.Ready
-          text: root.glyph
+          text: root.effectiveGlyph
           color: Color.notifications.text
           font.family: root.fontFamily
           font.pixelSize: Style.font.displayLarge
@@ -153,7 +215,7 @@ BorderSurface {
         textFormat: Text.PlainText
         Layout.alignment: Qt.AlignVCenter
         visible: root.compactGlyph
-        text: root.glyph
+        text: root.effectiveGlyph
         color: Color.notifications.text
         font.family: root.fontFamily
         font.pixelSize: Style.font.icon
@@ -199,8 +261,60 @@ BorderSurface {
         }
       }
     }
-  }
+    // Actions the sender registered. Rendered only when there are any, so an
+    // ordinary toast keeps its shape. The first is the primary — it carries the
+    // accent fill, the rest are ink washes — which is the same weighting the
+    // profile pills use, so a button means the same thing across the theme.
+    Flow {
+      visible: root.actions.length > 0
+      Layout.fillWidth: true
+      Layout.leftMargin: Style.spacing.popupPadding
+      Layout.rightMargin: Style.spacing.popupPadding
+      Layout.bottomMargin: Style.spacing.popupPadding
+      spacing: Style.spacing.controlGap
 
+      Repeater {
+        model: root.actions
+
+        Rectangle {
+          id: actionPill
+          required property var modelData
+          required property int index
+          readonly property bool primary: index === 0
+          readonly property bool hot: actionMouse.containsMouse
+
+          implicitWidth: actionLabel.implicitWidth + Style.spacing.controlPaddingX * 2
+          implicitHeight: actionLabel.implicitHeight + Style.spacing.controlPaddingY * 2
+          width: implicitWidth
+          height: implicitHeight
+          radius: Style.cornerRadius
+          color: actionPill.primary
+            ? Util.alpha(Color.notifications.countdown, actionPill.hot ? 1.0 : 0.85)
+            : Util.alpha(Color.notifications.text, actionPill.hot ? 0.24 : 0.14)
+          Behavior on color { ColorAnimation { duration: 120 } }
+
+          Text {
+            id: actionLabel
+            anchors.centerIn: parent
+            textFormat: Text.PlainText
+            text: String(actionPill.modelData.text || actionPill.modelData.identifier || "")
+            color: Color.notifications.text
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.body
+          }
+
+          MouseArea {
+            id: actionMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.actionInvoked(String(actionPill.modelData.identifier || ""))
+          }
+        }
+      }
+    }
+
+  }
 
   // Close. Right-click anywhere on the card already dismissed, but that is a
   // gesture you have to know; this is the one that is visible. It fades in on
