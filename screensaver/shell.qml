@@ -60,11 +60,17 @@ ShellRoot {
           id: softened
           anchors.fill: parent
           layer.enabled: true
+          // Saturation and contrast live on the effect, which is the reliable
+          // way to get punch here. A Qt5Compat Blend was tried first and is the
+          // obvious answer, but a layer-effect item cannot also serve as a
+          // Blend source — the composite collapsed to the flat base colour.
           layer.effect: MultiEffect {
             blurEnabled: true
             blur: 1.0
             blurMax: 64
             autoPaddingEnabled: false
+            saturation: 0.45
+            contrast: 0.12
           }
 
         Item {
@@ -193,6 +199,55 @@ ShellRoot {
             bx: plate.width * 0.26;  by: plate.height * 0.32
             spin: 21000
             driftX: 15000; driftY: 12000; breathe: 8000
+          }
+
+          // Colour pops. The wash is deliberately muted to sit near the
+          // wallpaper, which leaves it a little inert, so these three saturated
+          // fields spend most of their cycle at zero and briefly surface. The
+          // frame gets an event rather than a constant, and because they ride
+          // inside the plate they are blurred and turned with everything else
+          // instead of reading as discs laid on top.
+          component Pop: Rectangle {
+            id: pop
+            property int cycle: 31000
+            property real peak: 0.5
+            property int offset: 0
+            radius: width / 2
+            opacity: 0
+            transformOrigin: Item.Center
+            SequentialAnimation on opacity {
+              running: true
+              loops: Animation.Infinite
+              PauseAnimation { duration: pop.offset }
+              NumberAnimation { to: pop.peak; duration: Math.round(pop.cycle * 0.24); easing.type: Easing.InOutSine }
+              NumberAnimation { to: 0; duration: Math.round(pop.cycle * 0.32); easing.type: Easing.InOutSine }
+              PauseAnimation { duration: Math.round(pop.cycle * 0.44) }
+            }
+            SequentialAnimation on scale {
+              running: true
+              loops: Animation.Infinite
+              NumberAnimation { from: 0.7; to: 1.25; duration: pop.cycle; easing.type: Easing.InOutSine }
+              NumberAnimation { to: 0.7; duration: pop.cycle; easing.type: Easing.InOutSine }
+            }
+          }
+
+          Pop {
+            width: plate.width * 0.26; height: width
+            color: "#ffb02e"
+            x: plate.width * 0.20; y: plate.height * 0.16
+            cycle: 31000; peak: 0.55; offset: 2000
+          }
+          Pop {
+            width: plate.width * 0.22; height: width
+            color: "#ff5f8f"
+            x: plate.width * 0.52; y: plate.height * 0.44
+            cycle: 43000; peak: 0.45; offset: 13000
+          }
+          Pop {
+            width: plate.width * 0.24; height: width
+            color: "#3fc8f0"
+            x: plate.width * 0.14; y: plate.height * 0.52
+            cycle: 37000; peak: 0.40; offset: 25000
           }
 
           // Keeps the middle luminous so the name always has quiet to sit on.
