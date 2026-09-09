@@ -1,0 +1,27 @@
+#!/bin/bash
+# marvin-screensaver — the Marvin screensaver.
+#
+# Omarchy's own runs ttfx in a terminal, which is an ASCII effect by design.
+# This is a standalone Quickshell config instead: a layer-shell overlay with
+# the theme's wallpaper look, drifting under a double blur, and the mark in
+# the middle. It is its own process, not a shell plugin, so an idle machine
+# is not holding a second copy of the bar's engine and any input can kill it
+# outright.
+set -euo pipefail
+
+DIR="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/themes/marvin/screensaver"
+[ -f "$DIR/shell.qml" ] || { echo "marvin-screensaver: not installed at $DIR" >&2; exit 1; }
+
+# Already up: leave the running one alone rather than stacking overlays.
+pgrep -f "qs -n -p $DIR" >/dev/null 2>&1 && exit 0
+
+show_cursor() {
+  hyprctl eval 'hl.config({ cursor = { invisible = false } })' &>/dev/null \
+    || hyprctl keyword cursor:invisible false &>/dev/null || true
+}
+trap show_cursor EXIT INT TERM HUP
+
+hyprctl eval 'hl.config({ cursor = { invisible = true } })' &>/dev/null \
+  || hyprctl keyword cursor:invisible true &>/dev/null || true
+
+qs -n -p "$DIR"

@@ -278,9 +278,11 @@ install_mode() {
   install_bin "$THEME_DIR/bin/marvin-mode" "$HOME/.local/bin/marvin-mode"
   install_bin "$THEME_DIR/bin/marvin-update" "$HOME/.local/bin/marvin-update"
   install_bin "$THEME_DIR/bin/marvin-todo" "$HOME/.local/bin/marvin-todo"
+  install_bin "$THEME_DIR/bin/marvin-screensaver" "$HOME/.local/bin/marvin-screensaver"
   note "→ ~/.local/bin/marvin-mode    (toggle · system · schedule)"
   note "→ ~/.local/bin/marvin-update  (pull + re-apply; --enable for a daily timer)"
   note "→ ~/.local/bin/marvin-todo    (backs the marvin.todos widget; ~/todos.md)"
+  note "→ ~/.local/bin/marvin-screensaver (the gradient screensaver; bind it or run it)"
   # Auto-update on by default — but only turn it on at first install. On an
   # update, whatever the user set (they may have turned it off in the panel) is
   # left alone; re-enabling here would override their choice.
