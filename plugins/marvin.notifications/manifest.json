@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.notifications",
+  "name": "Marvin Notifications",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "Notification daemon, popups, DND, and history — Marvin card styling",
+  "kinds": [
+    "service"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml"
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.notifications"
+  }
+}
