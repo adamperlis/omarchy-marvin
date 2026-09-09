@@ -249,6 +249,18 @@ install_plugins() {
         fi
       done
     else
+      # Widgets keep their placement, but a clone that replaces a built-in
+      # *service* (idle, notifications) has no placement to preserve and does
+      # nothing whatsoever until it is enabled. On an update those are newly
+      # shipped, so turn on any service clone that is not on yet — otherwise the
+      # theme ships a screensaver that silently never fires.
+      local plugin_json
+      plugin_json=$(omarchy-shell shell listPlugins 2>/dev/null || echo "[]")
+      for id in $(plugin_ids); do
+        jq -e --arg id "$id" 'any(.[]; .id == $id and .enabled == true)' <<<"$plugin_json" >/dev/null 2>&1 && continue
+        jq -e --arg id "$id" 'any(.[]; .id == $id and ((.kinds // []) | index("service")))' <<<"$plugin_json" >/dev/null 2>&1 || continue
+        omarchy-plugin-enable "$id" >/dev/null 2>&1 && note "enabled $id (new service)" || true
+      done
       note "kept your widget layout (refreshed their code only)"
     fi
   else

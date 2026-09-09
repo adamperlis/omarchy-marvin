@@ -9,6 +9,12 @@
 # outright.
 set -euo pipefail
 
+# Honour the same off switch the stock launcher reads, so "omarchy toggle
+# screensaver-off" keeps meaning what it meant. `force` overrides it.
+if omarchy-toggle-enabled screensaver-off 2>/dev/null && [[ ${1:-} != force ]]; then
+  exit 1
+fi
+
 DIR="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/themes/marvin/screensaver"
 [ -f "$DIR/shell.qml" ] || { echo "marvin-screensaver: not installed at $DIR" >&2; exit 1; }
 
