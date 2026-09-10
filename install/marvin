@@ -399,8 +399,14 @@ apply() {
   if command -v omarchy-theme-bg-set >/dev/null 2>&1 \
      && { [[ ! -e "$bg_link" ]] || [[ ! -f "$(readlink -f "$bg_link" 2>/dev/null)" ]]; }; then
     for d in "$CFG/omarchy/backgrounds/marvin" "$THEME_DIR/backgrounds"; do
-      def=$(ls "$d"/0-*.jpg 2>/dev/null | head -1)
-      [[ -n "$def" ]] && { omarchy-theme-bg-set "$def" >/dev/null 2>&1 && note "wallpaper set (blue default)"; break; }
+      # A missing candidate must fall through to the next one: under `set -e` a
+      # bare `[[ -n ]] && {...}` returning 1 aborts the whole install, skipping
+      # the reload and the shell restart below.
+      def=$(ls "$d"/0-*.jpg 2>/dev/null | head -1) || def=""
+      if [[ -n "$def" ]]; then
+        omarchy-theme-bg-set "$def" >/dev/null 2>&1 && note "wallpaper set (blue default)"
+        break
+      fi
     done
   fi
   # Restore the appearance the user chose (light / dark / auto). A reinstall runs
