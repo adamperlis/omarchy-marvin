@@ -17,7 +17,11 @@ BarWidget {
   readonly property var sourcePlayers: mediaService ? mediaService.sourcePlayers : []
 
   readonly property bool hasMedia: activePlayer !== null && (activePlayer.trackTitle || activePlayer.trackArtist)
-  readonly property string playIcon: activePlayer && activePlayer.isPlaying ? "󰏤" : "󰐊"
+  // One static mark, the same music note the popup's empty art tile carries,
+  // so the bar and the card agree. State is carried by tone, not by swapping
+  // the glyph: foreground while playing, muted when paused — the theme's
+  // two tones. The popup's transport keeps the real play/pause glyphs.
+  readonly property string playIcon: "󰝚"
   readonly property string title: activePlayer ? (activePlayer.trackTitle || "") : ""
   readonly property string artist: activePlayer ? (activePlayer.trackArtist || "") : ""
 
