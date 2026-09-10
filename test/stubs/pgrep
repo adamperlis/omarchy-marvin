@@ -1,0 +1,8 @@
+#!/bin/bash
+# Sandbox stub — see test/stubs/README. The fake HOME has no shell of its own,
+# so `pgrep -x quickshell` must say so; everything else is the real pgrep.
+if [[ "$*" == "-x quickshell" ]]; then
+  [[ -n "${MARVIN_STUB_LOG:-}" ]] && echo "pgrep $*" >>"$MARVIN_STUB_LOG"
+  exit 1
+fi
+exec /usr/bin/pgrep "$@"

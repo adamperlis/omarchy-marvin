@@ -1,0 +1,4 @@
+#!/bin/bash
+# Sandbox stub — see test/stubs/README. Records the call, changes nothing.
+[[ -n "${MARVIN_STUB_LOG:-}" ]] && echo "omarchy-plugin-enable $*" >>"$MARVIN_STUB_LOG"
+exit 0

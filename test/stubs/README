@@ -1,0 +1,12 @@
+Stubs that keep test/install-revert inside its fake HOME.
+
+install/marvin reaches the desktop through helpers that talk to the running
+shell over IPC (omarchy-shell and the omarchy-plugin-*/restart/theme wrappers
+built on it) and through hyprctl. None of them read $HOME, so a test that only
+sets HOME=$FAKE still reconfigures the developer's live session — running
+./test/run once stripped every marvin.* widget out of a real shell.json.
+
+The test puts this directory first on PATH so those calls land here instead.
+pgrep is stubbed too, and only for `-x quickshell`: install/marvin gates its
+IPC on shell_running(), and inside the sandbox the honest answer is "no shell".
+Every other pgrep query is passed through to the real binary.

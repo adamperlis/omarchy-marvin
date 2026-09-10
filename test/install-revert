@@ -4,6 +4,13 @@
 # shell does to shell.json when clones are enabled, revert, and require every
 # touched file to be byte-identical to before. Then the no-snapshot fallback.
 # Run from the repo root: ./test/install-revert
+#
+# HOME=$FAKE alone does not sandbox this. install/marvin reconfigures the
+# desktop over IPC, which has no idea what $HOME says, so this test used to
+# strip every marvin.* widget out of the developer's live shell.json. The
+# escaping commands are shimmed in test/stubs and put first on PATH; the live
+# config is fingerprinted below so a new escape route fails the test loudly
+# instead of silently rearranging someone's bar.
 set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 FAKE=$(mktemp -d); trap 'rm -rf "$FAKE"' EXIT
@@ -14,9 +21,12 @@ cp "$ROOT/test/fixtures/shell.json" "$FAKE/.config/omarchy/"
 echo "tokyo-night" >"$FAKE/.local/state/omarchy/current/theme.name"
 echo "keep" >"$FAKE/.config/omarchy/plugins/user.thing/keep"
 fingerprint() { ( cd "$FAKE/.config" && find . -path ./omarchy/themes -prune -o -type f -print | sort | xargs md5sum ); }
-run() { HOME="$FAKE" PATH=/usr/bin:/bin bash "$FAKE/.config/omarchy/themes/marvin/install/marvin" "$@" >/dev/null 2>&1; }
+run() { HOME="$FAKE" PATH="$ROOT/test/stubs:/usr/bin:/bin" MARVIN_STUB_LOG="$FAKE/stub.log" \
+        bash "$FAKE/.config/omarchy/themes/marvin/install/marvin" "$@" >/dev/null 2>&1; }
 fail=0
 before=$(fingerprint)
+LIVE="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/shell.json"
+live_before=$([[ -f "$LIVE" ]] && md5sum "$LIVE" | cut -d" " -f1 || echo absent)
 
 run
 [[ -f "$FAKE/.config/hypr/marvin.lua" ]] || { echo "BAD install did not place marvin.lua"; fail=1; }
@@ -54,5 +64,14 @@ grep -q "marvin" "$FAKE/.config/omarchy/shell.json" && { echo "BAD fallback left
 python3 -c "import json,sys; sys.exit(0 if json.load(open('$FAKE/.config/omarchy/shell.json')).get('disabledPlugins',[])==[] else 1)" && echo "ok  fallback re-enables built-ins" || { echo "BAD built-ins still disabled"; fail=1; }
 grep -qF 'hypr.marvin' "$FAKE/.config/hypr/hyprland.lua" && { echo "BAD fallback left the require line"; fail=1; } || echo "ok  fallback removes the require line"
 [[ ! -e "$FAKE/.config/hypr/marvin.lua" && ! -e "$FAKE/.config/omarchy/themes/marvin-light" && ! -e "$FAKE/.config/omarchy/plugins/marvin.weather" ]] && echo "ok  fallback removes files" || { echo "BAD fallback left files"; fail=1; }
+
+live_after=$([[ -f "$LIVE" ]] && md5sum "$LIVE" | cut -d" " -f1 || echo absent)
+if [[ "$live_before" == "$live_after" ]]; then
+  echo "ok  the live shell.json is untouched"
+else
+  echo "BAD this test reconfigured the real $LIVE — a command escaped the sandbox:"
+  sed -n "1,20p" "$FAKE/stub.log" 2>/dev/null
+  fail=1
+fi
 
 echo; echo "$fail failures"; exit $fail
