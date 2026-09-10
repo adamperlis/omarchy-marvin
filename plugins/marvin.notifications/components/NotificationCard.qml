@@ -31,6 +31,11 @@ BorderSurface {
   // System monospace font injected by the container.
   property string fontFamily: ""
 
+  // Injected by the container. Maps a themed icon name onto the dark variant
+  // of the icon theme, because this card is navy under the light theme too —
+  // see DarkIconResolver. Null is a working card with the plain lookup.
+  property var iconResolver: null
+
   readonly property bool hovered: hoverTracker.hovered
 
   // Plain {identifier, text} rows, never live NotificationAction objects —
@@ -47,7 +52,13 @@ BorderSurface {
   signal cardClicked()
   // Prefer per-notification media/avatar data, then fall back to the app icon.
   // The `check` flag avoids Qt's missing-texture placeholder for unknown names.
-  readonly property string smallIconSource: image.length > 0 ? image : iconSource(appIcon)
+  readonly property string smallIconSource: {
+    if (image.length > 0) return image
+    // Read so a dark-variant lookup that lands after the card is on screen
+    // re-runs this binding and swaps the icon in place.
+    void (iconResolver ? iconResolver.revision : 0)
+    return iconSource(appIcon)
+  }
   // Every notification gets a mark. Apps that set an icon or an image keep
   // theirs; the rest fall back to a glyph picked by urgency, so a toast is
   // never a bare block of text. Same Nerd Font family the omarchy-notification-*
@@ -111,6 +122,11 @@ BorderSurface {
     if (value.length === 0) return ""
     if (value.indexOf("file://") === 0 || value.indexOf("image://") === 0) return value
     if (value.charAt(0) === "/") return Util.fileUrl(value)
+    // A bare name is the icon theme's to answer, and the theme has two inks
+    // for it. Take the one drawn for a dark panel; fall back to the plain
+    // lookup for every name the dark theme does not override.
+    var dark = root.iconResolver ? root.iconResolver.resolve(value) : ""
+    if (dark.length > 0) return dark
     return Quickshell.iconPath(value, true)
   }
 

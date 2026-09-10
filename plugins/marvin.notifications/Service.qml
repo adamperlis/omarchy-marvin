@@ -91,6 +91,11 @@ Item {
   property alias popupModel: popupModel
   ListModel { id: popupModel }
 
+  // The card is navy under both Marvin themes, so a themed icon name has to be
+  // resolved against the icon theme's dark ink rather than the process-wide
+  // one. Shared by every card: the lookup is cached per icon name.
+  DarkIconResolver { id: darkIcons }
+
   // How many notifications the history directory keeps, and therefore how
   // many `showHistory` can replay.
   readonly property int historyLimit: 10
@@ -1086,6 +1091,7 @@ Item {
               anchors.right: parent.right
               app: cardSlot.app
               appIcon: cardSlot.appIcon
+              iconResolver: darkIcons
               summary: cardSlot.summary
               body: cardSlot.body
               image: cardSlot.image
