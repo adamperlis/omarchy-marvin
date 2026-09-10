@@ -26,6 +26,23 @@ blue    = "#6db8ee"
 magenta = "#c4a0dc"
 cyan    = "#82c9c9"
 
+# Names upstream's app templates ask for that a neutral ramp does not
+# carry. Set here so every template — not just the files Marvin ships —
+# takes Marvin's value instead of a derived one. Left unset, orange
+# resolves onto yellow and flattens enumMember against class in the
+# editor themes. Both sit in the ramp's own band; test/contrast holds them.
+orange  = "#e0a273"
+brown   = "#a37857"
+
+# Positional ANSI names. Some apps read the palette by slot rather than by
+# role — voxtype's dictation OSD colours its level meter from color1/2/3 and
+# falls back to its own saturated built-ins when they are absent, which is
+# how a lime-green meter ended up on a Marvin ground. Aliases of the ramp's
+# own red/green/yellow; test/contrast pins them so they cannot drift.
+color1  = "#e38484"  # danger  — mirrors red
+color2  = "#98c78c"  # safe    — mirrors green
+color3  = "#dfbf72"  # warning — mirrors yellow
+
 bright_red     = "#ee9a9a"
 bright_green   = "#aed6a3"
 bright_yellow  = "#ead08e"

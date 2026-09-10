@@ -25,6 +25,15 @@ blue    = "#1a72ad"
 magenta = "#9448b8"
 cyan    = "#177a7a"
 
+# See the dark palette: named for upstream's templates, measured like the rest.
+orange  = "#a1560f"
+brown   = "#96622e"
+
+# See the dark palette. Aliases of red/green/yellow; test/contrast pins them.
+color1  = "#c03a3a"
+color2  = "#2e7d2e"
+color3  = "#8f6a00"
+
 bright_red     = "#a82f2f"
 bright_green   = "#256b25"
 bright_yellow  = "#7a5a00"

@@ -22,7 +22,10 @@ def contrast(a, b):
     la, lb = lum(a), lum(b)
     return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
 
+# orange and brown are named for upstream's app templates (see colors.toml).
+# They carry syntax tokens in the editor themes, so they hold the text floor.
 ANSI = ("red", "green", "yellow", "blue", "magenta", "cyan")
+WARM = ("orange", "brown")   # no bright_ siblings; the ramp carries one step each
 CHECKS = [
     ("body text",        "foreground",        "background",         10.0),
     ("body on raised",   "foreground",        "lighter_background", 10.0),
@@ -33,8 +36,12 @@ CHECKS = [
     ("accent as text",   "accent_text",       "lighter_background",  4.5),
     ("attention (icon)", "attention",         "background",          3.0),
     ("selected text",    "bright_foreground", "selection",           4.5),
-] + [(f"ansi {c}", c, "background", 4.5) for c in ANSI] \
+] + [(f"ansi {c}", c, "background", 4.5) for c in ANSI + WARM] \
   + [(f"ansi bright_{c}", "bright_" + c, "background", 4.5) for c in ANSI]
+
+# Positional ANSI slots (see colors.toml). They exist only so palette-by-slot
+# consumers get Marvin's values; they must stay identical to their role source.
+ALIASES = (("color1", "red"), ("color2", "green"), ("color3", "yellow"))
 
 failed = 0
 for path in ("colors.toml", "light/colors.toml"):
@@ -45,5 +52,9 @@ for path in ("colors.toml", "light/colors.toml"):
         ok = v >= floor
         failed += not ok
         print(f"  {'ok ' if ok else 'BAD'} {label:18} {p[fg]} on {p[bg]}  {v:5.2f}  floor {floor}")
+    for slot, role in ALIASES:
+        ok = p.get(slot) == p[role]
+        failed += not ok
+        print(f"  {'ok ' if ok else 'BAD'} alias {slot:12} {p.get(slot)} == {role} {p[role]}")
 print(f"\n{failed} failures")
 sys.exit(1 if failed else 0)
