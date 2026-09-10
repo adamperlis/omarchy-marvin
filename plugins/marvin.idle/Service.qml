@@ -69,6 +69,13 @@ Item {
     runProcess(screensaverProcess, "screensaver", "[[ $(omarchy-shell lock isLocked 2>/dev/null) == \"true\" ]] || marvin-screensaver")
   }
 
+  function restoreCursor(reason) {
+    if (cursorProcess.running) return
+    logEvent("cursor-restore", reason)
+    cursorProcess.command = ["hyprctl", "eval", "hl.config({ cursor = { invisible = false } })"]
+    cursorProcess.running = true
+  }
+
   function lockSystem(reason) {
     logEvent("lock-system", reason || "requested")
     screensaverTimer.stop()
@@ -295,8 +302,20 @@ Item {
 
   Process {
     id: screensaverProcess
-    onExited: function(exitCode, exitStatus) { root.logEvent("process-exit", "screensaver exitCode=" + exitCode + " status=" + exitStatus) }
+    onExited: function(exitCode, exitStatus) {
+      root.logEvent("process-exit", "screensaver exitCode=" + exitCode + " status=" + exitStatus)
+      root.restoreCursor("screensaver exited")
+    }
   }
+
+  // marvin-screensaver hides the pointer for its run and restores it from a
+  // trap, which SIGKILL does not run — and a screensaver launched from here is
+  // a child of the shell, so `omarchy restart shell` is exactly that kill. The
+  // pointer then stays hidden with no process left to bring it back. This is
+  // the only side of that handshake still alive to undo it, so it undoes it
+  // whenever the screensaver ends and once on startup, for the run whose shell
+  // did not outlive it. Setting it false when it is already false is a no-op.
+  Process { id: cursorProcess }
   Process {
     id: lockProcess
     onExited: function(exitCode, exitStatus) { root.logEvent("process-exit", "lock exitCode=" + exitCode + " status=" + exitStatus) }
@@ -340,6 +359,7 @@ Item {
   Component.onCompleted: {
     logEvent("service-ready")
     refreshStayAwakeState()
+    restoreCursor("service start")
   }
 
   IpcHandler {
