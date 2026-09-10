@@ -68,14 +68,24 @@ BarWidget {
     }
   }
 
+  // The reading as the bar sees it: the rounded degree, no unit letter — the
+  // panel carries °F/°C, the bar only needs the number. Empty until the first
+  // fetch lands, and dropped on a vertical bar, where a wide text block cannot
+  // fit the slot.
+  readonly property string barGlyph: (panelLoader.item && panelLoader.item.label !== "") ? panelLoader.item.label : "\uf0c2"
+  readonly property string barDegree: (panelLoader.item && panelLoader.item.reportTempNum) ? (panelLoader.item.reportTempNum + "°") : ""
+  readonly property bool barShowsDegree: barDegree !== "" && !button.vertical
+
   BarIconButton {
     id: button
     anchors.fill: parent
     bar: root.bar
-    // The condition glyph once we have one; a cloud placeholder until then so
-    // the widget is visibly present the moment it's enabled.
-    text: (panelLoader.item && panelLoader.item.label !== "") ? panelLoader.item.label : "\uf0c2"
-    slotSize: Style.bar.statusSlot
+    // Degree then glyph, the order marvin.power uses for its percentage. Falls
+    // back to the glyph alone — a cloud placeholder until the first reading —
+    // so the widget is visibly present the moment it's enabled.
+    text: root.barShowsDegree ? (root.barDegree + " " + root.barGlyph) : root.barGlyph
+    // A text block is wider than an icon slot; power widens the same way.
+    slotSize: root.barShowsDegree ? Style.bar.statusSlot * 2 : Style.bar.statusSlot
     tooltipText: (panelLoader.item && panelLoader.item.label !== "") ? "" : "Weather — fetching your location…"
 
     onPressed: function(b) {
