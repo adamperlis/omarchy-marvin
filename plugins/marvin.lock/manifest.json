@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "marvin.lock",
+  "name": "Lock Screen",
+  "version": "1.0.0",
+  "author": "Marvin theme",
+  "description": "Omarchy's lock screen with the Marvin wash behind the password field, shared with the screensaver.",
+  "omarchy": {
+    "capabilities": [
+      "authentication"
+    ],
+    "clonedFrom": "omarchy.lock"
+  },
+  "kinds": [
+    "service"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml"
+  }
+}
