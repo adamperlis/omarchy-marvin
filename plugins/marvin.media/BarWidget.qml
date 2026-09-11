@@ -29,7 +29,6 @@ BarWidget {
 
   function close() { popupOpen = false }
   property real maxLabelWidth: 180
-
   visible: hasMedia
   implicitWidth: hasMedia ? row.implicitWidth + Style.space(14) : 0
   implicitHeight: barSize
@@ -70,8 +69,7 @@ BarWidget {
         font.family: root.bar.fontFamily
         font.pixelSize: Style.font.body
         font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
-      font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
-        anchors.verticalCenter: parent.verticalCenter
+              anchors.verticalCenter: parent.verticalCenter
 
         property bool needsScroll: implicitWidth > scrollClip.width
 
@@ -219,9 +217,7 @@ BarWidget {
             color: Color.muted
             font.family: root.bar.fontFamily
             font.pixelSize: Style.font.body
-        font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
-      font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
-            elide: Text.ElideRight
+                          elide: Text.ElideRight
             width: parent.width
             visible: text !== ""
           }
@@ -365,7 +361,6 @@ BarWidget {
               && root.mediaService.playerKey(root.activePlayer) === root.mediaService.playerKey(player)
             readonly property string sourceTitle: player ? (player.trackTitle || player.identity || player.desktopEntry || "Media source") : "Media source"
             readonly property string sourceDetail: player && player.trackArtist ? player.trackArtist : (player && player.identity ? player.identity : "")
-
             width: sourceList.width
             height: Style.spacing.controlHeight
             radius: Style.cornerRadius
@@ -395,9 +390,7 @@ BarWidget {
                 color: root.bar.foreground
                 font.family: root.bar.fontFamily
                 font.pixelSize: Style.font.body
-        font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
-      font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
-                elide: Text.ElideRight
+                              elide: Text.ElideRight
                 width: parent.width - Style.font.iconSmall - Style.spacing.sm * 2 - detail.width
                 anchors.verticalCenter: parent.verticalCenter
               }
