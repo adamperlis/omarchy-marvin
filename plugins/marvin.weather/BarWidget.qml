@@ -100,12 +100,11 @@ BarWidget {
   // Icon only — the cloud placeholder before the first fetch, and every
   // vertical bar — goes through BarIconButton, whose OpticalGlyph centres a
   // single mark on its painted bounds rather than its line box. That is the
-  // right treatment for a mark and the wrong one for a run of characters: the
-  // correction is a fractional offset, and under NativeRendering a fractional
-  // origin makes each glyph hint to the pixel grid differently, so the digits
-  // of a temperature come out visibly unequal — a 2 narrower than the 3 beside
-  // it. So the reading goes through the plain label instead, the same path
-  // marvin.clock puts its time through, and sizes itself to what it paints.
+  // right treatment for a mark and the wrong one for a run of characters,
+  // which wants its line box centred like any other label. So the reading goes
+  // through the plain label, the same path marvin.clock puts its time through.
+  // It also sizes itself to what it paints, instead of the doubled icon slot
+  // the previous version guessed at.
   BarIconButton {
     id: glyphButton
     anchors.fill: parent
