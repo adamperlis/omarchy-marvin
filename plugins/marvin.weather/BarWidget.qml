@@ -11,7 +11,7 @@ BarWidget {
     if (!target) return
     if ("bar" in target) target.bar = root.bar
     if ("settings" in target) target.settings = root.settings
-    if ("anchorItem" in target) target.anchorItem = button
+    if ("anchorItem" in target) target.anchorItem = root.activeButton
     if ("hostWidget" in target) target.hostWidget = root
   }
 
@@ -51,8 +51,10 @@ BarWidget {
   // its own). Gating visibility on data made an enabled widget invisible while
   // it fetched, which read as "weather won't turn on".
   visible: panelLoader.item !== null
-  implicitWidth: button.implicitWidth
-  implicitHeight: button.implicitHeight
+  // Whichever of the two is showing owns the slot and the panel anchor.
+  readonly property var activeButton: barShowsDegree ? degreeButton : glyphButton
+  implicitWidth: activeButton.implicitWidth
+  implicitHeight: activeButton.implicitHeight
 
   onBarChanged: injectPanel()
   onSettingsChanged: injectPanel()
@@ -74,25 +76,57 @@ BarWidget {
   // fit the slot.
   readonly property string barGlyph: (panelLoader.item && panelLoader.item.label !== "") ? panelLoader.item.label : "\uf0c2"
   readonly property string barDegree: (panelLoader.item && panelLoader.item.reportTempNum) ? (panelLoader.item.reportTempNum + "°") : ""
-  readonly property bool barShowsDegree: barDegree !== "" && !button.vertical
+  readonly property bool barVertical: root.bar ? root.bar.vertical : false
+  readonly property bool barShowsDegree: barDegree !== "" && !barVertical
+  readonly property string tooltip: (panelLoader.item && panelLoader.item.label !== "") ? "" : "Weather — fetching your location…"
 
+  // With a reading the widget paints a text run rather than a mark, so the
+  // open-panel underline takes the painted label width. Left unset, the bar
+  // falls back to an icon-sized fraction of the slot and the rule stops short
+  // of the glyph. Zero hands it back to that fallback for the icon-only case,
+  // which is what the fallback is sized for.
+  readonly property real openPanelIndicatorWidth: barShowsDegree ? degreeButton.labelWidth : 0
+
+  function handlePress(b) {
+    if (!root.bar) return
+    if (b === Qt.RightButton) root.bar.run("omarchy-notification-send \"$(omarchy-weather-status)\"")
+    else if (b === Qt.MiddleButton) root.refresh()
+    else root.togglePanel()
+  }
+
+  // Two buttons, one showing at a time, because the two states want different
+  // text machinery.
+  //
+  // Icon only — the cloud placeholder before the first fetch, and every
+  // vertical bar — goes through BarIconButton, whose OpticalGlyph centres a
+  // single mark on its painted bounds rather than its line box. That is the
+  // right treatment for a mark and the wrong one for a run of characters: the
+  // correction is a fractional offset, and under NativeRendering a fractional
+  // origin makes each glyph hint to the pixel grid differently, so the digits
+  // of a temperature come out visibly unequal — a 2 narrower than the 3 beside
+  // it. So the reading goes through the plain label instead, the same path
+  // marvin.clock puts its time through, and sizes itself to what it paints.
   BarIconButton {
-    id: button
+    id: glyphButton
     anchors.fill: parent
+    visible: !root.barShowsDegree
     bar: root.bar
-    // Degree then glyph, the order marvin.power uses for its percentage. Falls
-    // back to the glyph alone — a cloud placeholder until the first reading —
-    // so the widget is visibly present the moment it's enabled.
-    text: root.barShowsDegree ? (root.barDegree + " " + root.barGlyph) : root.barGlyph
-    // A text block is wider than an icon slot; power widens the same way.
-    slotSize: root.barShowsDegree ? Style.bar.statusSlot * 2 : Style.bar.statusSlot
-    tooltipText: (panelLoader.item && panelLoader.item.label !== "") ? "" : "Weather — fetching your location…"
+    text: root.barGlyph
+    slotSize: Style.bar.statusSlot
+    tooltipText: root.tooltip
+    onPressed: function(b) { root.handlePress(b) }
+  }
 
-    onPressed: function(b) {
-      if (!root.bar) return
-      if (b === Qt.RightButton) root.bar.run("omarchy-notification-send \"$(omarchy-weather-status)\"")
-      else if (b === Qt.MiddleButton) root.refresh()
-      else root.togglePanel()
-    }
+  WidgetButton {
+    id: degreeButton
+    anchors.fill: parent
+    visible: root.barShowsDegree
+    bar: root.bar
+    labelVisible: true
+    // Degree then glyph, the order marvin.power uses for its percentage.
+    text: root.barDegree + " " + root.barGlyph
+    fontSize: Style.bar.iconFont
+    tooltipText: root.tooltip
+    onPressed: function(b) { root.handlePress(b) }
   }
 }
