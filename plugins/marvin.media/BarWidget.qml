@@ -47,6 +47,7 @@ BarWidget {
       color: activePlayer && activePlayer.isPlaying ? root.bar.barForeground : Color.muted
       font.family: root.bar.fontFamily
       font.pixelSize: Style.font.body
+      font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
       Behavior on color {
         enabled: !root.bar || root.bar.foregroundAnimationEnabled
         ColorAnimation { duration: 160 }
@@ -68,6 +69,8 @@ BarWidget {
         color: root.bar.barForeground
         font.family: root.bar.fontFamily
         font.pixelSize: Style.font.body
+        font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
+      font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
         anchors.verticalCenter: parent.verticalCenter
 
         property bool needsScroll: implicitWidth > scrollClip.width
@@ -216,6 +219,8 @@ BarWidget {
             color: Color.muted
             font.family: root.bar.fontFamily
             font.pixelSize: Style.font.body
+        font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
+      font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
             elide: Text.ElideRight
             width: parent.width
             visible: text !== ""
@@ -390,6 +395,8 @@ BarWidget {
                 color: root.bar.foreground
                 font.family: root.bar.fontFamily
                 font.pixelSize: Style.font.body
+        font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
+      font.hintingPreference: Font.PreferFullHinting   // see marvin.clock
                 elide: Text.ElideRight
                 width: parent.width - Style.font.iconSmall - Style.spacing.sm * 2 - detail.width
                 anchors.verticalCenter: parent.verticalCenter

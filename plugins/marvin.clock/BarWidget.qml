@@ -86,7 +86,7 @@ BarWidget {
   // dot takes the label width; vertically it is a stack of icon-sized lines,
   // so the dot takes one line — the same mark every icon widget gets, rather
   // than a rule running the height of the whole stack.
-  readonly property real openPanelIndicatorWidth: button.labelWidth
+  readonly property real openPanelIndicatorWidth: reading.visible ? reading.implicitWidth : 0
   readonly property real openPanelIndicatorHeight: Math.max(Style.space(10), Math.round(Style.bar.iconSlot * 0.55))
 
   // Forwarded so this widget can stand in for the panel as the bar's popout
@@ -140,12 +140,39 @@ BarWidget {
     anchors.fill: parent
     bar: root.bar
     text: root.vertical ? "" : root.displayText
-    labelVisible: !root.vertical
+    // The label is kept for sizing only; `reading` below is what paints.
+    labelVisible: false
     hasVisualContent: root.vertical ? root.verticalLines.length > 0 : text !== ""
     fixedHeight: root.vertical ? root.verticalLines.length * Style.bar.iconSlot : -1
     horizontalMargin: 8.75
     verticalPadding: 8.75
     tooltipText: "Right-click to toggle format"
+
+    // The visible run, drawn here rather than by WidgetButton's label, for one
+    // property: hintingPreference. On a fractionally scaled display Qt forces
+    // default-hinted text to HintNone and positions glyphs at vertical
+    // sub-pixel offsets. Qt's metrics round Inter to 18px tall, a 32px bar
+    // centres that at y=7, and 7 × 1.5 puts the baseline on a half pixel —
+    // where Inter's 0.2px overshoot on 0 3 6 8 9 rounds into an extra row
+    // and the round digits sit a pixel below the flat ones. Full hinting is
+    // the one preference Qt honours there; it snaps glyphs to whole rows,
+    // so every digit shares a baseline whatever the phase. The measurements
+    // are in docs/platform-constraints.md, under Text rendering.
+    Text {
+      id: reading
+      visible: !root.vertical
+      anchors.centerIn: parent
+      text: root.displayText
+      color: button.active && button.useActiveColor ? button.activeColor : button.foreground
+      font.family: button.fontFamily
+      font.pixelSize: button.fontSize
+      font.hintingPreference: Font.PreferFullHinting
+      renderType: Text.NativeRendering
+      Behavior on color {
+        enabled: !root.bar || root.bar.foregroundAnimationEnabled
+        ColorAnimation { duration: 160 }
+      }
+    }
 
     onPressed: function(b) {
       if (b === Qt.RightButton) root.cycleFormat()

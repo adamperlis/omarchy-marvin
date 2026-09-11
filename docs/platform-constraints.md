@@ -277,6 +277,56 @@ centering. `Style.resolvedFontFamily` runs `fc-match monospace` without
 
 Config layer only. A plain `omarchy theme install` keeps the monospace UI.
 
+### Text rendering at fractional scale
+
+On a display scaled 1.5× (1920×1080 at scale 1.5 → 1280×720 logical), round
+digits on the bar rendered one pixel below flat ones: 0 3 6 8 9 sat under
+1 2 4 5 7, so 11:30 hung its 30 beneath the 11 and 23 had a short 2 beside a
+tall 3. Round capitals did the same at the top, which is why Sep read taller
+than Fri. This is not the font, not FreeType, not fontconfig hinting, and not
+the compositor. Each was measured and cleared:
+
+- Inter's round glyphs overshoot the baseline by 20/2048 em — 0.2px at the
+  bar's 21 device px. FreeType renders every digit to the same rows at 14,
+  19.5, 21 and 28 ppem under native, auto- and no hinting.
+- Hyprland blur on or off, layer Top or Overlay, namespace, transparent or
+  opaque surface: no change. A screen-bound window matches an unbound one.
+- A fontconfig `hintstyle` rule scoped to `prgname=quickshell` changes
+  nothing, because Qt does not consult it: with high-DPI scaling active,
+  `QFontconfigDatabase` forces default-hinted text to `HintNone`.
+
+That last point is the mechanism. At `HintNone` (and `HintLight`) Qt's
+FreeType engine positions glyphs at vertical sub-pixel offsets
+(`supportsVerticalSubPixelPositions`). Qt rounds Inter's ascent and descent
+up to 14 + 4 = 18px, a 32px bar centres that at y = 7, and 7 × 1.5 puts the
+baseline on a half pixel. Sweeping the phase in a scratch window:
+
+    y=7.00 → 10.50 device   cap 14 rows   round glyphs one row lower   ← the bar
+    y=7.25 → 10.88          cap 15        even
+    y=7.50 → 11.25          cap 15        even
+    y=8.00 → 12.00          cap 15        even
+    (every other phase tested: even)
+
+At that phase the 0.2px overshoot lands past a row boundary for round glyphs
+and short of it for flat ones. Only the bad phase shows it, which is why it
+looked like a font bug that came and went with layout.
+
+`Font.PreferFullHinting` is the fix, and the only one the theme can reach:
+Qt honours an explicit preference even under high-DPI, `HintFull` turns
+sub-pixel positioning off, and glyphs snap to whole rows at any phase.
+Measured on the live bar afterwards, every glyph's solid ink spans the same
+rows; the round ones are only a shade darker on the shared antialiased
+fringe, which is the overshoot doing what it is for. WidgetButton's label
+does not expose the property, so the clones that paint text on the bar —
+clock, weather, media — draw their own `Text` over a hidden label kept for
+sizing. Panels are not touched: their surfaces sit at other phases and the
+larger sizes hide it.
+
+Two things this rules out for good. The bar height is not a lever — it
+would move the phase for one label height and not another. And no system
+font setting reaches the shell's text; the platform theme, fontconfig and
+GTK's hint style are all overridden by the high-DPI rule.
+
 ## Icons
 
 Shell icons are **text glyphs**, not images. `shell/Ui/OpticalGlyph.qml`

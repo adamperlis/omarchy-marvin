@@ -85,7 +85,7 @@ BarWidget {
   // falls back to an icon-sized fraction of the slot and the rule stops short
   // of the glyph. Zero hands it back to that fallback for the icon-only case,
   // which is what the fallback is sized for.
-  readonly property real openPanelIndicatorWidth: barShowsDegree ? degreeButton.labelWidth : 0
+  readonly property real openPanelIndicatorWidth: barShowsDegree ? reading.implicitWidth : 0
 
   function handlePress(b) {
     if (!root.bar) return
@@ -121,11 +121,30 @@ BarWidget {
     anchors.fill: parent
     visible: root.barShowsDegree
     bar: root.bar
-    labelVisible: true
+    // The label is kept for sizing only; `reading` below is what paints.
+    labelVisible: false
     // Degree then glyph, the order marvin.power uses for its percentage.
     text: root.barDegree + " " + root.barGlyph
-    fontSize: Style.bar.iconFont
     tooltipText: root.tooltip
     onPressed: function(b) { root.handlePress(b) }
+
+    // Drawn here for hintingPreference — see marvin.clock for the whole
+    // story. Body size, the same run the clock paints, rather than the icon
+    // font size: a reading is text, and two sizes of numeral on one bar read
+    // as two bars.
+    Text {
+      id: reading
+      anchors.centerIn: parent
+      text: degreeButton.text
+      color: degreeButton.active && degreeButton.useActiveColor ? degreeButton.activeColor : degreeButton.foreground
+      font.family: degreeButton.fontFamily
+      font.pixelSize: degreeButton.fontSize
+      font.hintingPreference: Font.PreferFullHinting
+      renderType: Text.NativeRendering
+      Behavior on color {
+        enabled: !root.bar || root.bar.foregroundAnimationEnabled
+        ColorAnimation { duration: 160 }
+      }
+    }
   }
 }
