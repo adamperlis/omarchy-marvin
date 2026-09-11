@@ -4,7 +4,7 @@
 We can't run Quickshell off the target, so these catch the classes of fatal
 error that a brace check alone misses. Run from the repo root: ./test/qml-lint
 
-Checks, per plugins/**/*.qml:
+Checks, per plugins/**/*.qml and screensaver/*.qml:
   - `Behavior on <p>` where <p> is declared `readonly property`. A Behavior is a
     property interceptor, i.e. an assignment, so this is a fatal compile error:
     the whole component fails to load and the widget silently never appears.
@@ -15,7 +15,11 @@ Checks, per plugins/**/*.qml:
 import re, sys, glob
 
 failed = 0
-files = sorted(glob.glob("plugins/**/*.qml", recursive=True))
+# The screensaver is QML the shell never loads — it is its own qs config —
+# but it is the same language with the same fatal traps, and since the wash
+# moved into Backdrop.qml it is more than one file. Lint it too.
+files = sorted(glob.glob("plugins/**/*.qml", recursive=True)
+               + glob.glob("screensaver/*.qml"))
 
 
 def balance(src):
