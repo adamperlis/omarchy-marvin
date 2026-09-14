@@ -67,7 +67,7 @@ function clockFormatRing(configured, configuredAlt, presets) {
     if (format === "" || ring.indexOf(format) !== -1) continue
     ring.push(format)
   }
-  return ring.length > 0 ? ring : ["HH:mm"]
+  return ring.length > 0 ? ring : ["h:mm AP"]
 }
 
 // Next entry after `current`. An unknown current format (a hand-written one

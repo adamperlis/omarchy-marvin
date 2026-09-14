@@ -17,8 +17,8 @@ BarWidget {
   property date displayDate: clock.date
 
   readonly property string configuredFormat: vertical
-    ? setting("verticalFormat", "HH\n—\nmm")
-    : setting("format", "dddd HH:mm")
+    ? setting("verticalFormat", "h\n—\nmm\nAP")
+    : setting("format", "dddd h:mm AP")
   readonly property string configuredAltFormat: vertical
     ? setting("verticalFormatAlt", "dd\nMMM\n'W'ww\n''yy")
     : setting("formatAlt", "d MMMM 'W'ww yyyy")
