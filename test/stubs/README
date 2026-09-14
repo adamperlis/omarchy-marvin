@@ -10,3 +10,11 @@ The test puts this directory first on PATH so those calls land here instead.
 pgrep is stubbed too, and only for `-x quickshell`: install/marvin gates its
 IPC on shell_running(), and inside the sandbox the honest answer is "no shell".
 Every other pgrep query is passed through to the real binary.
+
+The same goes for the rest of the session, which $HOME does not scope either.
+systemctl: the installer runs marvin-update --enable and, on revert,
+marvin-update --disable and marvin-mode unschedule/follow-off, which would
+switch the developer's real auto-update and light/dark timers off. gsettings:
+the GTK font and accent live in dconf, not under $HOME. omarchy and
+omarchy-notification-send: the CLI and the update notification reach the
+running desktop the same way the IPC wrappers do.
