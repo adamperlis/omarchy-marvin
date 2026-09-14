@@ -78,12 +78,16 @@ Adds, in order:
   `hyprland.lua` by one marked line; nothing else of yours is edited.
 - **Widgets** — sixteen plugins: fourteen restyled clones of the built-ins,
   plus two new ones — a light/dark **mode** control and a **to-dos** list.
-  Enabled if the shell is running.
+  Enabled if the shell is running, with three exceptions. The to-do list stays
+  off until you switch it on in the control panel. Dropbox and Tailscale are
+  not on Omarchy's default bar, so they only replace their built-ins when those
+  are already on yours.
 - **`marvin-mode` · `marvin-update` · `marvin-todo`** — helpers installed to
   `~/.local/bin`. The **`marvin.mode`** widget (a sun in light, a moon in dark)
   opens a **control panel** on left click — appearance (**Light / Dark / Auto**,
   where Auto switches by time of day), a **wallpaper picker** with previews,
-  reduce motion, and **auto-update** (on by default) — and right click is a
+  reduce motion, a **to-do list** switch, and **auto-update** (on by default) —
+  and right click is a
   quick flip. Your appearance choice is remembered across updates. The **`marvin.todos`** widget is a to-do list stored in `~/todos.md`, so
   Obsidian and OmaWrite share the same checklist. Light/dark also works from the
   command line:
@@ -95,9 +99,11 @@ Adds, in order:
   marvin-mode schedule 07:00 19:00  # light at 07:00, dark at 19:00, daily
   ```
 
-  These two clone nothing, so nothing places them automatically — the installer
-  puts `marvin.mode` and `marvin.todos` on the right of the bar for you (first
-  install only; it won't touch your layout on an update). Move them by editing a
+  These two clone nothing, so nothing places them automatically. The installer
+  puts `marvin.mode` on the right of the bar for you (first install only; it
+  won't touch your layout on an update). The to-do list stays off the bar until
+  you want it: **To-do list** in the control panel puts it beside the gear, and
+  Off takes it away again (`~/todos.md` is kept). Move either by editing a
   `bar.layout` array in `~/.config/omarchy/shell.json` if you'd rather.
 
 - **Obsidian** — Marvin's note styling (`obsidian.css`) is installed as a theme

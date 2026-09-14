@@ -5,7 +5,10 @@ is a `clonedFrom` plugin: the built-in's data, networking and IPC code verbatim,
 the layout rewritten to the Marvin rules. Enabling one replaces the built-in in
 its bar slot, and the built-in's IPC targets keep routing to it. The exceptions
 are `marvin.mode` (a light/dark control panel) and `marvin.todos` (a to-do
-list) — they clone nothing, so you add them to the bar yourself.
+list) — they clone nothing, so you add them to the bar yourself. The to-do
+list can also be switched on and off from the `marvin.mode` panel. The
+installer leaves `marvin.dropbox` and `marvin.tailscale` off unless their
+built-ins are already on your bar, since Omarchy's default bar carries neither.
 
 Plugins are unsandboxed QML — they are not part of the theme and are never
 installed by `omarchy theme install`. They land disabled so you can read them
@@ -18,7 +21,7 @@ first.
 | `marvin.media` | `omarchy.media` | Art at a nested radius, title and artist in two tones, play as the card's one inverted element, a 2px scrub hairline with times as captions, sources as 32px rows. |
 | `marvin.audio`, `marvin.bluetooth`, `marvin.monitor`, `marvin.network`, `marvin.tailscale`, `marvin.agents`, `marvin.dropbox`, `marvin.wifiqr`, `marvin.speedtest`, `marvin.disk-speedtest` | the built-in of the same name | Mechanical pass by `tools/restyle.py`: separators out, section headers to muted sentence-case captions, `Qt.darker` collapsed to `muted`, bold to weight, uppercase and letter-spacing off, spacing snapped to the grid, sliders and meters as 2px hairlines, card width 352 (content 304). Logic untouched. |
 | `marvin.power` | `omarchy.power` | Charge percentage at `display-large`, charge as a 2px hairline, stats as value over label in two columns, profiles as a caption and a row of pills with no divider before them. |
-| `marvin.mode` | — (new) | Not a clone: a light/dark control. A sun in light, a moon in dark; left click opens a panel (appearance, next wallpaper, reduce motion, daily schedule), right click is a quick flip. Calls `marvin-mode` from the config layer. |
+| `marvin.mode` | — (new) | Not a clone: a light/dark control. A sun in light, a moon in dark; left click opens a panel (appearance, next wallpaper, reduce motion, daily schedule, to-do list), right click is a quick flip. Calls `marvin-mode` from the config layer. |
 | `marvin.todos` | — (new) | Not a clone: a to-do list in the bar. Add tasks, check them off, clear done. Stored in `~/todos.md` (Markdown checkboxes) so Obsidian and OmaWrite share the list. Backed by `marvin-todo`. |
 
 ## Install by hand

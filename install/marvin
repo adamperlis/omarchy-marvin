@@ -42,6 +42,11 @@ TOUCHED=(
 say()  { printf '\e[1m%s\e[0m\n' "$*"; }
 note() { printf '  %s\n' "$*"; }
 shell_running() { pgrep -x quickshell >/dev/null 2>&1; }
+# Whether a widget is on the bar right now, per shell.json.
+on_bar() {
+  [[ -f "$SHELL_JSON" ]] && command -v jq >/dev/null 2>&1 &&
+    jq -e --arg id "$1" '[(.bar.layout // {})[]?[]? | if type == "object" then .id else . end] | index($id)' "$SHELL_JSON" >/dev/null 2>&1
+}
 
 # Run a slow command with a spinner on a terminal (and plainly when the output
 # is redirected, e.g. the auto-update timer). Keeps the long shell reload from
@@ -232,13 +237,21 @@ install_plugins() {
     omarchy-shell shell rescanPlugins >/dev/null 2>&1 || true
     if [[ "$FIRST_INSTALL" == 1 ]]; then
       for id in $(plugin_ids); do
-        # Clones replace a built-in and inherit its slot, so they need no
-        # placement. The three that clone nothing — weather, mode, todos — would
-        # land enabled-but-unplaced (invisible), so give them a bar section.
+        # A clone takes over its built-in's bar slot when the built-in is on
+        # the bar. Where it is not, enabling the clone adds it at its manifest's
+        # defaultSection instead. Dropbox and Tailscale are off Omarchy's
+        # default bar, so enable their clones only where the built-in is
+        # already on it; otherwise they would land on everyone's bar. The
+        # to-do list is opt-in: its switch is in the mode panel. Weather and
+        # mode get a bar section so they never land enabled-but-unplaced.
+        # Every plugin is still copied above, so any of them can be turned on
+        # by hand.
         local sect=""
         case "$id" in
-          marvin.weather)           sect="center" ;;
-          marvin.mode|marvin.todos) sect="right" ;;
+          marvin.todos) continue ;;
+          marvin.dropbox|marvin.tailscale) on_bar "omarchy.${id#marvin.}" || continue ;;
+          marvin.weather) sect="center" ;;
+          marvin.mode)    sect="right" ;;
         esac
         if [[ -n "$sect" ]] && command -v omarchy >/dev/null 2>&1; then
           omarchy plugin enable "$id" --section "$sect" >/dev/null 2>&1 \

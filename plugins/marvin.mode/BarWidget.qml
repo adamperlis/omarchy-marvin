@@ -9,9 +9,9 @@ import qs.Ui
 // Marvin's settings control, as a bar widget with a pop-out panel.
 //
 // The bar icon is a gear — this is the theme's settings. Left click opens the
-// panel (appearance, wallpaper, reduce motion, auto-update); right click is a
-// quick light/dark flip. The logic lives in marvin-mode and marvin-update,
-// installed to ~/.local/bin by the config layer.
+// panel (appearance, wallpaper, reduce motion, to-do list, auto-update); right
+// click is a quick light/dark flip. The logic lives in marvin-mode and
+// marvin-update, installed to ~/.local/bin by the config layer.
 BarWidget {
   id: root
   moduleName: "marvin.mode"
@@ -27,6 +27,10 @@ BarWidget {
   property bool reduceMotion: false
   property bool scheduled: false
   property bool autoUpdate: false
+  // Whether marvin.todos sits on the bar. The to-do list is opt-in, and this
+  // panel is where it is switched. Read from shell.json, so the switch follows
+  // the bar even when the widget is added or removed some other way.
+  property bool todosInBar: false
   // Update availability, surfaced only when auto-update is off — with it on the
   // daily timer self-heals, so a badge would be noise. behind>0 lights the bar
   // dot and the "Update now" row.
@@ -85,6 +89,31 @@ BarWidget {
     if (root.autoUpdate) { root.behind = 0; root.updateLog = "" }
     else root.refreshUpdate()
   }
+  // On puts the to-do list on the bar right after this gear; Off takes it off.
+  // Both go through the shell's own plugin commands, so the layout stays the
+  // shell's to write. The list itself lives in ~/todos.md and is never touched.
+  function toggleTodos() {
+    root.todosInBar = !root.todosInBar
+    if (root.todosInBar)
+      Quickshell.execDetached(["omarchy-plugin-enable", "marvin.todos", "--after", "marvin.mode"])
+    else
+      Quickshell.execDetached(["omarchy-plugin-disable", "marvin.todos"])
+  }
+  // A half-written or unreadable shell.json leaves the switch as it was rather
+  // than flipping it to Off.
+  function applyShellConfig(json) {
+    var layout
+    try { layout = (JSON.parse(json).bar || {}).layout || {} } catch (err) { return }
+    var sections = ["left", "center", "right"]
+    for (var s = 0; s < sections.length; s++) {
+      var entries = layout[sections[s]] || []
+      for (var i = 0; i < entries.length; i++) {
+        var e = entries[i]
+        if ((typeof e === "string" ? e : (e && e.id)) === "marvin.todos") { root.todosInBar = true; return }
+      }
+    }
+    root.todosInBar = false
+  }
   // Pull and re-apply in place — the same detached call the CLI makes. The
   // re-apply restarts the shell, so this widget is recreated fresh (applying
   // starts false and a new check runs); updateSettle covers the no-op case.
@@ -114,6 +143,9 @@ BarWidget {
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
   Component.onCompleted: { refreshMode(); refreshAuto(); refreshStatus(); refreshBg() }
+  // Re-read the layout on open as well: the shell can write shell.json by
+  // replacing the file, which a file watch may miss.
+  onPopupOpenChanged: if (popupOpen) shellConfig.reload()
 
   // The live theme, watched rather than polled: the panel reflects the real
   // appearance the moment theme.name changes, and a stale re-read can never
@@ -125,6 +157,16 @@ BarWidget {
     printErrors: false
     onFileChanged: reload()
     onLoaded: root.themeName = String(text() || "").trim()
+  }
+
+  // The bar layout, for the To-do list switch.
+  FileView {
+    id: shellConfig
+    path: root.home + "/.config/omarchy/shell.json"
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: root.applyShellConfig(text())
   }
 
   // Whether the auto-update timer is on, so the toggle reflects reality.
@@ -618,6 +660,35 @@ BarWidget {
           bordered: true
           active: root.reduceMotion
           onClicked: root.toggleReduceMotion()
+        }
+      }
+
+      // ---- To-do list: opt-in. On puts marvin.todos on the bar beside this
+      //      gear; Off takes it off. ~/todos.md is kept either way.
+      Item {
+        width: parent.width
+        height: todosButton.implicitHeight
+        Text {
+          anchors.left: parent.left
+          anchors.verticalCenter: parent.verticalCenter
+          text: "To-do list"
+          color: root.bar.foreground
+          font.family: root.bar.fontFamily
+          font.pixelSize: Style.font.body
+        }
+        Button {
+          id: todosButton
+          anchors.right: parent.right
+          anchors.verticalCenter: parent.verticalCenter
+          text: root.todosInBar ? "On" : "Off"
+          fontSize: Style.font.body
+          foreground: root.bar.foreground
+          fontFamily: root.bar.fontFamily
+          horizontalPadding: Style.spacing.controlPaddingX
+          verticalPadding: Style.spacing.controlPaddingY
+          bordered: true
+          active: root.todosInBar
+          onClicked: root.toggleTodos()
         }
       }
 
