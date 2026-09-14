@@ -4,7 +4,7 @@
 We can't run Quickshell off the target, so these catch the classes of fatal
 error that a brace check alone misses. Run from the repo root: ./test/qml-lint
 
-Checks, per plugins/**/*.qml and screensaver/*.qml:
+Checks, per plugins/**/*.qml, screensaver/*.qml and config/voxtype/**/*.qml:
   - `Behavior on <p>` where <p> is declared `readonly property`. A Behavior is a
     property interceptor, i.e. an assignment, so this is a fatal compile error:
     the whole component fails to load and the widget silently never appears.
@@ -18,8 +18,11 @@ failed = 0
 # The screensaver is QML the shell never loads — it is its own qs config —
 # but it is the same language with the same fatal traps, and since the wash
 # moved into Backdrop.qml it is more than one file. Lint it too.
+# The voxtype OSD package is QML too, loaded by voxtype's own Quickshell
+# config rather than the shell — same language, same fatal traps.
 files = sorted(glob.glob("plugins/**/*.qml", recursive=True)
-               + glob.glob("screensaver/*.qml"))
+               + glob.glob("screensaver/*.qml")
+               + glob.glob("config/voxtype/**/*.qml", recursive=True))
 
 
 def balance(src):

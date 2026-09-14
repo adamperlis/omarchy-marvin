@@ -1,0 +1,10 @@
+# Marvin's style package for voxtype's Quickshell OSD.
+#
+# Installed as ~/.config/voxtype/osd/marvin and selected with
+#   [osd]  frontend = "quickshell"  style = "marvin"
+# voxtype resolves qml_entry relative to this directory and loads it in place
+# of its built-in card. See MarvinOsd.qml for why the whole surface is ours.
+version     = "1.0.0"
+description = "Marvin: dictation on the same card as the volume OSD"
+palette     = "omarchy"
+qml_entry   = "MarvinOsd.qml"
