@@ -138,7 +138,9 @@ omarchy plugin enable marvin.weather --section center
 ```
 
 It appears as a cloud icon the moment it's enabled and detects your location
-from your IP, then fills in with the current condition and temperature. (If you
+from your IP, then fills in with the current condition and temperature. It
+remembers the last place it detected, so when wttr.in (which does the detecting)
+is down, the reading keeps coming from Open-Meteo for that place. (If you
 only ever see a blank slot, you likely enabled stock `omarchy.weather` instead —
 that one hides itself until its own fetch returns. Use `marvin.weather`.)
 

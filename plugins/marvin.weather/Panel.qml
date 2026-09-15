@@ -6,7 +6,8 @@ import qs.Ui
 import "Model.js" as Model
 
 // Marvin weather panel. A clone of omarchy.weather: the data, networking,
-// location editing and IPC below are upstream's, verbatim. Only the layout
+// location editing and IPC below are upstream's, verbatim, plus one addition
+// (lastArea) that keeps the card up through a wttr.in outage. Only the layout
 // after KeyboardPanel is rewritten, to the Marvin rules:
 //   - the temperature is the largest thing on the card; its unit is a caption
 //   - two text tones (ink, inkMuted), no third
@@ -152,6 +153,41 @@ Panel {
     onTriggered: locationFile.reload()
   }
 
+  // Marvin's addition. Auto-detect gets its coordinates from wttr.in alone, so
+  // when wttr.in is down (an expired certificate, 2026-09-15) nothing reaches
+  // Open-Meteo either and the card goes blank. Remember the last area wttr.in
+  // reported, and fall back to it when a wttr.in fetch fails: Open-Meteo only
+  // needs coordinates to fill current conditions and the forecast. Auto-detect
+  // only; a configured location already has its own coordinates or name.
+  property var lastArea: null
+  readonly property string lastAreaPath: Quickshell.env("HOME") + "/.local/state/marvin/weather-area.json"
+
+  property FileView lastAreaFile: FileView {
+    path: root.lastAreaPath
+    printErrors: false
+    onLoaded: root.lastArea = Model.parseLastArea(text())
+    onLoadFailed: root.lastArea = null
+  }
+
+  Process {
+    id: lastAreaSaveProc
+  }
+
+  function rememberArea(report) {
+    if (root.locationQuery !== "") return
+    var area = Model.areaFromReport(report)
+    if (!area || Model.sameArea(area, root.lastArea)) return
+    root.lastArea = area
+    lastAreaSaveProc.command = ["sh", "-c", 'mkdir -p "${1%/*}" && printf "%s\\n" "$2" > "$1.tmp" && mv "$1.tmp" "$1"', "sh", root.lastAreaPath, JSON.stringify(area)]
+    lastAreaSaveProc.running = true
+  }
+
+  function useLastArea() {
+    if (root.locationQuery !== "" || root.report || !root.lastArea) return
+    if (root.wttrLocation === "") root.wttrLocation = root.lastArea.name
+    root.refreshDailyForecast(Model.lastAreaReport(root.lastArea))
+  }
+
   property int forecastRetries: 0
   property int dailyForecastRetries: 0
 
@@ -174,7 +210,7 @@ Panel {
   readonly property var current: (hasConfiguredCoordinates && openMeteoCurrent) ? openMeteoCurrent : ((report && report.current_condition && report.current_condition[0]) ? report.current_condition[0] : openMeteoCurrent)
   readonly property var areaInfo: report && report.nearest_area && report.nearest_area[0] ? report.nearest_area[0] : null
   readonly property var forecastDays: buildForecastDays()
-  readonly property string reportCountry: areaInfo && areaInfo.country && areaInfo.country[0] ? areaInfo.country[0].value : ""
+  readonly property string reportCountry: areaInfo && areaInfo.country && areaInfo.country[0] ? areaInfo.country[0].value : ((locationQuery === "" && lastArea) ? lastArea.country : "")
 
   readonly property bool useImperial: Model.shouldUseImperial(setting("unit", ""), Qt.locale().name, reportCountry)
 
@@ -377,12 +413,14 @@ Panel {
       onStreamFinished: {
         var raw = String(text || "").trim()
         if (!raw) {
+          root.useLastArea()
           root.scheduleForecastRetry()
           return
         }
         try {
           var parsed = JSON.parse(raw)
           root.report = parsed
+          root.rememberArea(parsed)
           if (!root.hasConfiguredCoordinates)
             root.label = Model.provisionalCurrentIcon(parsed.current_condition && parsed.current_condition[0], root.label)
           root.forecastRetries = 0
@@ -394,6 +432,7 @@ Panel {
             root.refreshDailyForecast(parsed)
         } catch (e) {
           // Keep last-good report visible, but try again shortly.
+          root.useLastArea()
           root.scheduleForecastRetry()
         }
       }

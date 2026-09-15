@@ -265,8 +265,68 @@ function iconForCode(code, night) {
   }
 }
 
+// Marvin: the last area wttr.in auto-detected, kept on disk so a wttr.in
+// outage (an expired certificate took it down on 2026-09-15) does not blank
+// the card. Open-Meteo only needs coordinates, so the remembered area carries
+// current conditions and the forecast until wttr.in answers again. Stored as
+// {"name", "country", "latitude", "longitude"}.
+function areaFromReport(report) {
+  var area = report && report.nearest_area && report.nearest_area[0] ? report.nearest_area[0] : null
+  if (!area) return null
+  var latitude = parseFloat(String(area.latitude))
+  var longitude = parseFloat(String(area.longitude))
+  if (isNaN(latitude) || isNaN(longitude)) return null
+  return {
+    name: area.areaName && area.areaName[0] ? String(area.areaName[0].value || "") : "",
+    country: area.country && area.country[0] ? String(area.country[0].value || "") : "",
+    latitude: latitude,
+    longitude: longitude
+  }
+}
+
+function parseLastArea(raw) {
+  try {
+    var data = JSON.parse(String(raw || ""))
+    if (!data || typeof data !== "object") return null
+    var latitude = parseFloat(data.latitude)
+    var longitude = parseFloat(data.longitude)
+    if (isNaN(latitude) || isNaN(longitude)) return null
+    return {
+      name: typeof data.name === "string" ? data.name : "",
+      country: typeof data.country === "string" ? data.country : "",
+      latitude: latitude,
+      longitude: longitude
+    }
+  } catch (e) {
+    return null
+  }
+}
+
+function sameArea(a, b) {
+  if (!a || !b) return false
+  return a.name === b.name && a.country === b.country && a.latitude === b.latitude && a.longitude === b.longitude
+}
+
+// The remembered area in wttr's nearest_area shape, so refreshDailyForecast
+// takes it exactly as it takes a live report.
+function lastAreaReport(area) {
+  if (!area) return null
+  return {
+    nearest_area: [{
+      areaName: [{ value: area.name }],
+      country: [{ value: area.country }],
+      latitude: String(area.latitude),
+      longitude: String(area.longitude)
+    }]
+  }
+}
+
 if (typeof module !== "undefined") {
   module.exports = {
+    areaFromReport: areaFromReport,
+    parseLastArea: parseLastArea,
+    sameArea: sameArea,
+    lastAreaReport: lastAreaReport,
     parseLocationFile: parseLocationFile,
     wttrLocationQuery: wttrLocationQuery,
     parseGeocodingResults: parseGeocodingResults,

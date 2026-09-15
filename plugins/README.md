@@ -16,7 +16,7 @@ first.
 
 | Plugin | Clones | What changed |
 |--------|--------|--------------|
-| `marvin.weather` | `omarchy.weather` | Temperature at `display-large` with the unit as a caption, value-over-label stats, forecast days as columns, no dividers, per-theme tint from `[marvin-weather]` in `shell.toml`. |
+| `marvin.weather` | `omarchy.weather` | Temperature at `display-large` with the unit as a caption, value-over-label stats, forecast days as columns, no dividers, per-theme tint from `[marvin-weather]` in `shell.toml`. Remembers the last auto-detected area, so a wttr.in outage falls back to Open-Meteo instead of blanking. |
 | `marvin.clock` | `omarchy.clock` | Day number at `display-large` with month and weekday as its caption, year and life progress as 2px hairlines, month name left with chevrons right, 40×32 grid cells with no gutter line, today as a fill. |
 | `marvin.media` | `omarchy.media` | Art at a nested radius, title and artist in two tones, play as the card's one inverted element, a 2px scrub hairline with times as captions, sources as 32px rows. |
 | `marvin.audio`, `marvin.bluetooth`, `marvin.monitor`, `marvin.network`, `marvin.tailscale`, `marvin.agents`, `marvin.dropbox`, `marvin.wifiqr`, `marvin.speedtest`, `marvin.disk-speedtest` | the built-in of the same name | Mechanical pass by `tools/restyle.py`: separators out, section headers to muted sentence-case captions, `Qt.darker` collapsed to `muted`, bold to weight, uppercase and letter-spacing off, spacing snapped to the grid, sliders and meters as 2px hairlines, card width 352 (content 304). Logic untouched. |
