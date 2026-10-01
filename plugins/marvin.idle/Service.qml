@@ -167,8 +167,8 @@ Item {
 
     // Starting the screensaver can make the compositor report activity. Keep
     // the lock timer running once the screensaver exists (or during its short
-    // launch grace); Hyprland window events cancel the cycle if it exits before
-    // the normal lock deadline.
+    // launch grace); window close events or a successful screensaver process
+    // exit cancel the cycle before the normal lock deadline.
     // Upstream watches for a Hyprland window with class org.omarchy.screensaver,
     // because its screensaver is a terminal. Marvin's is a layer-shell surface,
     // which emits no openwindow/closewindow at all, so that count never leaves
@@ -289,7 +289,7 @@ Item {
     interval: 3000
     repeat: false
     onTriggered: {
-      if (root.idleEnabled && root.idledThisCycle && root.screensaverStartedThisCycle && root.screensaverWindowCount === 0 && !idleMonitor.isIdle) {
+      if (root.idleEnabled && root.idledThisCycle && root.screensaverStartedThisCycle && !screensaverProcess.running && root.screensaverWindowCount === 0 && !idleMonitor.isIdle) {
         root.cancelIdleCycle("screensaver-not-running")
       }
     }
@@ -305,6 +305,13 @@ Item {
     onExited: function(exitCode, exitStatus) {
       root.logEvent("process-exit", "screensaver exitCode=" + exitCode + " status=" + exitStatus)
       root.restoreCursor("screensaver exited")
+      // Marvin uses a layer surface, so dismissal has no closewindow event.
+      // A normal exit must cancel its pending lock even if the compositor
+      // already reported activity while the screensaver was still running.
+      // Preserve unattended locking if the screensaver failed to launch.
+      if (exitCode === 0 && exitStatus === 0 && root.idleEnabled && root.idledThisCycle && root.screensaverStartedThisCycle) {
+        root.cancelIdleCycle("screensaver-dismissed")
+      }
     }
   }
 

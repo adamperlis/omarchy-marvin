@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+"""Idle lifecycle regression checks using real Quickshell timers and processes.
+
+The fixture loads the idle service headlessly. Only external desktop commands
+and compositor input are stubbed; it cannot lock, wake, or alter the desktop.
+Requires Quickshell; skipped when it is not installed.
+Run from the repo root: ./test/idle-lifecycle
+"""
+from pathlib import Path
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+
+if not shutil.which("qs"):
+    print("-- skipped: Quickshell is not installed")
+    sys.exit(0)
+
+repo = Path(__file__).resolve().parent.parent
+source = repo / "plugins/marvin.idle/Service.qml"
+temporary = tempfile.TemporaryDirectory(prefix="marvin-idle-test-")
+work = Path(temporary.name)
+qml = source.read_text()
+# Keep the actual idle state machine, timers, and subprocess exit handlers.
+# Replace external commands and compositor idle notifications only.
+def replace_once(old, new):
+    global qml
+    if qml.count(old) != 1:
+        raise RuntimeError(f"Cannot isolate the idle fixture: {old!r}")
+    qml = qml.replace(old, new)
+
+
+replace_once('process.command = ["bash", "-lc", command]', 'process.command = ["bash", "-c", root.shell.commandFor(label)]')
+replace_once('cursorProcess.command = ["hyprctl", "eval", "hl.config({ cursor = { invisible = false } })"]', 'cursorProcess.command = ["true"]')
+replace_once('enabled: root.idleEnabled\n    timeout:', 'enabled: false\n    timeout:')
+(work / 'TestService.qml').write_text(qml)
+shutil.copyfile(source.with_name('IdleModel.js'), work / 'IdleModel.js')
+(work / 'shell.qml').write_text('''import QtQuick
+import Quickshell
+import Quickshell.Io
+ShellRoot {
+  QtObject {
+    id: mock
+    property var shellConfig: ({ idle: { screensaver: 1, lock: 3 } })
+    property string screensaverCommand: "sleep 0.5"
+    property int lockRequests: 0
+    function commandFor(label) {
+      if (label === "screensaver") return screensaverCommand
+      if (label === "lock") lockRequests++
+      return "true"
+    }
+  }
+  TestService { id: service; shell: mock }
+  IpcHandler {
+    target: "test"
+    function start(command: string, lockSeconds: int): void {
+      mock.screensaverCommand = command
+      mock.shellConfig = { idle: { screensaver: 1, lock: lockSeconds } }
+      service.startIdleCycle()
+    }
+    function active(): void { service.handleActiveSignal() }
+    function snapshot(): string {
+      var state = JSON.parse(service.statusJson())
+      state.lockRequests = mock.lockRequests
+      return JSON.stringify(state)
+    }
+    function quit(): void { Qt.quit() }
+  }
+}
+''')
+env = os.environ.copy()
+env['QT_QPA_PLATFORM'] = 'offscreen'
+env['HOME'] = str(work)
+env['XDG_CONFIG_HOME'] = str(work / '.config')
+env['HYPRLAND_INSTANCE_SIGNATURE'] = ''
+log_path = work / 'runtime.log'
+with log_path.open('w') as log:
+    proc = subprocess.Popen(['qs', '-p', str(work), '--no-color'], stdout=log, stderr=subprocess.STDOUT, env=env)
+    def ipc(method, *args):
+        result = subprocess.run(['qs', 'ipc', '--pid', str(proc.pid), 'call', 'test', method, *map(str,args)], capture_output=True, text=True, timeout=3, env=env)
+        if result.returncode:
+            raise RuntimeError(result.stderr or result.stdout)
+        return result.stdout.strip()
+    def state():
+        return json.loads(ipc('snapshot'))
+    try:
+        for attempt in range(40):
+            if proc.poll() is not None:
+                raise RuntimeError(log_path.read_text())
+            try:
+                initial = state()
+                if initial['enabled']:
+                    break
+            except RuntimeError:
+                pass
+            time.sleep(.1)
+        else:
+            raise RuntimeError('Fixture never became ready')
+        ipc('start', 'sleep 0.5', 3)
+        time.sleep(.15)
+        ipc('active')
+        assert state()['timers']['lock'], 'Opening activity must preserve the armed countdown'
+        time.sleep(.65)
+        dismissed = state()
+        assert not dismissed['inIdleCycle'] and not dismissed['timers']['lock'], f'Dismissal left the countdown armed: {dismissed}'
+        time.sleep(1.5)
+        assert state()['lockRequests'] == 0, 'A stale lock fired after dismissal'
+        print('PASS: dismissal cancels countdown; no lock after its old deadline')
+
+        ipc('start', 'sleep 4.6', 5)
+        time.sleep(.15)
+        ipc('active')
+        time.sleep(3.1)
+        unattended = state()
+        assert unattended['processes']['screensaver'] and unattended['timers']['lock'], f'Launch grace canceled a running screensaver: {unattended}'
+        time.sleep(1.05)
+        assert state()['lockRequests'] == 1, 'Unattended locking did not fire'
+        time.sleep(.5)
+        assert state()['lockRequests'] == 1 and not state()['inIdleCycle'], 'Exit after lock rearmed or woke the session'
+        print('PASS: running screensaver survives grace check and locks once when unattended')
+
+        ipc('start', 'sleep 0.1; exit 1', 2)
+        time.sleep(.3)
+        assert state()['timers']['lock'], 'Screensaver failure incorrectly disabled unattended locking'
+        time.sleep(1)
+        assert state()['lockRequests'] == 2, 'Failed screensaver prevented unattended locking'
+        print('PASS: failed screensaver preserves unattended locking')
+    except Exception:
+        log.flush()
+        print(log_path.read_text(), file=sys.stderr)
+        raise
+    finally:
+        proc.terminate()
+        try:
+            proc.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+
+        temporary.cleanup()
